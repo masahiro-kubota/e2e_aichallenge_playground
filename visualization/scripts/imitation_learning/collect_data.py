@@ -12,7 +12,7 @@ def main() -> None:
     workspace_root = Path(__file__).parent.parent.parent.parent
 
     # Use Pure Pursuit config but override for data collection
-    config_path = workspace_root / "experiments/configs/pure_pursuit.yaml"
+    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Override settings for data collection

@@ -28,7 +28,7 @@ docker compose up -d
 cd ..
 
 # 4. シミュレーションを実行
-uv run experiment-runner --config configs/experiments/pure_pursuit.yaml
+uv run experiment-runner --config experiment_configs/experiments/pure_pursuit.yaml
 
 # 5. 結果を確認
 # MLflow UI: http://localhost:5000
@@ -74,7 +74,7 @@ e2e_aichallenge_playground/
 │   └── control/                    # 制御コンポーネント
 │       ├── pid/
 │       └── neural_controller/
-├── configs/                        # 設定ファイル
+├── experiment_configs/             # 実験設定ファイル
 │   └── experiments/                # 実験設定
 │       ├── pure_pursuit.yaml
 │       └── imitation_learning.yaml
@@ -190,12 +190,12 @@ visualization/
 
 **依存関係**: `core`
 
-#### ⚙️ `configs/` - 設定ファイル
+#### ⚙️ `experiment_configs/` - 実験設定ファイル
 
 YAMLファイルで実験の再現性を保証。
 
 ```
-configs/
+experiment_configs/
 ├── experiments/                # 実験設定
 │   ├── pure_pursuit.yaml
 │   ├── pure_pursuit_dynamic.yaml
@@ -211,10 +211,10 @@ configs/
 
 ```bash
 # Pure Pursuit コントローラーでシミュレーション
-uv run experiment-runner --config configs/experiments/pure_pursuit.yaml
+uv run experiment-runner --config experiment_configs/experiments/pure_pursuit.yaml
 
 # Imitation Learning（ニューラルコントローラー）でシミュレーション
-uv run experiment-runner --config configs/experiments/imitation_learning.yaml
+uv run experiment-runner --config experiment_configs/experiments/imitation_learning.yaml
 ```
 
 ### テストの実行
@@ -240,7 +240,7 @@ uv run pre-commit install
 設定ファイルでコンポーネントを自由に組み合わせ：
 
 ```yaml
-# configs/experiments/custom.yaml
+# experiment_configs/experiments/custom.yaml
 experiment:
   name: "custom_experiment"
   simulator: "simple_2d"

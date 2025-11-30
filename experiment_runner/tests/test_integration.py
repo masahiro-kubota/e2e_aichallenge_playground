@@ -24,7 +24,7 @@ def test_pure_pursuit_experiment() -> None:
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent
-    config_path = workspace_root / "configs/experiments/pure_pursuit.yaml"
+    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Verify configuration
@@ -81,7 +81,7 @@ def test_config_loading() -> None:
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent
-    config_path = workspace_root / "configs/experiments/pure_pursuit.yaml"
+    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Verify structure
@@ -100,7 +100,7 @@ def test_custom_track_loading(_setup_mlflow_env: None) -> None:
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent
-    config_path = workspace_root / "configs/experiments/pure_pursuit.yaml"
+    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Create a dummy custom track file

@@ -300,8 +300,8 @@ class ExperimentRunner:
 
                 # Workspace root is 4 levels up from this file
                 workspace_root = Path(__file__).parent.parent.parent.parent
-                tools_scripts = workspace_root / "tools/scripts"
-                sys.path.insert(0, str(tools_scripts))
+                visualization_scripts = workspace_root / "visualization/scripts"
+                sys.path.insert(0, str(visualization_scripts))
                 from generate_dashboard import generate_dashboard
 
                 # Find OSM file in workspace root

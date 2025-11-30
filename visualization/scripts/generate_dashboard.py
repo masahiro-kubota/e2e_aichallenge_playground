@@ -47,12 +47,12 @@ def generate_dashboard(
     # 2. Find paths
     script_dir = Path(__file__).parent
     workspace_root = script_dir.parent.parent
-    template_path = script_dir.parent / "dashboard" / "dist" / "index.html"
-    inject_script = workspace_root / "tools" / "dashboard" / "inject_data.py"
+    template_path = workspace_root / "dashboard" / "dist" / "index.html"
+    inject_script = workspace_root / "dashboard" / "inject_data.py"
 
     if not template_path.exists():
         print(f"Error: Dashboard template not found at {template_path}")
-        print("Please build the dashboard first: cd tools/dashboard && npm run build")
+        print("Please build the dashboard first: cd dashboard && npm run build")
         return
 
     if not inject_script.exists():
