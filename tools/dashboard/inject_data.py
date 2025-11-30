@@ -95,14 +95,34 @@ def inject_data(
         # Serialize back to JSON string
         final_json_content = json.dumps(data)
 
-        injection_marker = "window.SIMULATION_DATA = null;"
-        replacement = f"window.SIMULATION_DATA = {final_json_content};"
+        # Use regex to find the marker, handling potential whitespace/newlines from minification
+        # Look for window.SIMULATION_DATA = null; with optional whitespace and semicolon
+        import re
 
-        if injection_marker not in html_content:
-            logger.error("Error: Marker '%s' not found in %s", injection_marker, html_path)
-            sys.exit(1)
+        pattern = re.compile(r"window\.SIMULATION_DATA\s*=\s*null;?")
 
-        new_html_content = html_content.replace(injection_marker, replacement)
+        if not pattern.search(html_content):
+            logger.error(
+                "Error: Marker 'window.SIMULATION_DATA = null;' not found in %s",
+                html_path,
+            )
+            # Fallback: try to inject before </head> if marker is missing
+            if "</head>" in html_content:
+                logger.info("Attempting fallback injection before </head>")
+                injection_script = (
+                    f"<script>window.SIMULATION_DATA = {final_json_content};</script>"
+                )
+                new_html_content = html_content.replace("</head>", f"{injection_script}</head>")
+            else:
+                sys.exit(1)
+        else:
+            # Replace the found marker with the data
+            # We use a lambda to avoid issues with backslashes in json_content
+            # being interpreted as escape sequences
+            new_html_content = pattern.sub(
+                lambda _: f"window.SIMULATION_DATA = {final_json_content};",
+                html_content,
+            )
 
         Path(output_path).write_text(new_html_content, encoding="utf-8")
         logger.info("Successfully injected data from %s into %s", json_path, output_path)
