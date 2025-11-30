@@ -69,15 +69,7 @@ export const DashboardLayout: React.FC = () => {
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    width: '100%',
-                    minWidth: 0,
-                  }}
-                >
+                <Stack spacing={2} sx={{ width: '100%', minWidth: 0 }}>
                   <TimeSeriesPlot
                     title="Velocity"
                     dataKey="velocity"
@@ -106,7 +98,7 @@ export const DashboardLayout: React.FC = () => {
                     unit="rad"
                     height={150}
                   />
-                </Box>
+                </Stack>
               </Box>
             </Box>
           </Stack>

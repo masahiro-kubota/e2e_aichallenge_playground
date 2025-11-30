@@ -11,6 +11,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { useSimulationStore } from '../store/simulationStore';
+import type { TrajectoryPoint } from '../types';
 
 interface TimeSeriesPlotProps {
   title: string;
@@ -29,26 +30,16 @@ export const TimeSeriesPlot: React.FC<TimeSeriesPlotProps> = ({
 }) => {
   const { data, currentTime } = useSimulationStore();
   const currentPoint = useSimulationStore((state) => state.getCurrentPoint());
-  const [isReady, setIsReady] = React.useState(false);
-
-  React.useEffect(() => {
-    // Delay rendering slightly to allow layout to stabilize
-    const timer = requestAnimationFrame(() => {
-      setIsReady(true);
-    });
-    return () => cancelAnimationFrame(timer);
-  }, []);
-
-  if (!data)
+  // Simple implementation without delayed rendering or absolute positioning
+  if (!data) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height={height}>
         <Typography>No Data</Typography>
       </Box>
     );
+  }
 
-  const currentValue = currentPoint
-    ? ((currentPoint[dataKey as keyof typeof currentPoint] as number) ?? 0)
-    : 0;
+  const currentValue = currentPoint ? (currentPoint[dataKey as keyof TrajectoryPoint] ?? 0) : 0;
 
   return (
     <Paper elevation={2} sx={{ overflow: 'hidden', borderRadius: 2 }}>
@@ -69,45 +60,35 @@ export const TimeSeriesPlot: React.FC<TimeSeriesPlotProps> = ({
           {(typeof currentValue === 'number' ? currentValue : 0).toFixed(3)} {unit}
         </Typography>
       </Box>
-      <Box
-        sx={{ height: height, bgcolor: 'background.default', position: 'relative', width: '100%' }}
-      >
-        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-          {isReady && (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.steps} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                <XAxis
-                  dataKey="timestamp"
-                  type="number"
-                  domain={['dataMin', 'dataMax']}
-                  tickFormatter={(val) => val.toFixed(1)}
-                  stroke="#999"
-                />
-                <YAxis stroke="#999" />
-                <Tooltip
-                  labelFormatter={(label) => `Time: ${Number(label).toFixed(2)}s`}
-                  formatter={(value: number) => [`${value.toFixed(3)} ${unit}`, title]}
-                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={dataKey}
-                  stroke={color}
-                  dot={false}
-                  strokeWidth={2}
-                  isAnimationActive={false}
-                />
-                <ReferenceLine
-                  x={currentTime}
-                  stroke="#ef4444"
-                  strokeDasharray="3 3"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </Box>
+      <Box sx={{ height, bgcolor: 'background.default', width: '100%' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data.steps} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              tickFormatter={(val) => val.toFixed(1)}
+              stroke="#999"
+            />
+            <YAxis stroke="#999" />
+            <Tooltip
+              labelFormatter={(label) => `Time: ${Number(label).toFixed(2)}s`}
+              formatter={(value: number) => [`${value.toFixed(3)} ${unit}`, title]}
+              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}
+            />
+            <Line
+              type="monotone"
+              dataKey={dataKey}
+              stroke={color}
+              dot={false}
+              strokeWidth={2}
+              isAnimationActive={false}
+            />
+            {/* Current time indicator */}
+            <ReferenceLine x={currentTime} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
       </Box>
     </Paper>
   );
