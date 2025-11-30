@@ -24,7 +24,13 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: |
+          uv sync --package experiment-runner
+          uv sync --package core
+          uv sync --package simulators
+          uv sync --package pure-pursuit
+          uv sync --package pid-controller
+          uv sync --package planning-utils
 
       - name: Run integration tests
         run: uv run pytest experiment_runner/tests -m integration -v -s
