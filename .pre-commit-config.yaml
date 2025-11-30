@@ -33,13 +33,13 @@ repos:
     hooks:
       - id: dashboard-eslint
         name: Dashboard ESLint
-        entry: sh -c 'cd dashboard && npx eslint .'
+        entry: sh -c 'cd dashboard/frontend && npx eslint .'
         language: system
         pass_filenames: false
-        files: ^dashboard/src/.*\.(ts|tsx)$
+        files: ^dashboard/frontend/src/.*\.(ts|tsx)$
       - id: dashboard-prettier
         name: Dashboard Prettier
-        entry: sh -c 'cd dashboard && npx prettier --check "src/**/*.{ts,tsx,css}"'
+        entry: sh -c 'cd dashboard/frontend && npx prettier --check "src/**/*.{ts,tsx,css}"'
         language: system
         pass_filenames: false
-        files: ^dashboard/src/.*\.(ts|tsx|css)$
+        files: ^dashboard/frontend/src/.*\.(ts|tsx|css)$
