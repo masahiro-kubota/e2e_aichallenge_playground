@@ -15,6 +15,15 @@
 
 ---
 
+## 📊 CI/CD & Dashboard
+
+| Status | Description |
+| :--- | :--- |
+| [![Integration Tests](https://github.com/masahiro-kubota/e2e_aichallenge_playground/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/masahiro-kubota/e2e_aichallenge_playground/actions/workflows/integration-tests.yml) | 最新の統合テスト実行ステータス |
+| [**Simulation Dashboard**](https://masahiro-kubota.github.io/e2e_aichallenge_playground/) | 最新のテスト結果（シミュレーションダッシュボード） |
+
+---
+
 ## 📁 ディレクトリ構成
 
 ### アーキテクチャ方針
