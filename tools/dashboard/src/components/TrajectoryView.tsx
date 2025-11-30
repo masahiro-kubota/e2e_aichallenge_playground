@@ -18,6 +18,16 @@ export const TrajectoryView: React.FC<TrajectoryViewProps> = ({ width, height })
     const xCoords = data.steps.map((p) => p.x);
     const yCoords = data.steps.map((p) => p.y);
 
+    // Include map_lines in the bounds calculation
+    if (data.map_lines) {
+      data.map_lines.forEach((line) => {
+        line.points.forEach((point) => {
+          xCoords.push(point.x);
+          yCoords.push(point.y);
+        });
+      });
+    }
+
     const minX = Math.min(...xCoords);
     const maxX = Math.max(...xCoords);
     const minY = Math.min(...yCoords);
@@ -58,6 +68,23 @@ export const TrajectoryView: React.FC<TrajectoryViewProps> = ({ width, height })
       <Stage width={width} height={height - 40}>
         <Layer>
           {/* Grid or Axis could go here */}
+
+          {/* Map Lines (Lanelet) */}
+          {data.map_lines?.map((line, idx) => {
+            const linePoints = line.points.flatMap((p) => [
+              p.x * scale + offsetX,
+              -p.y * scale + offsetY, // Flip Y
+            ]);
+            return (
+              <Line
+                key={`map-line-${idx}`}
+                points={linePoints}
+                stroke="#9ca3af"
+                strokeWidth={1}
+                tension={0}
+              />
+            );
+          })}
 
           {/* Full Trajectory */}
           <Line points={points} stroke="#cbd5e1" strokeWidth={2} tension={0} />

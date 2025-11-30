@@ -2,18 +2,23 @@
 
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 from core.data import SimulationLog
 
 
-def generate_dashboard(log: SimulationLog, output_path: str | Path) -> None:
+def generate_dashboard(
+    log: SimulationLog, output_path: str | Path, osm_path: str | Path | None = None
+) -> None:
     """Generate interactive HTML dashboard.
 
     Args:
         log: Simulation log
         output_path: Output HTML file path
+        osm_path: Optional path to OSM file for map display
     """
     # 1. Prepare data
     data: dict[str, Any] = {
@@ -39,35 +44,60 @@ def generate_dashboard(log: SimulationLog, output_path: str | Path) -> None:
             }
         )
 
-    # 2. Load template
-    # Assuming the script is in tools/scripts/generate_dashboard.py
-    # and the template is in tools/dashboard/dist/index.html
+    # 2. Find paths
     script_dir = Path(__file__).parent
+    workspace_root = script_dir.parent.parent
     template_path = script_dir.parent / "dashboard" / "dist" / "index.html"
+    inject_script = workspace_root / "tools" / "dashboard" / "inject_data.py"
 
     if not template_path.exists():
         print(f"Error: Dashboard template not found at {template_path}")
         print("Please build the dashboard first: cd tools/dashboard && npm run build")
         return
 
-    with open(template_path, encoding="utf-8") as f:
-        template_content = f.read()
+    if not inject_script.exists():
+        print(f"Error: inject_data.py not found at {inject_script}")
+        return
 
-    # 3. Inject data
-    json_data = json.dumps(data)
-    injection_script = f"<script>window.SIMULATION_DATA = {json_data};</script>"
+    # 3. Write temporary JSON file
+    temp_json = Path("/tmp/simulation_log_temp.json")
+    with open(temp_json, "w", encoding="utf-8") as f:
+        json.dump(data, f)
 
-    # Inject before </head> or </body>
-    if "</head>" in template_content:
-        html_content = template_content.replace("</head>", f"{injection_script}</head>")
-    else:
-        html_content = template_content.replace("</body>", f"{injection_script}</body>")
+    # 4. Use inject_data.py to generate dashboard with optional OSM
+    try:
+        cmd = [
+            sys.executable,
+            str(inject_script),
+            str(template_path),
+            str(temp_json),
+            str(output_path),
+        ]
 
-    # 4. Write output
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html_content)
+        # Add OSM path if provided
+        if osm_path is not None:
+            osm_path = Path(osm_path)
+            if osm_path.exists():
+                cmd.extend(["--osm-path", str(osm_path)])
+            else:
+                print(f"Warning: OSM file not found at {osm_path}, skipping map data")
 
-    print(f"Dashboard saved to {output_path}")
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        if result.stdout:
+            print(result.stdout)
+        if result.stderr:
+            print(result.stderr, file=sys.stderr)
+        print(f"Dashboard saved to {output_path}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error generating dashboard: {e}")
+        print(f"stdout: {e.stdout}")
+        print(f"stderr: {e.stderr}")
+        raise
+    finally:
+        # Clean up temp file
+        if temp_json.exists():
+            temp_json.unlink()
 
 
 def main() -> None:
@@ -75,6 +105,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate interactive HTML dashboard")
     parser.add_argument("log_file", help="Path to SimulationLog JSON file")
     parser.add_argument("-o", "--output", required=True, help="Output HTML file path")
+    parser.add_argument("--osm-path", help="Optional path to OSM file for map display")
 
     args = parser.parse_args()
 
@@ -87,7 +118,8 @@ def main() -> None:
     log = SimulationLog.load(log_path)
     print(f"Loaded {len(log.steps)} steps")
 
-    generate_dashboard(log, args.output)
+    osm_path = Path(args.osm_path) if args.osm_path else None
+    generate_dashboard(log, args.output, osm_path)
     print(f"\nOpen {args.output} in a browser to view the dashboard")
 
 

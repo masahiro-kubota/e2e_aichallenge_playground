@@ -16,9 +16,14 @@ export interface SimulationMetadata {
   [key: string]: string | number;
 }
 
+export interface MapLine {
+  points: { x: number; y: number }[];
+}
+
 export interface SimulationData {
   metadata: SimulationMetadata;
   steps: TrajectoryPoint[];
+  map_lines?: MapLine[];
 }
 
 declare global {

@@ -304,7 +304,15 @@ class ExperimentRunner:
                 sys.path.insert(0, str(tools_scripts))
                 from generate_dashboard import generate_dashboard
 
-                generate_dashboard(log, dashboard_path)
+                # Find OSM file in workspace root
+                osm_path = workspace_root / "lanelet2_map.osm"
+                if not osm_path.exists():
+                    osm_path = None
+                    print(
+                        "Warning: lanelet2_map.osm not found, dashboard will not include map data"
+                    )
+
+                generate_dashboard(log, dashboard_path, osm_path)
                 if not is_ci:
                     mlflow.log_artifact(str(dashboard_path))
                 else:
