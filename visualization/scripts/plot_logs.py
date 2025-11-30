@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from core.data import SimulationLog
-from tools.visualization.plotter import SimulationPlotter
+from visualization.plotter import SimulationPlotter
 
 
 def main() -> None:

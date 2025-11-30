@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Dashboard
         run: |
-          cd tools/dashboard
+          cd dashboard
           npm ci
           npm run build
 
@@ -47,11 +47,11 @@ jobs:
         run: |
           # Check if simulation log exists (it might not if tests failed early)
           if [ -f "simulation_log.json" ]; then
-            python tools/dashboard/inject_data.py tools/dashboard/dist/index.html simulation_log.json dashboard.html --osm-path lanelet2_map.osm
+            python dashboard/inject_data.py dashboard/dist/index.html simulation_log.json dashboard.html --osm-path lanelet2_map.osm
           else
             echo "Simulation log not found, skipping data injection"
             # Create a dummy dashboard or copy the template if needed, or just fail/warn
-            cp tools/dashboard/dist/index.html dashboard.html
+            cp dashboard/dist/index.html dashboard.html
           fi
 
       - name: Upload dashboard artifact

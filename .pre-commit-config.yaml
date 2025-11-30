@@ -31,15 +31,15 @@ repos:
   # React Dashboard linter and formatter
   - repo: local
     hooks:
-      - id: dashboard-lint
+      - id: dashboard-eslint
         name: Dashboard ESLint
-        entry: sh -c 'cd tools/dashboard && npx eslint .'
+        entry: sh -c 'cd dashboard && npx eslint .'
         language: system
         pass_filenames: false
-        files: ^tools/dashboard/src/.*\.(ts|tsx)$
-      - id: dashboard-format
+        files: ^dashboard/src/.*\.(ts|tsx)$
+      - id: dashboard-prettier
         name: Dashboard Prettier
-        entry: sh -c 'cd tools/dashboard && npx prettier --check "src/**/*.{ts,tsx,css}"'
+        entry: sh -c 'cd dashboard && npx prettier --check "src/**/*.{ts,tsx,css}"'
         language: system
         pass_filenames: false
-        files: ^tools/dashboard/src/.*\.(ts|tsx|css)$
+        files: ^dashboard/src/.*\.(ts|tsx|css)$

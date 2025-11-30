@@ -5,7 +5,7 @@ from typing import Any
 from matplotlib import animation
 
 from core.data import SimulationLog, Trajectory
-from tools.visualization.base import BasePlotter
+from visualization.base import BasePlotter
 
 
 class SimulationAnimator(BasePlotter):

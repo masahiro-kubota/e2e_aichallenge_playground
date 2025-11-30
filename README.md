@@ -65,7 +65,8 @@ e2e_aichallenge_playground/
 ├── core/                           # コアフレームワーク
 ├── experiment_runner/              # 統一実験実行フレームワーク
 ├── simulators/                     # シミュレータ実装
-├── tools/                          # 共通ツール
+├── dashboard/                      # シミュレーション可視化ダッシュボード
+├── visualization/                  # 可視化ツール
 ├── components_packages/            # コンポーネントパッケージ
 │   ├── planning/                   # 計画コンポーネント
 │   │   ├── pure_pursuit/
@@ -77,7 +78,7 @@ e2e_aichallenge_playground/
 │   └── experiments/                # 実験設定
 │       ├── pure_pursuit.yaml
 │       └── imitation_learning.yaml
-├── data/                           # データ（.gitignore、MLflow/W&Bで管理）
+├── data/                           # データ(.gitignore、MLflow/W&Bで管理)
 └── experiment-tracking-server/     # MLflow + MinIO サーバー
 ```
 
@@ -152,19 +153,42 @@ experiment_runner/
 
 **役割**: YAML設定ファイルで実験を定義・実行
 
-**依存関係**: `core`, `simulators`, `tools`, コンポーネントパッケージ
+**依存関係**: `core`, `simulators`, `visualization`, コンポーネントパッケージ
 
-#### 🛠️ `tools/` - 共通ツール
+#### 📊 `dashboard/` - シミュレーション可視化ダッシュボード
 
-複数の実験で再利用可能なツール群。
+React/Viteベースのインタラクティブなダッシュボード。
 
 ```
-tools/
-├── data_collection/            # データ収集ツール
-├── training/                   # 学習フレームワーク
-├── evaluation/                 # 評価フレームワーク
-└── visualization/              # 可視化ツール
+dashboard/
+├── src/                        # Reactコンポーネント
+├── dist/                       # ビルド成果物
+├── inject_data.py              # データ注入スクリプト
+└── package.json
 ```
+
+**役割**: シミュレーション結果の可視化（GitHub Pagesで公開）
+
+**依存関係**: なし（独立したフロントエンドアプリ）
+
+#### 📈 `visualization/` - 可視化ツール
+
+複数の実験で再利用可能な可視化ツール群。
+
+```
+visualization/
+├── scripts/
+│   ├── plot_logs.py            # 静止画プロット
+│   ├── animate_logs.py         # アニメーション生成
+│   └── mcap_to_log.py          # MCAP変換
+└── src/visualization/
+    ├── plotter.py              # プロットクラス
+    └── animator.py             # アニメーションクラス
+```
+
+**役割**: シミュレーションログの可視化・分析
+
+**依存関係**: `core`
 
 #### ⚙️ `configs/` - 設定ファイル
 

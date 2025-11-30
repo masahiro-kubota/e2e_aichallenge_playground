@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 
 from core.data import SimulationLog, Trajectory
-from tools.visualization.base import BasePlotter
+from visualization.base import BasePlotter
 
 
 class SimulationPlotter(BasePlotter):

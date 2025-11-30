@@ -1,5 +1,5 @@
 [project]
-name = "tools"
+name = "visualization"
 version = "0.1.0"
 description = "Visualization and analysis tools"
 requires-python = ">=3.12"
@@ -25,7 +25,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tools"]
+packages = ["src/visualization"]
 
 # Ruff configuration
 [tool.ruff]
@@ -44,10 +44,10 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "scripts/**" = ["T201", "E501", "N806", "PLR0915", "ERA001", "SLF001", "B007", "SIM108", "C408"]  # Relax rules for CLI scripts
-"src/tools/visualization/**" = ["T201", "TC002"]  # Allow print and runtime type imports in visualization
+"src/visualization/**" = ["T201", "TC002"]  # Allow print and runtime type imports in visualization
 
 [tool.ruff.lint.isort]
-known-first-party = ["tools", "core"]
+known-first-party = ["visualization", "core"]
 
 # Pyright configuration
 [tool.pyright]

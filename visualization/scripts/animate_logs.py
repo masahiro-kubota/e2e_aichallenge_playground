@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from core.data import SimulationLog, Trajectory
-from tools.visualization.animator import SimulationAnimator
+from visualization.animator import SimulationAnimator
 
 
 def main() -> None:

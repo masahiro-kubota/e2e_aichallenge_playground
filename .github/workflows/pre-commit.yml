@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Dashboard Dependencies
         run: |
-          cd tools/dashboard
+          cd dashboard
           npm ci
 
       - name: Install dependencies
