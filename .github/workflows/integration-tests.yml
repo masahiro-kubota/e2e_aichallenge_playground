@@ -31,6 +31,29 @@ jobs:
         env:
           CI: 'true'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Dashboard
+        run: |
+          cd tools/dashboard
+          npm ci
+          npm run build
+
+      - name: Inject Simulation Data
+        if: always()
+        run: |
+          # Check if simulation log exists (it might not if tests failed early)
+          if [ -f "simulation_log.json" ]; then
+            python tools/dashboard/inject_data.py tools/dashboard/dist/index.html simulation_log.json dashboard.html
+          else
+            echo "Simulation log not found, skipping data injection"
+            # Create a dummy dashboard or copy the template if needed, or just fail/warn
+            cp tools/dashboard/dist/index.html dashboard.html
+          fi
+
       - name: Upload dashboard artifact
         if: always()
         uses: actions/upload-artifact@v4
