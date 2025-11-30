@@ -1,0 +1,130 @@
+[project]
+name = "core"
+version = "0.1.0"
+description = "Core framework for autonomous driving components"
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml>=6.0",
+    "numpy>=2.3.5",
+    "mcap>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+    "pyright>=1.1.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "deptry>=0.12.0",
+    "pre-commit>=3.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/core"]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "ANN",    # flake8-annotations
+    "ASYNC",  # flake8-async
+    "B",      # flake8-bugbear
+    "A",      # flake8-builtins
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez
+    "T10",    # flake8-debugger
+    "EXE",    # flake8-executable
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "G",      # flake8-logging-format
+    "PIE",    # flake8-pie
+    "T20",    # flake8-print
+    "PYI",    # flake8-pyi
+    "PT",     # flake8-pytest-style
+    "Q",      # flake8-quotes
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    "SLF",    # flake8-self
+    "SIM",    # flake8-simplify
+    "TID",    # flake8-tidy-imports
+    "TCH",    # flake8-type-checking
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate
+    "PL",     # pylint
+    "TRY",    # tryceratops
+    "RUF",    # ruff-specific rules
+]
+ignore = [
+    "ANN101",  # Missing type annotation for self
+    "ANN102",  # Missing type annotation for cls
+    "ANN401",  # Dynamically typed expressions (Any) - needed for flexible interfaces
+    "PLR0913", # Too many arguments
+    "PLR2004", # Magic value in comparison
+    "PTH123",  # open() instead of Path.open() - acceptable for simple cases
+    "RUF002",  # Ambiguous unicode in docstrings - Japanese uses fullwidth parens
+    "TRY003",  # Avoid specifying long messages outside exception class
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Unused imports in __init__.py
+
+[tool.ruff.lint.isort]
+known-first-party = ["core"]
+
+# Pyright configuration
+[tool.pyright]
+include = ["src"]
+exclude = [
+    "**/__pycache__",
+    "**/.pytest_cache",
+]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+reportPrivateUsage = "warning"
+reportConstantRedefinition = "error"
+reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
+reportInconsistentConstructor = "error"
+reportOverlappingOverload = "error"
+reportMissingSuperCall = "warning"
+reportUninitializedInstanceVariable = "warning"
+reportCallInDefaultInitializer = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryContains = "warning"
+reportUnusedClass = "warning"
+reportUnusedFunction = "warning"
+reportUnusedVariable = "warning"
+reportDuplicateImport = "error"
+
+# Deptry configuration
+[tool.deptry]
+# Ignore dev dependencies (they're not imported in code)
+ignore_notebooks = true
+extend_exclude = ["tests"]
+
+[tool.deptry.per_rule_ignores]
+DEP001 = ["components"]
+DEP002 = ["ruff", "pyright", "pytest", "pytest-cov", "deptry", "pre-commit"]
+DEP003 = ["core"]  # Allow self-imports within the core package
+

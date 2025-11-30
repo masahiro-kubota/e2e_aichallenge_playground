@@ -278,11 +278,11 @@ uv sync
 cd e2e_aichallenge_playground
 uv sync
 
-# 学習
-uv run python experiments/e2e_warmup/scripts/train.py
+# シミュレーションの実行
+uv run experiment-runner --config experiments/configs/pure_pursuit.yaml
 
-# 軽量シミュレータで評価
-uv run python experiments/e2e_warmup/scripts/evaluate.py
+# 統合テストの実行
+uv run pytest experiment_runner/tests -m integration -v
 ```
 
 #### 2. ROS2ラッパーでの実行（Unityシミュレータ）

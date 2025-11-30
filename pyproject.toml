@@ -1,13 +1,34 @@
+[project]
+name = "e2e-aichallenge-playground"
+version = "0.1.0"
+description = "End-to-end AI Challenge Playground"
+requires-python = ">=3.12"
+dependencies = [
+    "experiment_runner",
+]
+
+[project.optional-dependencies]
+dev = [
+    "deptry>=0.12.0",
+    "pre-commit>=3.0.0",
+    "pytest>=8.0.0",
+    "lark>=1.0.0",
+]
+
 [tool.uv]
 managed = true
 
+[tool.uv.sources]
+experiment_runner = { workspace = true }
+
 [tool.uv.workspace]
 members = [
-    "packages/core",
-    "packages/simulators",
-    "packages/components",
-    "packages/tools",
-    "packages/experiment_runner",
-    "experiments/pure_pursuit_tracking",
-    "experiments/imitation_learning",
+    "core",
+    "experiment_runner",
+    "simulators",
+    "tools",
+    "components_packages/planning/pure_pursuit",
+    "components_packages/planning/planning_utils",
+    "components_packages/control/pid",
+    "components_packages/control/neural_controller",
 ]
