@@ -2,16 +2,46 @@
 
 自動運転の認識・計画・制御コンポーネントを柔軟に組み合わせて実験できる、モジュラーな研究プラットフォームです。
 
-## 🎯 プロジェクトの目的
+---
 
-このリポジトリは、自動運転の各コンポーネント（認識・計画・制御）をニューラルネットワークベースの手法で代替し、様々なアプローチを試すための**ROS2フリーな研究環境**を提供します。
+## 🚀 クイックスタート
 
-### 主な特徴
+### 必要な環境
 
-- **プラグイン型アーキテクチャ**: コンポーネントを自由に組み合わせ可能
-- **ROS2フリー**: 開発・学習・評価はROS2不要で高速イテレーション
-- **拡張性**: 新しいシミュレータや手法を簡単に追加
-- **再利用性**: 各パッケージは独立して他プロジェクトでも利用可能
+- Python >= 3.12
+- [uv](https://github.com/astral-sh/uv) (パッケージマネージャー)
+- Docker & Docker Compose (実験トラッキング用)
+
+### セットアップと実行
+
+```bash
+# 1. リポジトリをクローン
+git clone https://github.com/masahiro-kubota/e2e_aichallenge_playground.git
+cd e2e_aichallenge_playground
+
+# 2. 依存関係をインストール
+uv sync
+
+# 3. 実験トラッキングサーバーを起動（MLflow + MinIO）
+cd experiment-tracking-server
+docker compose up -d
+cd ..
+
+# 4. シミュレーションを実行
+uv run experiment-runner --config configs/experiments/pure_pursuit.yaml
+
+# 5. 結果を確認
+# MLflow UI: http://localhost:5000
+# MinIO Console: http://localhost:9001 (minioadmin / minioadmin)
+```
+
+### サーバーの停止
+
+```bash
+cd experiment-tracking-server
+docker compose down  # データを保持
+docker compose down -v  # データも削除
+```
 
 ---
 
@@ -142,137 +172,43 @@ YAMLファイルで実験の再現性を保証。
 
 ```
 configs/
-├── simulators/                 # シミュレータ設定
-│   └── simple_2d.yaml
-├── scenarios/                  # シナリオ定義
-│   ├── static_track.yaml
-│   └── dynamic_obstacles.yaml
-└── pipelines/                  # パイプライン設定
-    ├── full_nn.yaml           # 全てNN（E2E）
-    ├── modular_nn.yaml        # モジュラーNN
-    └── pure_pursuit.yaml      # ルールベース
+├── experiments/                # 実験設定
+│   ├── pure_pursuit.yaml
+│   ├── pure_pursuit_dynamic.yaml
+│   └── imitation_learning.yaml
+└── current_experiment.yaml     # 現在の実験設定（自動生成）
 ```
 
 ---
 
-## 🔗 ROS2連携アーキテクチャ
+## 📖 開発フロー
 
-### リポジトリ分離戦略
-
-このリポジトリは**ROS2フリー**に保ち、ROS2連携は別リポジトリで実装します。
-
-```
-📁 e2e_aichallenge_playground/     # このリポジトリ（ROS2フリー）
-   ├── packages/                   # コアロジック
-   ├── experiments/                # 実験コード
-   └── tools/                      # 共通ツール
-
-📁 aichallenge_ros2_wrapper/       # 別リポジトリ（ROS2専用）
-   └── src/aichallenge_controller/ # ROS2パッケージ
-       ├── launch/                 # launchファイル
-       ├── nodes/                  # ROS2ノード
-       ├── adapters/               # ROS2メッセージ変換
-       └── package.xml
-```
-
-### ROS2ラッパーの役割
-
-ROS2ラッパーリポジトリは以下を担当します：
-
-1. **ROS2トピックとの通信**: センサーデータ受信、制御指令送信
-2. **メッセージ変換**: ROS2メッセージ ↔ Pythonデータ構造
-3. **Unityシミュレータ連携**: ROS2経由でUnityと通信
-4. **コンポーネント統合**: このリポジトリのコンポーネントをインポートして使用
-
-### 統合方法
-
-ROS2ラッパーは`vcs import`でこのリポジトリを取得します：
-
-```yaml
-# aichallenge_ros2_wrapper/dependencies.repos
-repositories:
-  e2e_aichallenge_playground:
-    type: git
-    url: https://github.com/masahiro-kubota/e2e_aichallenge_playground.git
-    version: main
-```
-
-セットアップ手順：
+### 基本的な実験実行
 
 ```bash
-# ROS2ワークスペースを作成
-mkdir -p ~/aichallenge_ws/src
-cd ~/aichallenge_ws/src
-
-# ROS2ラッパーをクローン
-git clone https://github.com/yourusername/aichallenge_ros2_wrapper.git
-
-# 依存リポジトリ（このリポジトリ）を取得
-vcs import < aichallenge_ros2_wrapper/dependencies.repos
-
-# Pythonパッケージをインストール
-pip install -r aichallenge_ros2_wrapper/requirements.txt
-
-# ROS2パッケージをビルド
-cd ~/aichallenge_ws
-colcon build --symlink-install
-source install/setup.bash
-
-# 実行
-ros2 launch aichallenge_controller controller.launch.py
-```
-
----
-
-## 🚀 セットアップ
-
-### 必要な環境
-
-- Python >= 3.12
-- uv (パッケージマネージャー)
-
-### インストール
-
-```bash
-# リポジトリをクローン
-git clone https://github.com/masahiro-kubota/e2e_aichallenge_playground.git
-cd e2e_aichallenge_playground
-
-# 依存関係をインストール
-uv sync
-
-# 開発用依存関係（pre-commit等）をインストールする場合
-uv sync --extra dev
-uv run pre-commit install
-```
-
----
-
-## 📖 使用方法
-
-### 開発フロー
-
-#### 1. このリポジトリでの開発（ROS2不要）
-
-```bash
-cd e2e_aichallenge_playground
-uv sync
-
-# シミュレーションの実行
+# Pure Pursuit コントローラーでシミュレーション
 uv run experiment-runner --config configs/experiments/pure_pursuit.yaml
+
+# Imitation Learning（ニューラルコントローラー）でシミュレーション
+uv run experiment-runner --config configs/experiments/imitation_learning.yaml
+```
+
+### テストの実行
+
+```bash
+# ユニットテストの実行
+uv run pytest
 
 # 統合テストの実行
 uv run pytest experiment_runner/tests -m integration -v
 ```
 
-#### 2. ROS2ラッパーでの実行（Unityシミュレータ）
+### 開発用ツールのセットアップ
 
 ```bash
-cd ~/aichallenge_ws
-source install/setup.bash
-
-# Unityシミュレータ + ROS2で実行
-ros2 launch aichallenge_controller controller.launch.py
+# 開発用依存関係（pre-commit等）をインストール
+uv sync --extra dev
+uv run pre-commit install
 ```
 
 ### コンポーネントの組み合わせ
@@ -280,16 +216,24 @@ ros2 launch aichallenge_controller controller.launch.py
 設定ファイルでコンポーネントを自由に組み合わせ：
 
 ```yaml
-# configs/pipelines/hybrid.yaml
-pipeline:
-  simulator: simple_2d
-  perception: perfect           # ルールベース
-  planning: transformer         # NNベース
-  control: pid                  # ルールベース
+# configs/experiments/custom.yaml
+experiment:
+  name: "custom_experiment"
+  simulator: "simple_2d"
 
-simulator_config:
-  dynamic_obstacles: true
-  num_obstacles: 3
+simulator:
+  track_file: "data/tracks/raceline_awsim_1500.csv"
+
+components:
+  planning:
+    type: "pure_pursuit"  # または "neural_planner"
+    config:
+      lookahead_distance: 5.0
+
+  control:
+    type: "pid"  # または "neural_controller"
+    config:
+      kp: 1.0
 ```
 
 ---
