@@ -1,0 +1,9 @@
+.coverage
+
+# Daily experiment configs (personal use)
+/configs/*.yaml
+!/configs/.gitkeep
+
+# Custom data files (personal use)
+/data/
+!/data/**/.gitkeep

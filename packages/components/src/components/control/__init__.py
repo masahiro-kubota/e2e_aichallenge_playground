@@ -1,6 +1,6 @@
 """Control components."""
 
-from components.control.pid import PIDController
 from components.control.neural_controller import NeuralController
+from components.control.pid import PIDController
 
-__all__ = ["PIDController", "NeuralController"]
+__all__ = ["NeuralController", "PIDController"]

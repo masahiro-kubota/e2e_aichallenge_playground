@@ -8,7 +8,7 @@ MLflow + PostgreSQL + MinIO を使用した実験トラッキングサーバー�
 
 ```bash
 cd experiment-tracking-server
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 2. アクセス
@@ -19,12 +19,12 @@ docker-compose up -d
 ### 3. サーバーの停止
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 データを削除する場合:
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ## 実験からの使用方法
@@ -75,5 +75,5 @@ ports:
 ### データのバックアップ
 
 ```bash
-docker-compose exec postgres pg_dump -U mlflow mlflow > backup.sql
+docker compose exec postgres pg_dump -U mlflow mlflow > backup.sql
 ```

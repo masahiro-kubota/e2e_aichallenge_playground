@@ -54,6 +54,7 @@ class NeuralController(ControlComponent):
         # Load model
         self.model = MLP(input_size, output_size, hidden_size).to(self.device)
         if Path(model_path).exists():
+            print(f"Loading model from {model_path}")
             self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         else:
             print(f"Warning: Model file not found at {model_path}")

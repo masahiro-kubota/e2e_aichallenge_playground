@@ -150,12 +150,17 @@ uv run pyright src/
 ### テスト
 
 ```bash
-# テスト実行
+# テスト実行（カバレッジ計測も自動で行われます）
 uv run pytest
-
-# カバレッジ付き
-uv run pytest --cov=core
 ```
+
+> [!IMPORTANT]
+> ROS環境（`source /opt/ros/.../setup.bash` 等を実行済み）で実行する場合、環境変数の競合によりエラーが発生することがあります。
+> その場合は `PYTHONPATH` を空にして実行してください：
+>
+> ```bash
+> PYTHONPATH= uv run pytest
+> ```
 
 ## コード品質
 

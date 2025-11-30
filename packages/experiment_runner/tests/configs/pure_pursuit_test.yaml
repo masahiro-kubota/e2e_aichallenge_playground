@@ -1,0 +1,40 @@
+experiment:
+  name: "test_pure_pursuit_tracking"
+  description: "Integration test for Pure Pursuit tracking"
+
+components:
+  perception: null
+  planning:
+    type: "PurePursuitPlanner"
+    params:
+      lookahead_distance: 5.0
+      # track_path: "data/planning/pure_pursuit/tracks/my_custom_track.csv"  # Optional: defaults to raceline_awsim_15km.csv
+  control:
+    type: "PIDController"
+    params:
+      kp: 1.0
+      ki: 0.1
+      kd: 0.05
+
+simulator:
+  type: "Simple2DSimulator"
+  params:
+    dt: 0.1
+    initial_state:
+      from_track: true
+
+execution:
+  mode: "inference"
+  max_steps: 1000  # Increased to allow full lap completion
+  num_runs: 1
+  parallel: false
+
+logging:
+  mlflow:
+    enabled: true
+    tracking_uri: "http://localhost:5000"
+  mcap:
+    enabled: true
+    output_dir: "/tmp"
+  dashboard:
+    enabled: true
