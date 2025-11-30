@@ -113,6 +113,14 @@ class Simulator(ABC):
             描画結果（画像など）、またはNone
         """
 
+    @abstractmethod
+    def get_log(self) -> SimulationLog:
+        """シミュレーションログを取得.
+
+        Returns:
+            SimulationLog: シミュレーションログ
+        """
+
 
 class DashboardGenerator(ABC):
     """Dashboard generation interface.

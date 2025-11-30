@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from core.data import Action, Observation, VehicleState
+from core.data import Action, Observation, SimulationStep, VehicleState
 from simulator_kinematic.vehicle import KinematicVehicleModel
 from simulator_utils.base import BaseSimulator
 
@@ -38,6 +38,15 @@ class KinematicSimulator(BaseSimulator):
             done: エピソード終了フラグ
             info: 追加情報
         """
+        # Log current step before update
+        self.log.add_step(
+            SimulationStep(
+                timestamp=self._current_state.timestamp or 0.0,
+                vehicle_state=self._current_state,
+                action=action,
+            )
+        )
+
         self._current_state = self.vehicle_model.step(
             state=self._current_state,
             steering=action.steering,

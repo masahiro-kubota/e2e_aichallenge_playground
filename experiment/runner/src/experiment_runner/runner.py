@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import mlflow
-from core.data import SimulationLog, SimulationStep, VehicleState
+from core.data import SimulationStep, VehicleState
 from core.interfaces import ControlComponent, PlanningComponent, Simulator
 from core.logging import MCAPLogger
 from core.metrics import MetricsCalculator
@@ -127,6 +127,7 @@ class ExperimentRunner:
                     y=track[0].y,
                     yaw=track[0].yaw,
                     velocity=0.0,
+                    timestamp=0.0,
                 )
             else:
                 raise ValueError("Planner does not have reference_trajectory")
@@ -216,7 +217,7 @@ class ExperimentRunner:
             from datetime import datetime
 
             params["execution_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            log = SimulationLog(metadata=params)
+            # log = SimulationLog(metadata=params)  # Handled by simulator
             mcap_path = Path(self.config.logging.mcap.output_dir) / "simulation.mcap"
 
             print("Starting simulation...")
@@ -236,13 +237,15 @@ class ExperimentRunner:
                     # Simulate and get next state
                     next_state, observation, done, info = self.simulator.step(action)
 
-                    # Log current step (before state update)
+                    # Log to MCAP (still done here for now, or could be moved to simulator too?)
+                    # For now, we keep MCAP logging here as it might depend on runner-specifics,
+                    # but we remove the SimulationLog accumulation.
+                    # Actually, we need to construct SimulationStep for MCAP logging.
                     sim_step = SimulationStep(
                         timestamp=step * self.simulator.dt,  # type: ignore
                         vehicle_state=current_state,
                         action=action,
                     )
-                    log.add_step(sim_step)
                     mcap_logger.log_step(sim_step)
 
                     if step % 100 == 0:
@@ -260,7 +263,6 @@ class ExperimentRunner:
                         # Use time threshold instead of step threshold to handle different dt
                         elapsed_time = step * self.simulator.dt
                         if dist_to_end < 5.0 and elapsed_time > 20.0:
-                            print("Reached goal!")
                             break
 
                     # Update state for next iteration
@@ -273,6 +275,10 @@ class ExperimentRunner:
 
             end_time = time.time()
             print(f"Simulation finished in {end_time - start_time:.2f}s")
+
+            # Retrieve log from simulator
+            log = self.simulator.get_log()
+            log.metadata = params
 
             # Calculate metrics
             if reference_trajectory is not None:

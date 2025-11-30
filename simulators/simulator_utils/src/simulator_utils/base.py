@@ -3,7 +3,7 @@
 from abc import ABC
 from typing import Any
 
-from core.data import Observation, VehicleState
+from core.data import Observation, SimulationLog, VehicleState
 from core.interfaces import Simulator
 
 
@@ -29,6 +29,7 @@ class BaseSimulator(Simulator, ABC):
             x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0
         )
         self._current_state = self.initial_state
+        self.log = SimulationLog()
 
     def reset(self) -> VehicleState:
         """シミュレーションをリセット.
@@ -37,7 +38,16 @@ class BaseSimulator(Simulator, ABC):
             初期車両状態
         """
         self._current_state = self.initial_state
+        self.log = SimulationLog()
         return self._current_state
+
+    def get_log(self) -> SimulationLog:
+        """シミュレーションログを取得.
+
+        Returns:
+            SimulationLog: シミュレーションログ
+        """
+        return self.log
 
     def close(self) -> None:
         """シミュレータを終了."""
