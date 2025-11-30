@@ -23,8 +23,8 @@ def test_pure_pursuit_experiment() -> None:
     # Load config
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
-    workspace_root = Path(__file__).parent.parent.parent
-    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
+    workspace_root = Path(__file__).parent.parent.parent.parent
+    config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Verify configuration
@@ -80,8 +80,8 @@ def test_config_loading() -> None:
     """Test loading configuration."""
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
-    workspace_root = Path(__file__).parent.parent.parent
-    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
+    workspace_root = Path(__file__).parent.parent.parent.parent
+    config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Verify structure
@@ -99,14 +99,14 @@ def test_custom_track_loading(_setup_mlflow_env: None) -> None:
     # Load base config
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
-    workspace_root = Path(__file__).parent.parent.parent
-    config_path = workspace_root / "experiment_configs/experiments/pure_pursuit.yaml"
+    workspace_root = Path(__file__).parent.parent.parent.parent
+    config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Create a dummy custom track file
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
-    workspace_root = Path(__file__).parent.parent.parent
+    workspace_root = Path(__file__).parent.parent.parent.parent
     custom_track_path = "data/planning/pure_pursuit/test_custom_track.csv"
     full_path = workspace_root / custom_track_path
 

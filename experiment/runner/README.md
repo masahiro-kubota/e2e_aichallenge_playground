@@ -7,7 +7,7 @@
 ### 実行方法
 
 ```bash
-uv run experiment-runner --config experiment_configs/experiments/pure_pursuit.yaml
+uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
 ```
 
 ## Testing

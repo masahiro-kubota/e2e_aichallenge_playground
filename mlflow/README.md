@@ -7,7 +7,7 @@ MLflow + PostgreSQL + MinIO を使用した実験トラッキングサーバー�
 ### 1. サーバーの起動
 
 ```bash
-cd experiment-tracking-server
+cd mlflow
 docker compose up -d
 ```
 

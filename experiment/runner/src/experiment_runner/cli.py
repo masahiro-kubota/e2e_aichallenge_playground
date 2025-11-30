@@ -14,24 +14,31 @@ def main() -> None:
     parser.add_argument(
         "--config",
         type=str,
-        default="experiment_configs/current_experiment.yaml",
-        help="Path to experiment configuration YAML file",
+        default="experiment/configs/current_experiment.yaml",
+        help="Path to the experiment configuration file",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the command without executing it",
+    )
+
     args = parser.parse_args()
 
     config_path = Path(args.config)
+    # If the config file doesn't exist, list available templates
     if not config_path.exists():
-        print(f"Error: Configuration file not found: {config_path}")
+        print(f"Error: Configuration file '{args.config}' not found.")
         print("\nAvailable templates:")
-        templates_dir = Path("experiment_configs/experiments")
+        templates_dir = Path("experiment/configs/experiments")
         if templates_dir.exists():
             for template in templates_dir.glob("*.yaml"):
-                print(f"  - {template}")
-        print("\nUsage:")
+                print(f"  - {template.name}")
+        print("\nTo start a new experiment:")
         print(
-            f"  1. Copy a template: cp experiment_configs/experiments/pure_pursuit.yaml {args.config}"
+            f"  1. Copy a template: cp experiment/configs/experiments/pure_pursuit.yaml {args.config}"
         )
-        print(f"  2. Edit the config: vim {args.config}")
+        print("  2. Edit the configuration file")
         print(f"  3. Run: uv run experiment-runner --config {args.config}")
         return
 

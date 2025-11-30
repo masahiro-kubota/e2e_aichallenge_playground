@@ -23,12 +23,12 @@ cd e2e_aichallenge_playground
 uv sync
 
 # 3. 実験トラッキングサーバーを起動（MLflow + MinIO）
-cd experiment-tracking-server
+cd mlflow
 docker compose up -d
 cd ..
 
 # 4. シミュレーションを実行
-uv run experiment-runner --config experiment_configs/experiments/pure_pursuit.yaml
+uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
 
 # 5. 結果を確認
 # MLflow UI: http://localhost:5000
@@ -38,7 +38,7 @@ uv run experiment-runner --config experiment_configs/experiments/pure_pursuit.ya
 ### サーバーの停止
 
 ```bash
-cd experiment-tracking-server
+cd mlflow
 docker compose down  # データを保持
 docker compose down -v  # データも削除
 ```
@@ -63,7 +63,7 @@ docker compose down -v  # データも削除
 ```
 e2e_aichallenge_playground/
 ├── core/                           # コアフレームワーク
-├── experiment_runner/              # 統一実験実行フレームワーク
+├── experiment/runner/              # 統一実験実行フレームワーク
 ├── simulators/                     # シミュレータ実装
 ├── dashboard/                      # シミュレーション可視化ダッシュボード
 ├── visualization/                  # 可視化ツール
@@ -74,12 +74,12 @@ e2e_aichallenge_playground/
 │   └── control/                    # 制御コンポーネント
 │       ├── pid/
 │       └── neural_controller/
-├── experiment_configs/             # 実験設定ファイル
+├── experiment/configs/             # 実験設定ファイル
 │   └── experiments/                # 実験設定
 │       ├── pure_pursuit.yaml
 │       └── imitation_learning.yaml
 ├── data/                           # データ(.gitignore、MLflow/W&Bで管理)
-└── experiment-tracking-server/     # MLflow + MinIO サーバー
+└── mlflow/     # MLflow + MinIO サーバー
 ```
 
 ### 詳細構成
@@ -140,11 +140,11 @@ components_packages/
 
 **依存関係**: `core`
 
-#### 🧪 `experiment_runner/` - 統一実験実行フレームワーク
+#### 🧪 `experiment/runner/` - 統一実験実行フレームワーク
 ```
-experiment_runner/
+experiment/runner/
 ├── pyproject.toml
-├── src/experiment_runner/
+├── src/experiment/runner/
 │   ├── cli.py                 # CLIエントリーポイント
 │   ├── config.py              # 設定管理
 │   └── runner.py              # 実験実行ロジック
@@ -190,12 +190,12 @@ visualization/
 
 **依存関係**: `core`
 
-#### ⚙️ `experiment_configs/` - 実験設定ファイル
+#### ⚙️ `experiment/configs/` - 実験設定ファイル
 
 YAMLファイルで実験の再現性を保証。
 
 ```
-experiment_configs/
+experiment/configs/
 ├── experiments/                # 実験設定
 │   ├── pure_pursuit.yaml
 │   ├── pure_pursuit_dynamic.yaml
@@ -211,10 +211,10 @@ experiment_configs/
 
 ```bash
 # Pure Pursuit コントローラーでシミュレーション
-uv run experiment-runner --config experiment_configs/experiments/pure_pursuit.yaml
+uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
 
 # Imitation Learning（ニューラルコントローラー）でシミュレーション
-uv run experiment-runner --config experiment_configs/experiments/imitation_learning.yaml
+uv run experiment-runner --config experiment/configs/experiments/imitation_learning.yaml
 ```
 
 ### テストの実行
@@ -224,7 +224,7 @@ uv run experiment-runner --config experiment_configs/experiments/imitation_learn
 uv run pytest
 
 # 統合テストの実行
-uv run pytest experiment_runner/tests -m integration -v
+uv run pytest experiment/runner/tests -m integration -v
 ```
 
 ### 開発用ツールのセットアップ
@@ -240,7 +240,7 @@ uv run pre-commit install
 設定ファイルでコンポーネントを自由に組み合わせ：
 
 ```yaml
-# experiment_configs/experiments/custom.yaml
+# experiment/configs/experiments/custom.yaml
 experiment:
   name: "custom_experiment"
   simulator: "simple_2d"

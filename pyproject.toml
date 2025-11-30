@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "End-to-end AI Challenge Playground"
 requires-python = ">=3.12"
 dependencies = [
-    "experiment_runner",
+    "experiment-runner",
 ]
 
 [project.optional-dependencies]
@@ -20,13 +20,13 @@ dev = [
 managed = true
 
 [tool.uv.sources]
-experiment_runner = { workspace = true }
+experiment-runner = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "core",
     "dashboard",
-    "experiment_runner",
+    "experiment/runner",
     "simulators/simulator_utils",
     "simulators/simulator_kinematic",
     "simulators/simulator_dynamic",

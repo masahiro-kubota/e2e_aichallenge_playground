@@ -49,10 +49,7 @@ class ExperimentRunner:
         for key, value in params.items():
             if key in path_keys and isinstance(value, str):
                 # User specified custom path
-                # __file__ is in src/experiment_runner/runner.py
-                # Go up 3 levels: runner.py -> experiment_runner -> src -> experiment_runner (package) -> workspace
-                workspace_root = Path(__file__).parent.parent.parent.parent
-                resolved_params[key] = workspace_root / value
+                resolved_params[key] = self.workspace_root / value
             else:
                 resolved_params[key] = value
 
@@ -70,13 +67,15 @@ class ExperimentRunner:
         track_path = None
         if "track_path" in planning_params:
             # User specified custom track path
-            workspace_root = Path(__file__).parent.parent.parent.parent
+            workspace_root = Path(__file__).parent.parent.parent.parent.parent
             track_path = workspace_root / planning_params.pop("track_path")
         elif planning_type == "PurePursuitPlanner":
             # Use default track from component directory
             # __file__ is in src/experiment_runner/runner.py
             # Go to components_packages/planning/pure_pursuit/src/pure_pursuit/data/tracks/
-            components_root = Path(__file__).parent.parent.parent.parent / "components_packages"
+            components_root = (
+                Path(__file__).parent.parent.parent.parent.parent / "components_packages"
+            )
             default_track = (
                 components_root
                 / "planning/pure_pursuit/src/pure_pursuit/data/tracks"
@@ -301,7 +300,7 @@ class ExperimentRunner:
                 from dashboard import HTMLDashboardGenerator
 
                 # Find OSM file in workspace root
-                workspace_root = Path(__file__).parent.parent.parent.parent
+                workspace_root = Path(__file__).parent.parent.parent.parent.parent
                 osm_path = workspace_root / "lanelet2_map.osm"
                 if not osm_path.exists():
                     osm_path = None
