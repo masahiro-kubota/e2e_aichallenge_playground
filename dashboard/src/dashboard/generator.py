@@ -5,15 +5,16 @@ from pathlib import Path
 from typing import Any
 
 from core.data import SimulationLog
+from core.interfaces import DashboardGenerator
 from dashboard.injector import inject_simulation_data
 
 logger = logging.getLogger(__name__)
 
 
-class HTMLDashboardGenerator:
+class HTMLDashboardGenerator(DashboardGenerator):
     """HTML dashboard generator using React template.
 
-    This class implements the DashboardGenerator protocol and generates
+    This class implements the DashboardGenerator interface and generates
     interactive HTML dashboards from simulation logs using a pre-built
     React template.
     """

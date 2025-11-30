@@ -8,9 +8,8 @@
 
 ### 必要な環境
 
-- Python >= 3.12
-- [uv](https://github.com/astral-sh/uv) (パッケージマネージャー)
-- Docker & Docker Compose (実験トラッキング用)
+- uv
+- Docker
 
 ### セットアップと実行
 
