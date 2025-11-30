@@ -32,7 +32,9 @@ class SimulationMetrics:
 class MetricsCalculator:
     """Calculate metrics from simulation log."""
 
-    def __init__(self, reference_trajectory: Trajectory | None = None, wheelbase: float = 2.5) -> None:
+    def __init__(
+        self, reference_trajectory: Trajectory | None = None, wheelbase: float = 2.5
+    ) -> None:
         """Initialize metrics calculator.
 
         Args:
@@ -56,8 +58,12 @@ class MetricsCalculator:
 
         # Lateral acceleration
         lateral_accels = self._calculate_lateral_accelerations(log)
-        avg_lateral_accel = float(np.mean(np.abs(lateral_accels))) if len(lateral_accels) > 0 else 0.0
-        max_lateral_accel = float(np.max(np.abs(lateral_accels))) if len(lateral_accels) > 0 else 0.0
+        avg_lateral_accel = (
+            float(np.mean(np.abs(lateral_accels))) if len(lateral_accels) > 0 else 0.0
+        )
+        max_lateral_accel = (
+            float(np.max(np.abs(lateral_accels))) if len(lateral_accels) > 0 else 0.0
+        )
 
         # Lateral error (if reference trajectory available)
         if self.reference_trajectory:
@@ -123,10 +129,11 @@ class MetricsCalculator:
             for step in log.steps:
                 e_lat, _, _ = controller.calculate_errors(step.vehicle_state)
                 errors.append(e_lat)
-            return errors
         except ImportError:
             # Fallback: simple nearest point distance
             return [0.0] * len(log.steps)
+        else:
+            return errors
 
     def _calculate_comfort_score(self, log: SimulationLog) -> float:
         """Calculate comfort score (0-1, higher is better)."""
@@ -149,8 +156,7 @@ class MetricsCalculator:
 
         # Normalize: lower jerk = higher score
         avg_jerk = float(np.mean(jerks))
-        comfort = max(0.0, 1.0 - avg_jerk / 10.0)  # Assuming jerk < 10 is comfortable
-        return comfort
+        return max(0.0, 1.0 - avg_jerk / 10.0)  # Assuming jerk < 10 is comfortable
 
     def _check_success(self, log: SimulationLog) -> bool:
         """Check if simulation succeeded (reached goal)."""

@@ -15,7 +15,9 @@ from core.utils.geometry import distance, normalize_angle
 class MLP(nn.Module):
     """Simple MLP model."""
 
-    def __init__(self, input_size: int, output_size: int, hidden_size: int = 64) -> None:
+    def __init__(
+        self, input_size: int, output_size: int, hidden_size: int = 64
+    ) -> None:
         super().__init__()
         self.network = nn.Sequential(
             nn.Linear(input_size, hidden_size),
@@ -50,7 +52,7 @@ class NeuralController(ControlComponent):
             hidden_size: Hidden layer size
         """
         self.device = torch.device("cpu")
-        
+
         # Load model
         self.model = MLP(input_size, output_size, hidden_size).to(self.device)
         if Path(model_path).exists():
@@ -58,7 +60,7 @@ class NeuralController(ControlComponent):
             self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         else:
             print(f"Warning: Model file not found at {model_path}")
-            
+
         self.model.eval()
 
         # Load scaler
@@ -79,7 +81,9 @@ class NeuralController(ControlComponent):
         """
         self.reference_trajectory = trajectory
 
-    def calculate_errors(self, vehicle_state: VehicleState) -> tuple[float, float, float]:
+    def calculate_errors(
+        self, vehicle_state: VehicleState
+    ) -> tuple[float, float, float]:
         """Calculate lateral error, yaw error, and reference velocity.
 
         Args:
@@ -94,7 +98,7 @@ class NeuralController(ControlComponent):
         # Find nearest point
         min_dist = float("inf")
         nearest_idx = 0
-        
+
         # Simple search (can be optimized)
         for i, point in enumerate(self.reference_trajectory):
             d = distance(vehicle_state.x, vehicle_state.y, point.x, point.y)
@@ -103,25 +107,25 @@ class NeuralController(ControlComponent):
                 nearest_idx = i
 
         nearest_point = self.reference_trajectory[nearest_idx]
-        
+
         # Calculate lateral error
         # Vector from nearest point to vehicle
         dx = vehicle_state.x - nearest_point.x
         dy = vehicle_state.y - nearest_point.y
-        
+
         # Path direction vector
         path_yaw = nearest_point.yaw
         path_dx = math.cos(path_yaw)
         path_dy = math.sin(path_yaw)
-        
+
         # Cross product to determine side (left/right)
         # e_lat = (vehicle - nearest) x path_dir
         # If > 0, vehicle is to the left (assuming standard coord system)
         e_lat = dx * path_dy - dy * path_dx
-        
+
         # Calculate yaw error
         e_yaw = normalize_angle(vehicle_state.yaw - path_yaw)
-        
+
         return e_lat, e_yaw, nearest_point.velocity
 
     def control(
@@ -146,10 +150,10 @@ class NeuralController(ControlComponent):
         # Calculate features
         e_lat, e_yaw, v_ref = self.calculate_errors(vehicle_state)
         v = vehicle_state.velocity
-        
+
         # Prepare input [e_lat, e_yaw, v, v_ref]
         features = np.array([e_lat, e_yaw, v, v_ref], dtype=np.float32)
-        
+
         # Normalize
         if self.scaler_params:
             mean = np.array(self.scaler_params["X_mean"])
@@ -159,13 +163,15 @@ class NeuralController(ControlComponent):
             features_norm = features
 
         # Inference
-        input_tensor = torch.from_numpy(features_norm).float().unsqueeze(0).to(self.device)
-        
+        input_tensor = (
+            torch.from_numpy(features_norm).float().unsqueeze(0).to(self.device)
+        )
+
         with torch.no_grad():
             output_tensor = self.model(input_tensor)
-            
+
         output_norm = output_tensor.cpu().numpy()[0]
-        
+
         # Denormalize
         if self.scaler_params:
             y_mean = np.array(self.scaler_params["y_mean"])
@@ -173,7 +179,7 @@ class NeuralController(ControlComponent):
             output = output_norm * y_std + y_mean
         else:
             output = output_norm
-            
+
         return Action(steering=float(output[0]), acceleration=float(output[1]))
 
     def reset(self) -> None:

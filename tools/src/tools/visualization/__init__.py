@@ -1,6 +1,6 @@
 """Visualization tools."""
 
-from tools.visualization.plotter import SimulationPlotter
 from tools.visualization.animator import SimulationAnimator
+from tools.visualization.plotter import SimulationPlotter
 
-__all__ = ["SimulationPlotter", "SimulationAnimator"]
+__all__ = ["SimulationAnimator", "SimulationPlotter"]

@@ -1,12 +1,8 @@
 """Pure Pursuit Planner implementation."""
 
-import math
-
-import numpy as np
-
 from core.data import Observation, Trajectory, TrajectoryPoint, VehicleState
 from core.interfaces import PlanningComponent
-from core.utils.geometry import distance, nearest_point_on_line, normalize_angle
+from core.utils.geometry import distance
 
 
 class PurePursuitPlanner(PlanningComponent):
@@ -59,18 +55,18 @@ class PurePursuitPlanner(PlanningComponent):
         # Search forward from nearest point
         target_point = self.reference_trajectory[nearest_idx]
         accumulated_dist = 0.0
-        
+
         current_idx = nearest_idx
         while accumulated_dist < self.lookahead_distance:
             if current_idx >= len(self.reference_trajectory) - 1:
                 # End of trajectory
                 target_point = self.reference_trajectory[-1]
                 break
-            
+
             p1 = self.reference_trajectory[current_idx]
             p2 = self.reference_trajectory[current_idx + 1]
             d = distance(p1.x, p1.y, p2.x, p2.y)
-            
+
             if accumulated_dist + d >= self.lookahead_distance:
                 # Interpolate
                 remaining = self.lookahead_distance - accumulated_dist
@@ -78,32 +74,37 @@ class PurePursuitPlanner(PlanningComponent):
                 target_x = p1.x + (p2.x - p1.x) * ratio
                 target_y = p1.y + (p2.y - p1.y) * ratio
                 target_v = p1.velocity + (p2.velocity - p1.velocity) * ratio
-                target_point = TrajectoryPoint(x=target_x, y=target_y, yaw=0.0, velocity=target_v)
+                target_point = TrajectoryPoint(
+                    x=target_x, y=target_y, yaw=0.0, velocity=target_v
+                )
                 break
-            
+
             accumulated_dist += d
             current_idx += 1
             target_point = self.reference_trajectory[current_idx]
 
         # 3. Calculate steering angle
         # alpha = angle between vehicle heading and direction to target
-        target_angle = math.atan2(target_point.y - vehicle_state.y, target_point.x - vehicle_state.x)
-        alpha = normalize_angle(target_angle - vehicle_state.yaw)
-        
+        # Note: alpha calculation is commented out as it's not currently used
+        # target_angle = math.atan2(
+        #     target_point.y - vehicle_state.y, target_point.x - vehicle_state.x
+        # )
+        # alpha = normalize_angle(target_angle - vehicle_state.yaw)
+
         # steering = atan(2 * L * sin(alpha) / Ld)
-        # Assuming wheelbase L is handled by controller or vehicle model, 
+        # Assuming wheelbase L is handled by controller or vehicle model,
         # Pure Pursuit outputs curvature or steering for a specific wheelbase.
         # Here we output a trajectory point with the target steering.
         # Note: Ideally planner outputs a path, and controller follows it.
-        # But Pure Pursuit is often used as a controller. 
-        # Here we treat it as a planner that generates a target trajectory point 
+        # But Pure Pursuit is often used as a controller.
+        # Here we treat it as a planner that generates a target trajectory point
         # that implicitly contains the control command (or we can return a trajectory to the target).
-        
+
         # For this implementation, we will return a trajectory containing the target point
         # and let the controller (or simulator) use it.
         # However, to be useful for the "ControlComponent", we might want to compute the steering here
         # if this was a controller. Since it's a "Planner", we return the path to the target.
-        
+
         # Let's return a trajectory from vehicle to target
         return Trajectory(points=[target_point])
 

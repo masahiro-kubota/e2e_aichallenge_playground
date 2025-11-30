@@ -1,7 +1,6 @@
 """Vehicle dynamics model for simple 2D simulator."""
 
 import math
-from typing import Optional
 
 from core.data import VehicleState
 from core.utils.geometry import normalize_angle
@@ -49,9 +48,9 @@ class VehicleDynamics:
 
         # Normalize yaw
         yaw_next = normalize_angle(yaw_next)
-        
+
         # Update timestamp if present
-        timestamp_next: Optional[float] = None
+        timestamp_next: float | None = None
         if state.timestamp is not None:
             timestamp_next = state.timestamp + dt
 

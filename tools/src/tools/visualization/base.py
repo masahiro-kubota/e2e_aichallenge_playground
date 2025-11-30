@@ -1,9 +1,10 @@
 """Base plotter implementation."""
 
 import matplotlib.pyplot as plt
-from core.data import Trajectory
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+
+from core.data import Trajectory
 
 
 class BasePlotter:
@@ -18,16 +19,16 @@ class BasePlotter:
         self.fig: Figure
         self.ax: Axes
         self.fig, self.ax = plt.subplots(figsize=(10, 10))
-        
+
         self.track_trajectory = track_trajectory
-        
+
         # Calculate offset to center the plot
         self.offset_x = 0.0
         self.offset_y = 0.0
         if self.track_trajectory and len(self.track_trajectory) > 0:
             self.offset_x = self.track_trajectory[0].x
             self.offset_y = self.track_trajectory[0].y
-            
+
         self._plot_track()
 
     def _plot_track(self) -> None:
@@ -37,7 +38,7 @@ class BasePlotter:
             # Apply offset
             track_x = [x - self.offset_x for x in track_x]
             track_y = [y - self.offset_y for y in track_y]
-            
+
             self.ax.plot(track_x, track_y, "k--", label="Track", alpha=0.5)
             self.ax.set_aspect("equal")
             self.ax.grid(True)

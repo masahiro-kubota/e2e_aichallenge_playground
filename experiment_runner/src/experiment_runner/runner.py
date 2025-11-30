@@ -30,7 +30,9 @@ class ExperimentRunner:
         self.planner: PlanningComponent | None = None
         self.controller: ControlComponent | None = None
 
-    def _instantiate_component(self, module_path: str, class_name: str, params: dict[str, Any]) -> Any:
+    def _instantiate_component(
+        self, module_path: str, class_name: str, params: dict[str, Any]
+    ) -> Any:
         """Dynamically instantiate a component.
 
         Args:
@@ -44,7 +46,7 @@ class ExperimentRunner:
         # Resolve special parameters
         resolved_params = {}
         path_keys = {"track_path", "model_path", "scaler_path"}
-        
+
         for key, value in params.items():
             if key in path_keys and isinstance(value, str):
                 # User specified custom path
@@ -64,7 +66,7 @@ class ExperimentRunner:
         # Planning
         planning_type = self.config.components.planning.type
         planning_params = self.config.components.planning.params.copy()
-        
+
         # Handle track_path specially for PurePursuitPlanner
         track_path = None
         if "track_path" in planning_params:
@@ -77,26 +79,26 @@ class ExperimentRunner:
             # Go to components_packages/planning/pure_pursuit/src/pure_pursuit/data/tracks/
             components_root = Path(__file__).parent.parent.parent.parent / "components_packages"
             default_track = (
-                components_root / "planning/pure_pursuit/src/pure_pursuit/data/tracks"
+                components_root
+                / "planning/pure_pursuit/src/pure_pursuit/data/tracks"
                 / "raceline_awsim_15km.csv"
             )
             if default_track.exists():
                 track_path = default_track
-        
+
         # Determine module path based on type
         if planning_type == "PurePursuitPlanner":
             planning_module = "pure_pursuit"
         else:
-            planning_module = "components.planning" # Fallback/TODO
+            planning_module = "components.planning"  # Fallback/TODO
 
-        self.planner = self._instantiate_component(
-            planning_module, planning_type, planning_params
-        )
-        
+        self.planner = self._instantiate_component(planning_module, planning_type, planning_params)
+
         # Load track if specified and store for artifact logging
         self.track_path = None
         if track_path is not None:
             from planning_utils import load_track_csv
+
             track = load_track_csv(track_path)
             self.planner.set_reference_trajectory(track)  # type: ignore
             self.track_path = track_path  # Store for artifact logging
@@ -104,17 +106,15 @@ class ExperimentRunner:
         # Control
         control_type = self.config.components.control.type
         control_params = self.config.components.control.params
-        
+
         if control_type == "PIDController":
             control_module = "pid"
         elif control_type == "NeuralController":
             control_module = "neural_controller"
         else:
-            control_module = "components.control" # Fallback
+            control_module = "components.control"  # Fallback
 
-        self.controller = self._instantiate_component(
-            control_module, control_type, control_params
-        )
+        self.controller = self._instantiate_component(control_module, control_type, control_params)
 
         # Simulator
         sim_type = self.config.simulator.type

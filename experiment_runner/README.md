@@ -20,7 +20,7 @@ uv run scripts/run_experiment.py
 ### 実行方法
 
 ```bash
-uv run experiment-runner --config experiments/configs/pure_pursuit.yaml
+uv run experiment-runner --config configs/experiments/pure_pursuit.yaml
 ```
 
 ## Testing

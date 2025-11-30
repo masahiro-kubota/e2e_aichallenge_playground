@@ -66,7 +66,7 @@ class MyPlanner(PlanningComponent):
     def plan(self, observation: Observation, vehicle_state: VehicleState) -> Trajectory:
         # 計画ロジックを実装
         pass
-    
+
     def reset(self) -> None:
         # リセット処理
         pass
@@ -169,7 +169,7 @@ uv run pytest
 - **Ruff**: 高速なPythonリンター・フォーマッター
   - pycodestyle, pyflakes, isort, flake8-annotations など多数のルールを適用
   - 行長: 100文字
-  
+
 - **Pyright**: 厳密な型チェック
   - `typeCheckingMode = "strict"`
   - すべての関数に型アノテーションが必要

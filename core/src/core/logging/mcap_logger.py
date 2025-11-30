@@ -79,7 +79,7 @@ class MCAPLogger:
             publish_time=int(step.timestamp * 1e9),
         )
 
-    def __exit__(self, *args: Any) -> None:
+    def __exit__(self, *args: object) -> None:
         """Close MCAP file."""
         if self.writer:
             self.writer.finish()

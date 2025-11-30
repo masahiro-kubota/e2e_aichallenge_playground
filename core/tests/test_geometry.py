@@ -2,9 +2,6 @@
 
 import math
 
-import numpy as np
-import pytest
-
 from core.utils.geometry import (
     angle_between_points,
     curvature_from_points,

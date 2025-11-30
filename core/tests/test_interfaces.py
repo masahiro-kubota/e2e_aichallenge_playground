@@ -1,7 +1,5 @@
 """Tests for abstract interfaces."""
 
-import pytest
-
 from core.data import Action, Observation, Trajectory, TrajectoryPoint, VehicleState
 from core.interfaces import (
     ControlComponent,
@@ -16,9 +14,7 @@ class DummyPerception(PerceptionComponent):
 
     def perceive(self, sensor_data: object) -> Observation:
         """Return dummy observation."""
-        return Observation(
-            lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0
-        )
+        return Observation(lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0)
 
     def reset(self) -> None:
         """Reset perception."""
@@ -67,15 +63,11 @@ class DummySimulator(Simulator):
         self.state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0)
         return self.state
 
-    def step(
-        self, action: Action
-    ) -> tuple[VehicleState, Observation, bool, dict[str, object]]:
+    def step(self, action: Action) -> tuple[VehicleState, Observation, bool, dict[str, object]]:
         """Step simulator."""
         # Simple update
         self.state.x += 0.1
-        obs = Observation(
-            lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0
-        )
+        obs = Observation(lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0)
         done = False
         info: dict[str, object] = {}
         return self.state, obs, done, info
@@ -108,9 +100,7 @@ class TestPlanningInterface:
     def test_implementation(self) -> None:
         """Test that implementation works."""
         planner = DummyPlanner()
-        obs = Observation(
-            lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0
-        )
+        obs = Observation(lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0)
         state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=5.0)
         traj = planner.plan(obs, state)
         assert isinstance(traj, Trajectory)
@@ -128,9 +118,7 @@ class TestControlInterface:
     def test_implementation(self) -> None:
         """Test that implementation works."""
         controller = DummyController()
-        traj = Trajectory(
-            points=[TrajectoryPoint(x=0.0, y=0.0, yaw=0.0, velocity=5.0)]
-        )
+        traj = Trajectory(points=[TrajectoryPoint(x=0.0, y=0.0, yaw=0.0, velocity=5.0)])
         state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=5.0)
         action = controller.control(traj, state)
         assert isinstance(action, Action)
@@ -138,13 +126,9 @@ class TestControlInterface:
     def test_with_observation(self) -> None:
         """Test control with observation."""
         controller = DummyController()
-        traj = Trajectory(
-            points=[TrajectoryPoint(x=0.0, y=0.0, yaw=0.0, velocity=5.0)]
-        )
+        traj = Trajectory(points=[TrajectoryPoint(x=0.0, y=0.0, yaw=0.0, velocity=5.0)])
         state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=5.0)
-        obs = Observation(
-            lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0
-        )
+        obs = Observation(lateral_error=0.0, heading_error=0.0, velocity=5.0, target_velocity=5.0)
         action = controller.control(traj, state, obs)
         assert isinstance(action, Action)
 

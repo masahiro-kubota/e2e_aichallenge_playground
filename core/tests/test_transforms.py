@@ -3,7 +3,6 @@
 import math
 
 import numpy as np
-import pytest
 
 from core.utils.transforms import (
     global_to_local,
@@ -71,9 +70,7 @@ class TestLocalToGlobal:
 
         # Global -> Local -> Global
         local_x, local_y = global_to_local(global_x, global_y, origin_x, origin_y, origin_yaw)
-        restored_x, restored_y = local_to_global(
-            local_x, local_y, origin_x, origin_y, origin_yaw
-        )
+        restored_x, restored_y = local_to_global(local_x, local_y, origin_x, origin_y, origin_yaw)
 
         assert abs(restored_x - global_x) < 1e-10
         assert abs(restored_y - global_y) < 1e-10

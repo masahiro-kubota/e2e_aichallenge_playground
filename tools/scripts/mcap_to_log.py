@@ -4,8 +4,9 @@ import argparse
 import json
 from pathlib import Path
 
-from core.data import Action, SimulationLog, SimulationStep, VehicleState
 from mcap.reader import make_reader
+
+from core.data import Action, SimulationLog, SimulationStep, VehicleState
 
 
 def main() -> None:
@@ -50,7 +51,7 @@ def main() -> None:
 
     log.save(output_path)
     print(f"Saved SimulationLog to {output_path}")
-    print(f"\nYou can now visualize this log with:")
+    print("\nYou can now visualize this log with:")
     print(f"  uv run python packages/tools/scripts/plot_logs.py {output_path} -o plot.png")
     print(f"  uv run python packages/tools/scripts/animate_logs.py {output_path} -o animation.gif")
 

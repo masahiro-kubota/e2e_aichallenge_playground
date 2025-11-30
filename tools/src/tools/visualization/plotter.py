@@ -1,6 +1,7 @@
 """Simulation plotter implementation."""
 
 import matplotlib.pyplot as plt
+
 from core.data import SimulationLog, Trajectory
 from tools.visualization.base import BasePlotter
 
@@ -34,19 +35,19 @@ class SimulationPlotter(BasePlotter):
         """
         # Plot vehicle trajectories
         colors = ["b", "r", "g", "c", "m", "y"]
-        
+
         for i, (log, label) in enumerate(self.logs):
             color = colors[i % len(colors)]
             history_x = [s.vehicle_state.x - self.offset_x for s in log.steps]
             history_y = [s.vehicle_state.y - self.offset_y for s in log.steps]
-            
+
             self.ax.plot(history_x, history_y, f"{color}-", label=label)
-            
+
             # Plot start and end
             if history_x:
                 self.ax.plot(history_x[0], history_y[0], f"{color}o", markersize=5)
                 self.ax.plot(history_x[-1], history_y[-1], f"{color}x", markersize=5)
-            
+
         self.ax.legend()
         self.fig.savefig(filename)
         self.close()

@@ -82,6 +82,10 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Unused imports in __init__.py
+"**/scripts/**" = ["T201"]  # Allow print in scripts
+"**/tools/**" = ["T201"]  # Allow print in tools
+"**/tests/**" = ["ARG002"]  # Allow unused arguments in test fixtures
+"**/simulators/**" = ["ERA001"]  # Allow commented equations for documentation
 
 [tool.ruff.lint.isort]
 known-first-party = ["core"]
@@ -127,4 +131,3 @@ extend_exclude = ["tests"]
 DEP001 = ["components"]
 DEP002 = ["ruff", "pyright", "pytest", "pytest-cov", "deptry", "pre-commit"]
 DEP003 = ["core"]  # Allow self-imports within the core package
-

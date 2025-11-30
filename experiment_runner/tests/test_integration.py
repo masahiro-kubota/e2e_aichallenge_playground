@@ -20,15 +20,18 @@ def _setup_mlflow_env() -> None:
 @pytest.mark.integration
 def test_pure_pursuit_experiment() -> None:
     """Test Pure Pursuit experiment execution end-to-end."""
-    # Load test configuration
-    config_path = Path(__file__).parent / "configs" / "pure_pursuit_test.yaml"
+    # Load config
+    # __file__ is in experiment_runner/tests/test_integration.py
+    # Go up 2 levels to get to workspace root
+    workspace_root = Path(__file__).parent.parent.parent
+    config_path = workspace_root / "configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Verify configuration
-    assert config.experiment.name == "test_pure_pursuit_tracking"
+    assert config.experiment.name == "pure_pursuit_tracking"
     assert config.components.planning.type == "PurePursuitPlanner"
     assert config.components.control.type == "PIDController"
-    assert config.execution.max_steps == 1000
+    assert config.execution.max_steps == 2000
 
     # Run experiment
     runner = ExperimentRunner(config)
@@ -71,12 +74,15 @@ def test_pure_pursuit_experiment() -> None:
 
 @pytest.mark.integration
 def test_config_loading() -> None:
-    """Test configuration loading from YAML."""
-    config_path = Path(__file__).parent / "configs" / "pure_pursuit_test.yaml"
+    """Test loading configuration."""
+    # __file__ is in experiment_runner/tests/test_integration.py
+    # Go up 2 levels to get to workspace root
+    workspace_root = Path(__file__).parent.parent.parent
+    config_path = workspace_root / "configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
 
     # Verify structure
-    assert config.experiment.name == "test_pure_pursuit_tracking"
+    assert config.experiment.name == "pure_pursuit_tracking"
     assert config.components.planning.params["lookahead_distance"] == 5.0
     assert config.components.control.params["kp"] == 1.0
     assert config.simulator.type == "Simple2DSimulator"
@@ -88,42 +94,47 @@ def test_config_loading() -> None:
 def test_custom_track_loading(_setup_mlflow_env: None) -> None:
     """Test loading a custom track from the data directory."""
     # Load base config
-    config_path = Path(__file__).parent / "configs" / "pure_pursuit_test.yaml"
+    # __file__ is in experiment_runner/tests/test_integration.py
+    # Go up 2 levels to get to workspace root
+    workspace_root = Path(__file__).parent.parent.parent
+    config_path = workspace_root / "configs/experiments/pure_pursuit.yaml"
     config = ExperimentConfig.from_yaml(config_path)
-    
+
     # Create a dummy custom track file
     # __file__ is in experiment_runner/tests/test_integration.py
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent
     custom_track_path = "data/planning/pure_pursuit/test_custom_track.csv"
     full_path = workspace_root / custom_track_path
-    
+
     # Ensure directory exists
     full_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Copy default track to custom path
     default_track = (
-        workspace_root / "components_packages/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
+        workspace_root
+        / "components_packages/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
     )
     import shutil
+
     shutil.copy(default_track, full_path)
-    
+
     try:
         # Modify to use custom track
         config.components.planning.params["track_path"] = custom_track_path
-        
+
         # Run experiment setup
         runner = ExperimentRunner(config)
         runner._setup_components()
-        
+
         # Verify track was loaded from custom path
         assert runner.track_path is not None
         assert str(runner.track_path).endswith(custom_track_path)
         assert runner.planner is not None
         # Check if reference trajectory is set (implies track loaded successfully)
         assert hasattr(runner.planner, "reference_trajectory")
-        assert len(runner.planner.reference_trajectory) > 0 # type: ignore
-        
+        assert len(runner.planner.reference_trajectory) > 0  # type: ignore
+
     finally:
         # Cleanup
         if full_path.exists():

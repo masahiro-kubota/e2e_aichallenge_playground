@@ -2,8 +2,8 @@
 
 from typing import Any
 
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
+from matplotlib import animation
+
 from core.data import SimulationLog, Trajectory
 from tools.visualization.base import BasePlotter
 
@@ -50,9 +50,9 @@ class SimulationAnimator(BasePlotter):
         for i, (_, label) in enumerate(self.logs):
             color = colors[i % len(colors)]
             # Initial point (off-screen or first point)
-            point, = self.ax.plot([], [], f"{color}o", label=label, markersize=8)
+            (point,) = self.ax.plot([], [], f"{color}o", label=label, markersize=8)
             self.points.append(point)
-            
+
             # Also plot full trajectory as thin line
             log = self.logs[i][0]
             history_x = [s.vehicle_state.x - self.offset_x for s in log.steps]
@@ -73,7 +73,7 @@ class SimulationAnimator(BasePlotter):
                 x = step.vehicle_state.x - self.offset_x
                 y = step.vehicle_state.y - self.offset_y
                 self.points[i].set_data([x], [y])
-                
+
             self.ax.set_title(f"Simulation Animation (Step {frame}/{min_steps})")
             return self.points
 
@@ -99,5 +99,5 @@ class SimulationAnimator(BasePlotter):
                 print(f"Error saving MP4 (ffmpeg might be missing): {e}")
         else:
             print(f"Unsupported format: {filename}")
-            
+
         self.close()

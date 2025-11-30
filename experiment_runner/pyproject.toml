@@ -58,6 +58,10 @@ ignore = [
     "ANN101", "ANN102", "ANN401",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["E501"]  # Allow long lines in tests
+"src/**" = ["PTH123", "E501"]  # Allow open() and long lines in src
+
 [tool.ruff.lint.isort]
 known-first-party = ["experiment_runner"]
 

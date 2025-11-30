@@ -1,7 +1,6 @@
 """Tests for core data structures."""
 
 import numpy as np
-import pytest
 
 from core.data import Action, Observation, Trajectory, TrajectoryPoint, VehicleState
 
@@ -51,9 +50,7 @@ class TestObservation:
 
     def test_creation(self) -> None:
         """Test basic creation of Observation."""
-        obs = Observation(
-            lateral_error=0.5, heading_error=0.1, velocity=5.0, target_velocity=6.0
-        )
+        obs = Observation(lateral_error=0.5, heading_error=0.1, velocity=5.0, target_velocity=6.0)
         assert obs.lateral_error == 0.5
         assert obs.heading_error == 0.1
         assert obs.velocity == 5.0
@@ -61,9 +58,7 @@ class TestObservation:
 
     def test_to_array(self) -> None:
         """Test conversion to numpy array."""
-        obs = Observation(
-            lateral_error=0.5, heading_error=0.1, velocity=5.0, target_velocity=6.0
-        )
+        obs = Observation(lateral_error=0.5, heading_error=0.1, velocity=5.0, target_velocity=6.0)
         arr = obs.to_array()
         expected = np.array([0.5, 0.1, 5.0, 6.0])
         np.testing.assert_array_equal(arr, expected)

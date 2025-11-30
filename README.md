@@ -279,7 +279,7 @@ cd e2e_aichallenge_playground
 uv sync
 
 # シミュレーションの実行
-uv run experiment-runner --config experiments/configs/pure_pursuit.yaml
+uv run experiment-runner --config configs/experiments/pure_pursuit.yaml
 
 # 統合テストの実行
 uv run pytest experiment_runner/tests -m integration -v

@@ -167,7 +167,7 @@ class SimulationLog:
                 for s in self.steps
             ],
         }
-        
+
         with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
 
@@ -183,11 +183,11 @@ class SimulationLog:
         """
         import json
 
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             data = json.load(f)
 
         log = cls(metadata=data.get("metadata"))
-        
+
         for s in data.get("steps", []):
             step = SimulationStep(
                 timestamp=s["timestamp"],
@@ -196,5 +196,5 @@ class SimulationLog:
                 # Observation/info loading to be implemented if needed
             )
             log.add_step(step)
-            
+
         return log

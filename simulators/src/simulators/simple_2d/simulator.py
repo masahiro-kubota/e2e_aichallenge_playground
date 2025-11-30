@@ -1,6 +1,6 @@
 """Simple 2D simulator implementation."""
 
-from typing import Any, Optional
+from typing import Any
 
 from core.data import Action, Observation, VehicleState
 from core.interfaces import Simulator
@@ -12,7 +12,7 @@ class Simple2DSimulator(Simulator):
 
     def __init__(
         self,
-        initial_state: Optional[VehicleState] = None,
+        initial_state: VehicleState | None = None,
         dt: float = 0.1,
         wheelbase: float = 2.5,
     ) -> None:
@@ -74,8 +74,6 @@ class Simple2DSimulator(Simulator):
 
     def close(self) -> None:
         """シミュレータを終了."""
-        pass
 
     def render(self) -> None:
         """シミュレーションを描画（未実装）."""
-        pass
