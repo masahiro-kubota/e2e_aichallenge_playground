@@ -2,9 +2,6 @@
 # W&B
 wandb/
 artifacts/
-# データとモデル（MLflow/W&B で管理）
-data/
-!data/.gitkeep
 # MLflow
 mlruns/
 mlartifacts/

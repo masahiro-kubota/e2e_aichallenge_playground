@@ -19,7 +19,7 @@ uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.ya
 uv run pytest
 
 # Run integration tests
-uv run pytest experiment_runner/tests -m integration -v
+uv run pytest experiment/runner/tests -m integration -v
 ```
 
 ### テスト用MLflow Experimentのクリーンアップ
@@ -73,5 +73,5 @@ for exp in experiments:
 - `pyyaml`: YAML設定の読み込み
 - `mlflow`: 実験トラッキング
 - `boto3`: MLflow S3アーティファクトストレージ
-- `core`, `simulators`, `tools`: 内部パッケージ
+- `core`, `simulators`, `dashboard`: 内部パッケージ
 - `pure-pursuit`, `pid-controller`, `neural-controller`, `planning-utils`: コンポーネントパッケージ

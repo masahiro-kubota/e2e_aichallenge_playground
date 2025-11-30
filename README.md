@@ -65,7 +65,6 @@ e2e_aichallenge_playground/
 ├── core/                           # コアフレームワーク
 ├── experiment/runner/              # 統一実験実行フレームワーク
 ├── simulators/                     # シミュレータ実装
-├── dashboard/                      # シミュレーション可視化ダッシュボード
 ├── components_packages/            # コンポーネントパッケージ
 │   ├── planning/                   # 計画コンポーネント
 │   │   ├── pure_pursuit/
@@ -167,9 +166,6 @@ dashboard/
 ```
 
 **役割**: シミュレーション結果の可視化（GitHub Pagesで公開）
-
-**依存関係**: なし（独立したフロントエンドアプリ）
-
 
 #### ⚙️ `experiment/configs/` - 実験設定ファイル
 
