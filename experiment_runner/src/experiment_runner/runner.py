@@ -316,7 +316,12 @@ class ExperimentRunner:
                 if not is_ci:
                     mlflow.log_artifact(str(dashboard_path))
                 else:
-                    # In CI, save to a persistent location for artifact upload
+                    # In CI, save simulation log as JSON for dashboard injection
+                    ci_log_path = Path("simulation_log.json")
+                    log.save(ci_log_path)
+                    print(f"Simulation log saved to {ci_log_path} for CI dashboard injection")
+
+                    # Also save dashboard to persistent location for artifact upload
                     ci_dashboard_path = Path("dashboard.html")
                     if dashboard_path.exists():
                         import shutil
