@@ -1,12 +1,12 @@
-"""Vehicle dynamics model for simple 2D simulator."""
+"""Vehicle dynamics model for kinematic simulator."""
 
 import math
 
 from core.data import VehicleState
-from core.utils.geometry import normalize_angle
+from simulator_utils.geometry import normalize_angle
 
 
-class VehicleDynamics:
+class KinematicVehicleModel:
     """キネマティック自転車モデルに基づく車両ダイナミクス."""
 
     def __init__(self, wheelbase: float = 2.5) -> None:
@@ -33,7 +33,7 @@ class VehicleDynamics:
             dt: 時間刻み [s]
 
         Returns:
-            更新された車両状態（新しいインスタンス）
+            更新された車両状態(新しいインスタンス)
         """
         # Kinematic bicycle model equations
         # x_dot = v * cos(yaw)

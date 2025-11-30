@@ -26,7 +26,9 @@ experiment_runner = { workspace = true }
 members = [
     "core",
     "experiment_runner",
-    "simulators",
+    "simulators/simulator_utils",
+    "simulators/simulator_kinematic",
+    "simulators/simulator_dynamic",
     "tools",
     "components_packages/planning/pure_pursuit",
     "components_packages/planning/planning_utils",

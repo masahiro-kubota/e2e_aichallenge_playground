@@ -133,7 +133,16 @@ class ExperimentRunner:
             else:
                 raise ValueError("Planner does not have reference_trajectory")
 
-        self.simulator = self._instantiate_component("simulators", sim_type, sim_params)
+        # Determine simulator module based on type
+        if sim_type == "KinematicSimulator":
+            sim_module = "simulator_kinematic"
+        elif sim_type == "DynamicSimulator":
+            sim_module = "simulator_dynamic"
+        else:
+            # Fallback for backward compatibility
+            sim_module = "simulators"
+
+        self.simulator = self._instantiate_component(sim_module, sim_type, sim_params)
 
     def _setup_mlflow(self) -> None:
         """Set up MLflow tracking."""
@@ -247,7 +256,9 @@ class ExperimentRunner:
                             (current_state.x - reference_trajectory[-1].x) ** 2
                             + (current_state.y - reference_trajectory[-1].y) ** 2
                         ) ** 0.5
-                        if dist_to_end < 2.0 and step > 100:
+                        # Use time threshold instead of step threshold to handle different dt
+                        elapsed_time = step * self.simulator.dt
+                        if dist_to_end < 5.0 and elapsed_time > 20.0:
                             print("Reached goal!")
                             break
 

@@ -1,6 +1,6 @@
 experiment:
-  name: "pure_pursuit_tracking"
-  description: "Pure Pursuit controller tracking AWSIM raceline"
+  name: "pure_pursuit_dynamic"
+  description: "Pure Pursuit controller with dynamic simulator"
 
 components:
   perception: null
@@ -8,7 +8,6 @@ components:
     type: "PurePursuitPlanner"
     params:
       lookahead_distance: 5.0
-      # track_path: "experiments/pure_pursuit_tracking/data/raceline_awsim_15km.csv"  # Optional: defaults to raceline_awsim_15km.csv
   control:
     type: "PIDController"
     params:
@@ -17,15 +16,15 @@ components:
       kd: 0.05
 
 simulator:
-  type: "KinematicSimulator"
+  type: "DynamicSimulator"
   params:
-    dt: 0.1
+    dt: 0.01  # Smaller dt for RK4 stability
     initial_state:
       from_track: true
 
 execution:
   mode: "inference"
-  max_steps: 2000
+  max_steps: 20000  # dt=0.01 なので 200秒分のシミュレーション
   num_runs: 1
   parallel: false
 

@@ -240,6 +240,10 @@ cd e2e_aichallenge_playground
 
 # 依存関係をインストール
 uv sync
+
+# 開発用依存関係（pre-commit等）をインストールする場合
+uv sync --extra dev
+uv run pre-commit install
 ```
 
 ---

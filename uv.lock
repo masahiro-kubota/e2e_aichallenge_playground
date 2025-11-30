@@ -10,7 +10,9 @@ members = [
     "pid-controller",
     "planning-utils",
     "pure-pursuit",
-    "simulators",
+    "simulator-dynamic",
+    "simulator-kinematic",
+    "simulator-utils",
     "tools",
 ]
 
@@ -604,7 +606,9 @@ dependencies = [
     { name = "pure-pursuit" },
     { name = "pydantic" },
     { name = "pyyaml" },
-    { name = "simulators" },
+    { name = "simulator-dynamic" },
+    { name = "simulator-kinematic" },
+    { name = "simulator-utils" },
     { name = "tools" },
 ]
 
@@ -632,7 +636,9 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
-    { name = "simulators", editable = "simulators" },
+    { name = "simulator-dynamic", editable = "simulators/simulator_dynamic" },
+    { name = "simulator-kinematic", editable = "simulators/simulator_kinematic" },
+    { name = "simulator-utils", editable = "simulators/simulator_utils" },
     { name = "tools", editable = "tools" },
 ]
 
@@ -2324,9 +2330,63 @@ wheels = [
 ]
 
 [[package]]
-name = "simulators"
+name = "simulator-dynamic"
 version = "0.1.0"
-source = { editable = "simulators" }
+source = { editable = "simulators/simulator_dynamic" }
+dependencies = [
+    { name = "core" },
+    { name = "numpy" },
+    { name = "simulator-utils" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "numpy", specifier = ">=2.3.5" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+    { name = "simulator-utils", editable = "simulators/simulator_utils" },
+]
+
+[[package]]
+name = "simulator-kinematic"
+version = "0.1.0"
+source = { editable = "simulators/simulator_kinematic" }
+dependencies = [
+    { name = "core" },
+    { name = "numpy" },
+    { name = "simulator-utils" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "numpy", specifier = ">=2.3.5" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+    { name = "simulator-utils", editable = "simulators/simulator_utils" },
+]
+
+[[package]]
+name = "simulator-utils"
+version = "0.1.0"
+source = { editable = "simulators/simulator_utils" }
 dependencies = [
     { name = "core" },
     { name = "numpy" },

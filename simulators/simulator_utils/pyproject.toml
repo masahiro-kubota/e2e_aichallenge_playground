@@ -1,7 +1,7 @@
 [project]
-name = "simulators"
+name = "simulator_utils"
 version = "0.1.0"
-description = "Simulator implementations for autonomous driving"
+description = "Common utilities for simulators"
 requires-python = ">=3.12"
 dependencies = [
     "core",
@@ -23,7 +23,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/simulators"]
+packages = ["src/simulator_utils"]
 
 # Ruff configuration
 [tool.ruff]
@@ -45,7 +45,7 @@ ignore = [
 "tests/**" = ["E501"]  # Allow long lines in tests
 
 [tool.ruff.lint.isort]
-known-first-party = ["simulators", "core"]
+known-first-party = ["simulator_utils", "core"]
 
 # Pyright configuration
 [tool.pyright]

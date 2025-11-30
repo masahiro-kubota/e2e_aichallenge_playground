@@ -1,0 +1,126 @@
+"""Dynamic bicycle model simulator implementation."""
+
+from typing import Any
+
+from core.data import Action, Observation, VehicleState
+from simulator_dynamic.state import DynamicVehicleState
+from simulator_dynamic.vehicle import DynamicVehicleModel
+from simulator_dynamic.vehicle_params import VehicleParameters
+from simulator_utils.base import BaseSimulator
+
+
+class DynamicSimulator(BaseSimulator):
+    """ダイナミック自転車モデルに基づく2Dシミュレータ."""
+
+    def __init__(
+        self,
+        initial_state: VehicleState | None = None,
+        dt: float = 0.01,  # Smaller dt for RK4 stability
+        params: VehicleParameters | None = None,
+    ) -> None:
+        """初期化.
+
+        Args:
+            initial_state: 初期車両状態(キネマティクス形式)
+            dt: シミュレーション時間刻み [s]
+            params: 車両パラメータ
+        """
+        super().__init__(initial_state=initial_state, dt=dt)
+        self.vehicle_model = DynamicVehicleModel(params=params)
+
+        # Convert kinematic state to dynamic state
+        self._dynamic_state = self._kinematic_to_dynamic(self.initial_state)
+
+    def reset(self) -> VehicleState:
+        """シミュレーションをリセット.
+
+        Returns:
+            初期車両状態
+        """
+        self._current_state = self.initial_state
+        self._dynamic_state = self._kinematic_to_dynamic(self.initial_state)
+        return self._current_state
+
+    def step(self, action: Action) -> tuple[VehicleState, Observation, bool, dict[str, Any]]:
+        """1ステップ実行.
+
+        Args:
+            action: 制御指令
+
+        Returns:
+            vehicle_state: 更新された車両状態
+            observation: 観測データ
+            done: エピソード終了フラグ
+            info: 追加情報
+        """
+        # Convert acceleration to throttle (simplified)
+        throttle = action.acceleration / 5.0  # Normalize to [-1, 1] range
+        throttle = max(-1.0, min(1.0, throttle))
+
+        self._dynamic_state = self.vehicle_model.step(
+            state=self._dynamic_state,
+            steering=action.steering,
+            throttle=throttle,
+            dt=self.dt,
+        )
+
+        # Convert dynamic state back to kinematic state
+        self._current_state = self._dynamic_to_kinematic(
+            self._dynamic_state, action.steering, action.acceleration
+        )
+
+        observation = self._create_observation(self._current_state)
+        done = self._is_done()
+        info = self._create_info()
+
+        return self._current_state, observation, done, info
+
+    def _kinematic_to_dynamic(self, state: VehicleState) -> DynamicVehicleState:
+        """キネマティクス状態をダイナミクス状態に変換.
+
+        Args:
+            state: キネマティクス状態
+
+        Returns:
+            ダイナミクス状態
+        """
+        import math
+
+        # Assume no lateral velocity initially
+        vx = state.velocity * math.cos(0.0)  # beta = 0
+        vy = state.velocity * math.sin(0.0)
+
+        return DynamicVehicleState(
+            x=state.x,
+            y=state.y,
+            yaw=state.yaw,
+            vx=vx,
+            vy=vy,
+            yaw_rate=0.0,
+            steering=state.steering,
+            throttle=0.0,
+            timestamp=state.timestamp,
+        )
+
+    def _dynamic_to_kinematic(
+        self, state: DynamicVehicleState, steering: float, acceleration: float
+    ) -> VehicleState:
+        """ダイナミクス状態をキネマティクス状態に変換.
+
+        Args:
+            state: ダイナミクス状態
+            steering: ステアリング角
+            acceleration: 加速度
+
+        Returns:
+            キネマティクス状態
+        """
+        return VehicleState(
+            x=state.x,
+            y=state.y,
+            yaw=state.yaw,
+            velocity=state.velocity,
+            acceleration=acceleration,
+            steering=steering,
+            timestamp=state.timestamp,
+        )
