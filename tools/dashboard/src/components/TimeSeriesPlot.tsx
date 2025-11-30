@@ -61,7 +61,7 @@ export const TimeSeriesPlot: React.FC<TimeSeriesPlotProps> = ({
         </Typography>
       </Box>
       <Box sx={{ height: height, bgcolor: 'background.default', minWidth: 0 }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
           <LineChart data={data.steps} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
             <XAxis

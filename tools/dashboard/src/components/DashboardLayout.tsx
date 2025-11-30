@@ -69,7 +69,7 @@ export const DashboardLayout: React.FC = () => {
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Stack spacing={2}>
+                <Stack spacing={2} sx={{ width: '100%', minWidth: 0 }}>
                   <TimeSeriesPlot
                     title="Velocity"
                     dataKey="velocity"
