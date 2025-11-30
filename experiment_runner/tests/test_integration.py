@@ -88,7 +88,7 @@ def test_config_loading() -> None:
     assert config.experiment.name == "pure_pursuit_tracking"
     assert config.components.planning.params["lookahead_distance"] == 5.0
     assert config.components.control.params["kp"] == 1.0
-    assert config.simulator.type == "Simple2DSimulator"
+    assert config.simulator.type == "KinematicSimulator"
     assert config.execution.mode == "inference"
     assert config.logging.mlflow.enabled is True
 

@@ -17,7 +17,7 @@ components:
       kd: 0.05
 
 simulator:
-  type: "Simple2DSimulator"
+  type: "KinematicSimulator"
   params:
     dt: 0.1
     initial_state:
