@@ -60,7 +60,7 @@ export const DashboardLayout: React.FC = () => {
             <TimeSlider />
 
             <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Paper sx={{ p: 2, height: '600px', display: 'flex', flexDirection: 'column' }}>
                   <Box sx={{ flexGrow: 1, bgcolor: '#000', borderRadius: 1, overflow: 'hidden' }}>
                     <TrajectoryView width={600} height={600} />
@@ -68,7 +68,7 @@ export const DashboardLayout: React.FC = () => {
                 </Paper>
               </Box>
 
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Stack spacing={2}>
                   <TimeSeriesPlot
                     title="Velocity"
