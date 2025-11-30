@@ -26,11 +26,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Run integration tests
-        run: uv run pytest experiment_runner/tests -m integration -v -s
-        env:
-          CI: 'true'
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -38,20 +33,24 @@ jobs:
 
       - name: Build Dashboard
         run: |
-          cd dashboard
+          cd dashboard/frontend
           npm ci
           npm run build
 
-      - name: Inject Simulation Data
+      - name: Run integration tests
+        run: uv run pytest experiment_runner/tests -m integration -v -s
+        env:
+          CI: 'true'
+
+      - name: Copy dashboard
         if: always()
         run: |
-          # Check if simulation log exists (it might not if tests failed early)
-          if [ -f "simulation_log.json" ]; then
-            python dashboard/inject_data.py dashboard/dist/index.html simulation_log.json dashboard.html --osm-path lanelet2_map.osm
+          if [ -f "/tmp/dashboard.html" ]; then
+            cp /tmp/dashboard.html dashboard.html
           else
-            echo "Simulation log not found, skipping data injection"
-            # Create a dummy dashboard or copy the template if needed, or just fail/warn
-            cp dashboard/dist/index.html dashboard.html
+            echo "Dashboard not found at /tmp/dashboard.html"
+            # Fallback for artifact upload to not fail completely
+            touch dashboard.html
           fi
 
       - name: Upload dashboard artifact
