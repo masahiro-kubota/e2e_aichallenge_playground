@@ -13,6 +13,7 @@ dev = [
     "pre-commit>=3.0.0",
     "pytest>=8.0.0",
     "lark>=1.0.0",
+    "ruff>=0.8.0",
 ]
 
 [tool.uv]
@@ -32,3 +33,27 @@ members = [
     "components_packages/control/pid",
     "components_packages/control/neural_controller",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "SLF",    # flake8-self (private member access detection)
+    "SIM",    # flake8-simplify
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["SLF001"]  # Allow private access in tests

@@ -28,7 +28,7 @@ class Simple2DSimulator(Simulator):
         self.initial_state = initial_state or VehicleState(
             x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0
         )
-        self.current_state = self.initial_state
+        self._current_state = self.initial_state
 
     def reset(self) -> VehicleState:
         """シミュレーションをリセット.
@@ -36,8 +36,8 @@ class Simple2DSimulator(Simulator):
         Returns:
             初期車両状態
         """
-        self.current_state = self.initial_state
-        return self.current_state
+        self._current_state = self.initial_state
+        return self._current_state
 
     def step(self, action: Action) -> tuple[VehicleState, Observation, bool, dict[str, Any]]:
         """1ステップ実行.
@@ -51,8 +51,8 @@ class Simple2DSimulator(Simulator):
             done: エピソード終了フラグ（現在は常にFalse）
             info: 追加情報
         """
-        self.current_state = self.dynamics.step(
-            state=self.current_state,
+        self._current_state = self.dynamics.step(
+            state=self._current_state,
             steering=action.steering,
             acceleration=action.acceleration,
             dt=self.dt,
@@ -62,15 +62,15 @@ class Simple2DSimulator(Simulator):
         observation = Observation(
             lateral_error=0.0,
             heading_error=0.0,
-            velocity=self.current_state.velocity,
+            velocity=self._current_state.velocity,
             target_velocity=0.0,
-            timestamp=self.current_state.timestamp,
+            timestamp=self._current_state.timestamp,
         )
 
         done = False
         info: dict[str, Any] = {}
 
-        return self.current_state, observation, done, info
+        return self._current_state, observation, done, info
 
     def close(self) -> None:
         """シミュレータを終了."""

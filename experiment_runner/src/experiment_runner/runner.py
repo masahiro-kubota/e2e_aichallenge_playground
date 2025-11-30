@@ -212,20 +212,21 @@ class ExperimentRunner:
             print("Starting simulation...")
             start_time = time.time()
 
+            # Initialize state from simulator
+            current_state = self.simulator.reset()
+
             with MCAPLogger(mcap_path) as mcap_logger:
                 for step in range(self.config.execution.max_steps):
-                    current_state = self.simulator.current_state
-
                     # Plan
                     target_trajectory = self.planner.plan(None, current_state)  # type: ignore
 
                     # Control
                     action = self.controller.control(target_trajectory, current_state)
 
-                    # Simulate
-                    self.simulator.step(action)
+                    # Simulate and get next state
+                    next_state, observation, done, info = self.simulator.step(action)
 
-                    # Log
+                    # Log current step (before state update)
                     sim_step = SimulationStep(
                         timestamp=step * self.simulator.dt,  # type: ignore
                         vehicle_state=current_state,
@@ -250,8 +251,16 @@ class ExperimentRunner:
                             print("Reached goal!")
                             break
 
-            elapsed = time.time() - start_time
-            print(f"Simulation finished in {elapsed:.2f}s")
+                    # Update state for next iteration
+                    current_state = next_state
+
+                    # Check done flag from simulator
+                    if done:
+                        print("Simulation done.")
+                        break
+
+            end_time = time.time()
+            print(f"Simulation finished in {end_time - start_time:.2f}s")
 
             # Calculate metrics
             if reference_trajectory is not None:

@@ -578,6 +578,7 @@ dev = [
     { name = "lark" },
     { name = "pre-commit" },
     { name = "pytest" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -587,6 +588,7 @@ requires-dist = [
     { name = "lark", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
 ]
 
 [[package]]
@@ -597,7 +599,6 @@ dependencies = [
     { name = "boto3" },
     { name = "core" },
     { name = "mlflow" },
-    { name = "neural-controller" },
     { name = "pid-controller" },
     { name = "planning-utils" },
     { name = "pure-pursuit" },
@@ -613,13 +614,16 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+neural = [
+    { name = "neural-controller" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.0.0" },
     { name = "core", editable = "core" },
     { name = "mlflow", specifier = ">=2.0.0" },
-    { name = "neural-controller", editable = "components_packages/control/neural_controller" },
+    { name = "neural-controller", marker = "extra == 'neural'", editable = "components_packages/control/neural_controller" },
     { name = "pid-controller", editable = "components_packages/control/pid" },
     { name = "planning-utils", editable = "components_packages/planning/planning_utils" },
     { name = "pure-pursuit", editable = "components_packages/planning/pure_pursuit" },

@@ -13,8 +13,15 @@ dependencies = [
     "tools",
     "pure-pursuit",
     "pid-controller",
-    "neural-controller",
     "planning-utils",
+]
+
+[project.optional-dependencies]
+neural = ["neural-controller"]
+dev = [
+    "ruff>=0.8.0",
+    "pyright>=1.1.0",
+    "pytest>=8.0.0",
 ]
 
 [project.scripts]
@@ -28,13 +35,6 @@ pure-pursuit = { workspace = true }
 pid-controller = { workspace = true }
 neural-controller = { workspace = true }
 planning-utils = { workspace = true }
-
-[project.optional-dependencies]
-dev = [
-    "ruff>=0.8.0",
-    "pyright>=1.1.0",
-    "pytest>=8.0.0",
-]
 
 [build-system]
 requires = ["hatchling"]
