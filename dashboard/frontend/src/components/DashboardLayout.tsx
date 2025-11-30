@@ -19,9 +19,6 @@ import { useSimulationStore } from '../store/simulationStore';
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
-    primary: { main: '#90caf9' },
-    secondary: { main: '#f48fb1' },
-    background: { default: '#0a1929', paper: '#132f4c' },
   },
 });
 
@@ -70,34 +67,15 @@ export const DashboardLayout: React.FC = () => {
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Stack spacing={2} sx={{ width: '100%', minWidth: 0 }}>
-                  <TimeSeriesPlot
-                    title="Velocity"
-                    dataKey="velocity"
-                    color="#90caf9"
-                    unit="m/s"
-                    height={130}
-                  />
-                  <TimeSeriesPlot
-                    title="Steering"
-                    dataKey="steering"
-                    color="#f48fb1"
-                    unit="rad"
-                    height={130}
-                  />
+                  <TimeSeriesPlot title="Velocity" dataKey="velocity" unit="m/s" height={130} />
+                  <TimeSeriesPlot title="Steering" dataKey="steering" unit="rad" height={130} />
                   <TimeSeriesPlot
                     title="Acceleration"
                     dataKey="acceleration"
-                    color="#a5d6a7"
                     unit="m/s²"
                     height={130}
                   />
-                  <TimeSeriesPlot
-                    title="Yaw"
-                    dataKey="yaw"
-                    color="#a78bfa"
-                    unit="rad"
-                    height={150}
-                  />
+                  <TimeSeriesPlot title="Yaw" dataKey="yaw" unit="rad" height={150} />
                 </Stack>
               </Box>
             </Box>

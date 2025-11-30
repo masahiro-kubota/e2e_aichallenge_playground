@@ -1,54 +1,75 @@
-# React + TypeScript + Vite
+# Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interactive web-based dashboard for visualizing simulation results.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This dashboard is a React + TypeScript application built with Vite. It provides:
+- Real-time trajectory visualization
+- Time-series plots for velocity, steering, acceleration, and yaw
+- Interactive time slider for playback control
 
-## Expanding the ESLint configuration
+## Development
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+cd dashboard/frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development Server
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Run the development server with hot module replacement (HMR):
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm run dev
 ```
+
+This will start a local server at `http://localhost:5173` where you can preview changes in real-time.
+
+### Building for Production
+
+**IMPORTANT**: After making changes to the React code, you must rebuild the production bundle:
+
+```bash
+npm run build
+```
+
+This generates `dashboard/frontend/dist/index.html`, which is used by the Python `HTMLDashboardGenerator` to create simulation dashboards.
+
+## Architecture
+
+- **Frontend**: React + TypeScript + Vite + MUI (Material-UI)
+- **State Management**: Zustand
+- **Charts**: Recharts
+- **Build**: Single-file HTML output (via `vite-plugin-singlefile`)
+
+## Integration
+
+The dashboard is integrated with the experiment runner:
+1. `experiment-runner` generates simulation data
+2. `HTMLDashboardGenerator` (Python) injects data into `dist/index.html`
+3. The resulting HTML is uploaded to MLflow as an artifact
+
+## Customization
+
+### Theme
+
+The dashboard uses MUI's default dark theme. To customize colors, edit `src/components/DashboardLayout.tsx`:
+
+```typescript
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    // Add custom colors here
+  },
+});
+```
+
+### Components
+
+- `DashboardLayout.tsx`: Main layout and theme provider
+- `TrajectoryView.tsx`: 2D trajectory visualization
+- `TimeSeriesPlot.tsx`: Time-series charts
+- `TimeSlider.tsx`: Playback control

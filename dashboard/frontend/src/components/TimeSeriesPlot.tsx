@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography, Box } from '@mui/material';
+import { Paper, Typography, Box, useTheme } from '@mui/material';
 import {
   LineChart,
   Line,
@@ -16,7 +16,7 @@ import type { TrajectoryPoint } from '../types';
 interface TimeSeriesPlotProps {
   title: string;
   dataKey: string;
-  color: string;
+  color?: string;
   unit?: string;
   height?: number;
 }
@@ -28,6 +28,8 @@ export const TimeSeriesPlot: React.FC<TimeSeriesPlotProps> = ({
   unit = '',
   height = 200,
 }) => {
+  const theme = useTheme();
+  const lineColor = color || theme.palette.primary.main;
   const { data, currentTime } = useSimulationStore();
   const currentPoint = useSimulationStore((state) => state.getCurrentPoint());
   // Simple implementation without delayed rendering or absolute positioning
@@ -56,37 +58,45 @@ export const TimeSeriesPlot: React.FC<TimeSeriesPlotProps> = ({
         <Typography variant="subtitle1" fontWeight="bold" color="primary">
           {title}
         </Typography>
-        <Typography variant="h6" sx={{ fontFamily: 'monospace', color: color }}>
+        <Typography variant="h6" sx={{ fontFamily: 'monospace', color: lineColor }}>
           {(typeof currentValue === 'number' ? currentValue : 0).toFixed(3)} {unit}
         </Typography>
       </Box>
       <Box sx={{ height, bgcolor: 'background.default', width: '100%' }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data.steps} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
             <XAxis
               dataKey="timestamp"
               type="number"
               domain={['dataMin', 'dataMax']}
               tickFormatter={(val) => val.toFixed(1)}
-              stroke="#999"
+              stroke={theme.palette.text.secondary}
             />
-            <YAxis stroke="#999" />
+            <YAxis stroke={theme.palette.text.secondary} />
             <Tooltip
               labelFormatter={(label) => `Time: ${Number(label).toFixed(2)}s`}
               formatter={(value: number) => [`${value.toFixed(3)} ${unit}`, title]}
-              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}
+              contentStyle={{
+                backgroundColor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+              }}
             />
             <Line
               type="monotone"
               dataKey={dataKey}
-              stroke={color}
+              stroke={lineColor}
               dot={false}
               strokeWidth={2}
               isAnimationActive={false}
             />
             {/* Current time indicator */}
-            <ReferenceLine x={currentTime} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={2} />
+            <ReferenceLine
+              x={currentTime}
+              stroke={theme.palette.error.main}
+              strokeDasharray="3 3"
+              strokeWidth={2}
+            />
           </LineChart>
         </ResponsiveContainer>
       </Box>
