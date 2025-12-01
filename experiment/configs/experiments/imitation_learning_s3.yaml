@@ -1,0 +1,34 @@
+experiment:
+  name: "train_from_s3_dataset"
+  type: "training"
+  description: "Train neural controller using S3 dataset"
+
+model:
+  type: "NeuralController"
+  architecture:
+    input_size: 4
+    hidden_size: 64
+    output_size: 2
+
+training:
+  # Option 1: Specify dataset components
+  dataset_project: "e2e_aichallenge"
+  dataset_scenario: "pure_pursuit"
+  dataset_version: "v1.0"
+  dataset_stage: "raw"
+
+  # Option 2: Direct S3 path (uncomment to use)
+  # dataset_path: "s3://datasets/e2e_aichallenge/pure_pursuit/v1.0/raw/"
+
+  reference_trajectory_path: "component_packages/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.001
+  validation_split: 0.2
+  optimizer: "adam"
+  loss_function: "mse"
+
+logging:
+  mlflow:
+    enabled: true
+    tracking_uri: "http://localhost:5000"

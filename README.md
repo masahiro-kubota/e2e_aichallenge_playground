@@ -26,7 +26,17 @@ cd mlflow
 docker compose up -d
 cd ..
 
-# 4. シミュレーションを実行
+# 4. 実験を実行
+
+# データ収集（Pure Pursuit）
+# データは自動的にMinIO (s3://datasets/...) にアップロードされます
+uv run experiment-runner --config experiment/configs/experiments/data_collection_pure_pursuit.yaml
+
+# 学習（Imitation Learning）
+# MinIOからデータを自動ダウンロードして学習します
+uv run experiment-runner --config experiment/configs/experiments/imitation_learning_s3.yaml
+
+# 評価（Pure Pursuit）
 uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
 
 # 5. 結果を確認
@@ -61,6 +71,7 @@ docker compose down -v  # データも削除
 e2e_aichallenge_playground/
 ├── core/                           # コアフレームワーク
 ├── experiment/runner/              # 統一実験実行フレームワーク
+├── experiment/training/            # 学習機能（Dataset, Trainer）
 ├── simulators/                     # シミュレータ実装
 ├── component_packages/            # コンポーネントパッケージ
 │   ├── planning/                   # 計画コンポーネント
@@ -70,8 +81,9 @@ e2e_aichallenge_playground/
 ├── experiment/configs/             # 実験設定ファイル
 │   └── experiments/                # 実験設定
 │       ├── pure_pursuit.yaml
-│       └── imitation_learning.yaml
-├── data/                           # データ(.gitignore、MLflow/W&Bで管理)
+│       ├── data_collection_pure_pursuit.yaml
+│       └── imitation_learning_s3.yaml
+├── data/                           # 一時データ（MinIOで管理するためGit対象外）
 └── mlflow/     # MLflow + MinIO サーバー
 ```
 
@@ -91,11 +103,15 @@ graph TD
     %% Dashboard
     Dash[dashboard] --> Core
 
+    %% Training
+    Train[experiment/training] --> Core
+
     %% Experiment Runner
     Runner[experiment/runner] --> Core
     Runner --> Sim
     Runner --> Comp
     Runner --> Dash
+    Runner --> Train
 
     %% Styling
     classDef core fill:#f9f,stroke:#333,stroke-width:2px;
@@ -103,7 +119,7 @@ graph TD
     classDef app fill:#bfb,stroke:#333,stroke-width:2px;
 
     class Core core;
-    class Sim,Comp,Dash impl;
+    class Sim,Comp,Dash,Train impl;
     class Runner app;
 ```
 
@@ -184,6 +200,14 @@ classDiagram
 - **Integration**: 各コンポーネントとダッシュボードの統合
 
 **依存関係**: `core`, `simulators`, `components_packages`, `dashboard`
+
+#### 🧠 `experiment/training/` - 学習機能
+**責務**: データセット管理とモデル学習の実行。
+- **Dataset**: MinIOからのデータ読み込み、PyTorch Dataset実装
+- **Trainer**: 学習ループ、検証、モデル保存
+- **FunctionTrainer**: 関数近似タスク用の簡易トレーナー
+
+**依存関係**: `core`
 
 ---
 

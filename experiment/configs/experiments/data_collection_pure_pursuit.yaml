@@ -29,7 +29,11 @@ execution:
   parallel: false
 
 data_collection:
-  output_dir: "data/raw/pure_pursuit"
+  storage_backend: "s3"
+  project: "e2e_aichallenge"
+  scenario: "pure_pursuit"
+  version: "v1.0"
+  stage: "raw"
   format: "json"
   save_frequency: 1
 

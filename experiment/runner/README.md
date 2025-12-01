@@ -4,10 +4,64 @@
 
 ## Usage
 
-### 実行方法
+### 1. データ収集 (Data Collection)
+
+シミュレーションを実行し、ログデータをMinIOに保存します。
+
+```bash
+uv run experiment-runner --config experiment/configs/experiments/data_collection_pure_pursuit.yaml
+```
+
+### 2. 学習 (Training)
+
+MinIOからデータをダウンロードし、モデルを学習します。
+
+```bash
+uv run experiment-runner --config experiment/configs/experiments/imitation_learning_s3.yaml
+```
+
+### 3. 評価 (Evaluation)
+
+学習済みモデル（またはルールベースコントローラー）を評価します。
 
 ```bash
 uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
+```
+
+## Configuration
+
+`experiment.type` によって動作が変わります。
+
+### 共通設定
+
+```yaml
+experiment:
+  name: "my_experiment"
+  type: "data_collection"  # data_collection, training, evaluation
+  description: "..."
+```
+
+### Data Collection
+
+```yaml
+data_collection:
+  storage_backend: "s3"  # s3 or local
+  project: "e2e_aichallenge"
+  scenario: "pure_pursuit"
+  version: "v1.0"
+  stage: "raw"
+```
+
+### Training
+
+```yaml
+training:
+  dataset_project: "e2e_aichallenge"
+  dataset_scenario: "pure_pursuit"
+  dataset_version: "v1.0"
+  dataset_stage: "raw"
+  epochs: 100
+  # ...
 ```
 
 ## Testing
@@ -73,5 +127,5 @@ for exp in experiments:
 - `pyyaml`: YAML設定の読み込み
 - `mlflow`: 実験トラッキング
 - `boto3`: MLflow S3アーティファクトストレージ
-- `core`, `simulators`, `dashboard`: 内部パッケージ
+- `core`, `simulators`, `dashboard`, `experiment-training`: 内部パッケージ
 - `pure-pursuit`, `pid-controller`, `neural-controller`, `planning-utils`: コンポーネントパッケージ

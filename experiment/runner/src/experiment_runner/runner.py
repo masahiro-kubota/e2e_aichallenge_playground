@@ -403,7 +403,12 @@ class ExperimentRunner:
                 mlflow.log_params(params)
 
             # Create output directory
-            output_dir = Path(self.config.data_collection.output_dir)
+            if self.config.data_collection.output_dir:
+                output_dir = Path(self.config.data_collection.output_dir)
+            else:
+                # Use default temporary directory for S3 upload
+                output_dir = Path("data/temp/collection")
+
             output_dir.mkdir(parents=True, exist_ok=True)
 
             print(f"Starting data collection for {self.config.execution.num_episodes} episodes...")
@@ -450,24 +455,47 @@ class ExperimentRunner:
                         print("  MCAP format not yet implemented")
 
             print(
-                f"\nData collection completed. {self.config.execution.num_episodes} episodes saved to {output_dir}"
+                f"\nData collection completed. {self.config.execution.num_episodes} episodes saved"
             )
 
-            # Upload collected data and config to MLflow (skip in CI)
-            if not is_ci and collected_files:
-                print("\nUploading data to MLflow...")
+            # Upload to S3 or keep local based on storage backend
+            if self.config.data_collection.storage_backend == "s3" and not is_ci:
+                from experiment_runner.storage import DatasetStorage
 
-                # Upload all collected data files
-                for data_file in collected_files:
-                    mlflow.log_artifact(str(data_file), artifact_path="training_data")
+                storage = DatasetStorage()
 
-                # Upload the config file used for data collection
-                # This allows reproducing the data collection experiment
-                if hasattr(self, "config_path") and self.config_path:
-                    mlflow.log_artifact(str(self.config_path), artifact_path="config")
+                # Ensure datasets bucket exists
+                storage.ensure_bucket_exists("datasets")
 
-                print(f"Uploaded {len(collected_files)} data files to MLflow")
-                print("Data can be retrieved from MLflow even if local data/ directory is deleted")
+                # Build S3 path
+                s3_base_path = storage.build_dataset_path(
+                    project=self.config.data_collection.project,  # type: ignore
+                    scenario=self.config.data_collection.scenario,  # type: ignore
+                    version=self.config.data_collection.version,  # type: ignore
+                    stage=self.config.data_collection.stage,
+                )
+
+                print(f"\nUploading data to S3: {s3_base_path}")
+
+                # Upload all collected files to S3
+                for log_file in collected_files:
+                    s3_path = f"{s3_base_path}{log_file.name}"
+                    storage.upload_file(log_file, s3_path)
+
+                print(f"Uploaded {len(collected_files)} files to S3")
+
+                # Log dataset metadata to MLflow
+                mlflow.log_param("dataset_project", self.config.data_collection.project)
+                mlflow.log_param("dataset_scenario", self.config.data_collection.scenario)
+                mlflow.log_param("dataset_version", self.config.data_collection.version)
+                mlflow.log_param("dataset_stage", self.config.data_collection.stage)
+                mlflow.log_param("dataset_path", s3_base_path)
+                mlflow.log_param("num_files", len(collected_files))
+
+                print("Dataset metadata logged to MLflow")
+                print(f"Dataset path: {s3_base_path}")
+            elif self.config.data_collection.storage_backend == "local":
+                print(f"Data saved locally to: {output_dir}")
 
     def _run_training(self) -> None:
         """Run training mode."""
@@ -493,23 +521,107 @@ class ExperimentRunner:
             if self.config.model and self.config.model.architecture:
                 training_config.update(self.config.model.architecture)
 
+            # Determine data directory and files
+            data_dir = None
+            data_files = []
+
+            # Case 1: S3 Dataset (Recommended)
+            if (
+                self.config.training.dataset_project
+                and self.config.training.dataset_scenario
+                and self.config.training.dataset_version
+            ) or self.config.training.dataset_path:
+                from experiment_runner.storage import DatasetStorage
+
+                storage = DatasetStorage()
+
+                if self.config.training.dataset_path:
+                    dataset_path = self.config.training.dataset_path
+                else:
+                    dataset_path = storage.build_dataset_path(
+                        project=self.config.training.dataset_project,  # type: ignore
+                        scenario=self.config.training.dataset_scenario,  # type: ignore
+                        version=self.config.training.dataset_version,  # type: ignore
+                        stage=self.config.training.dataset_stage,
+                    )
+
+                print(f"Using S3 dataset: {dataset_path}")
+
+                # List files in S3
+                s3_files = storage.list_files(dataset_path, "*.json")
+
+                if not s3_files:
+                    print(f"No training data found in {dataset_path}")
+                    return
+
+                # Download files to temporary directory for training
+                # Note: In a real distributed setting, we might stream data or download on workers
+                temp_data_dir = Path("data/cache") / dataset_path.replace("s3://", "")
+                temp_data_dir.mkdir(parents=True, exist_ok=True)
+
+                print(f"Downloading {len(s3_files)} files to cache: {temp_data_dir}")
+
+                for s3_file in s3_files:
+                    filename = s3_file.split("/")[-1]
+                    local_path = temp_data_dir / filename
+
+                    if not local_path.exists():
+                        storage.download_file(s3_file, local_path)
+
+                    data_files.append(local_path)
+
+                data_dir = temp_data_dir
+
+                # Log dataset info to MLflow
+                mlflow.log_param("dataset_path", dataset_path)
+                if self.config.training.dataset_version:
+                    mlflow.log_param("dataset_version", self.config.training.dataset_version)
+
+            # Case 2: MLflow Artifact (Deprecated)
+            elif self.config.training.mlflow_run_id:
+                print(
+                    f"Downloading training data from MLflow run: {self.config.training.mlflow_run_id}"
+                )
+                client = mlflow.tracking.MlflowClient()
+
+                # Download to temporary directory
+                temp_data_dir = Path("data/raw/mlflow_downloaded")
+                temp_data_dir.mkdir(parents=True, exist_ok=True)
+
+                try:
+                    artifact_path = client.download_artifacts(
+                        self.config.training.mlflow_run_id,
+                        "training_data",
+                        dst_path=str(temp_data_dir),
+                    )
+                    data_dir = Path(artifact_path)
+                    print(f"Downloaded training data to: {data_dir}")
+                    data_files = list(data_dir.glob("*.json"))
+                except Exception as e:
+                    print(f"Error downloading training data from MLflow: {e}")
+                    return
+
+            # Case 3: Local Directory (Legacy)
+            elif self.config.training.data_dir:
+                data_dir = Path(self.config.training.data_dir)
+                if not data_dir.exists():
+                    print(f"Warning: Data directory {data_dir} does not exist")
+                    return
+                data_files = list(data_dir.glob("*.json"))
+
+            else:
+                raise ValueError("No data source specified")
+
+            if not data_files:
+                print("No training data (.json) found")
+                return
+
             # Choose trainer based on model type
             if model_type == "MLP":
                 # Simple function approximation
                 from experiment_training.function_trainer import FunctionTrainer
 
                 trainer = FunctionTrainer(config=training_config)
-
-                # Find data file
-                data_dir = Path(self.config.training.data_dir)
-                if not data_dir.exists():
-                    print(f"Warning: Data directory {data_dir} does not exist")
-                    return
-
-                data_files = list(data_dir.glob("*.json"))
-                if not data_files:
-                    print(f"No training data (.json) found in {data_dir}")
-                    return
 
                 # Use first data file for function approximation
                 trainer.train(data_files[0])
@@ -537,21 +649,8 @@ class ExperimentRunner:
                     workspace_root=workspace_root,
                 )
 
-                # Find data files
-                data_dir = Path(self.config.training.data_dir)
-                if not data_dir.exists():
-                    print(f"Warning: Data directory {data_dir} does not exist")
-                    return
-
-                # Find all .json files
-                data_paths = list(data_dir.glob("*.json"))
-
-                if not data_paths:
-                    print(f"No training data (.json) found in {data_dir}")
-                    return
-
                 # Run training
-                trainer.train(data_paths)
+                trainer.train(data_files)
 
             else:
                 raise ValueError(f"Unknown model type: {model_type}")

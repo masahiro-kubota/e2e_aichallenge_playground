@@ -41,7 +41,19 @@ class ExecutionConfig(BaseModel):
 class TrainingConfig(BaseModel):
     """Configuration for training."""
 
-    data_dir: str = Field(..., description="Directory containing training data")
+    # S3 dataset configuration
+    dataset_project: str | None = Field(None, description="Dataset project name")
+    dataset_scenario: str | None = Field(None, description="Dataset scenario/task name")
+    dataset_version: str | None = Field(None, description="Dataset version")
+    dataset_stage: Literal["raw", "processed", "features"] = Field(
+        "raw", description="Data processing stage"
+    )
+    dataset_path: str | None = Field(None, description="Direct S3 dataset path")
+
+    # Legacy options (deprecated)
+    data_dir: str | None = Field(None, description="[Deprecated] Local directory")
+    mlflow_run_id: str | None = Field(None, description="[Deprecated] MLflow run ID")
+
     reference_trajectory_path: str | None = Field(None, description="Path to reference trajectory")
     epochs: int = Field(100, description="Number of training epochs")
     batch_size: int = Field(32, description="Batch size")
@@ -50,13 +62,50 @@ class TrainingConfig(BaseModel):
     optimizer: str = Field("adam", description="Optimizer type")
     loss_function: str = Field("mse", description="Loss function type")
 
+    @model_validator(mode="after")
+    def validate_data_source(self) -> "TrainingConfig":
+        """Validate data source configuration."""
+        has_s3_components = bool(
+            self.dataset_project and self.dataset_scenario and self.dataset_version
+        )
+        has_s3_path = bool(self.dataset_path)
+        has_legacy = bool(self.data_dir or self.mlflow_run_id)
+
+        if not (has_s3_components or has_s3_path or has_legacy):
+            raise ValueError(
+                "Must specify either (dataset_project + dataset_scenario + dataset_version) "
+                "or dataset_path or data_dir"
+            )
+
+        return self
+
 
 class DataCollectionConfig(BaseModel):
     """Configuration for data collection."""
 
-    output_dir: str = Field(..., description="Output directory for collected data")
+    storage_backend: Literal["local", "s3"] = Field("s3", description="Storage backend")
+
+    # S3 dataset configuration
+    project: str | None = Field(None, description="Project name")
+    scenario: str | None = Field(None, description="Scenario/task name")
+    version: str | None = Field(None, description="Dataset version")
+    stage: Literal["raw", "processed", "features"] = Field("raw", description="Data stage")
+
+    # Legacy local storage
+    output_dir: str | None = Field(None, description="[Deprecated] Local output directory")
     format: Literal["json", "mcap"] = Field("json", description="Data format")
     save_frequency: int = Field(1, description="Save every N episodes")
+
+    @model_validator(mode="after")
+    def validate_storage_config(self) -> "DataCollectionConfig":
+        """Validate storage configuration."""
+        if self.storage_backend == "s3":
+            if not (self.project and self.scenario and self.version):
+                raise ValueError("project, scenario, and version are required for S3 storage")
+        elif self.storage_backend == "local":
+            if not self.output_dir:
+                raise ValueError("output_dir is required for local storage")
+        return self
 
 
 class EvaluationConfig(BaseModel):
