@@ -9,20 +9,15 @@ from core.data import (
     TrajectoryPoint,
     VehicleState,
 )
-from core.interfaces import ControlComponent, PerceptionComponent, PlanningComponent, Simulator
-from core.logging import MCAPLogger
-from core.metrics import MetricsCalculator, SimulationMetrics
+from core.interfaces import Controller, Perception, Planner, Simulator
 
 __all__ = [
     "Action",
-    "ControlComponent",
-    "MCAPLogger",
-    "MetricsCalculator",
+    "Controller",
     "Observation",
-    "PerceptionComponent",
-    "PlanningComponent",
+    "Perception",
+    "Planner",
     "SimulationLog",
-    "SimulationMetrics",
     "SimulationStep",
     "Simulator",
     "Trajectory",

@@ -1,15 +1,22 @@
 """Tests for abstract interfaces."""
 
-from core.data import Action, Observation, Trajectory, TrajectoryPoint, VehicleState
+from core.data import (
+    Action,
+    Observation,
+    SimulationLog,
+    Trajectory,
+    TrajectoryPoint,
+    VehicleState,
+)
 from core.interfaces import (
-    ControlComponent,
-    PerceptionComponent,
-    PlanningComponent,
+    Controller,
+    Perception,
+    Planner,
     Simulator,
 )
 
 
-class DummyPerception(PerceptionComponent):
+class DummyPerception(Perception):
     """Dummy perception implementation for testing."""
 
     def perceive(self, sensor_data: object) -> Observation:
@@ -20,7 +27,7 @@ class DummyPerception(PerceptionComponent):
         """Reset perception."""
 
 
-class DummyPlanner(PlanningComponent):
+class DummyPlanner(Planner):
     """Dummy planner implementation for testing."""
 
     def plan(self, observation: Observation, vehicle_state: VehicleState) -> Trajectory:
@@ -35,7 +42,7 @@ class DummyPlanner(PlanningComponent):
         """Reset planner."""
 
 
-class DummyController(ControlComponent):
+class DummyController(Controller):
     """Dummy controller implementation for testing."""
 
     def control(
@@ -78,9 +85,13 @@ class DummySimulator(Simulator):
     def render(self) -> None:
         """Render simulator."""
 
+    def get_log(self) -> SimulationLog:
+        """Get simulation log."""
+        return SimulationLog(steps=[], metadata={})
+
 
 class TestPerceptionInterface:
-    """Tests for PerceptionComponent interface."""
+    """Tests for Perception interface."""
 
     def test_implementation(self) -> None:
         """Test that implementation works."""
@@ -95,7 +106,7 @@ class TestPerceptionInterface:
 
 
 class TestPlanningInterface:
-    """Tests for PlanningComponent interface."""
+    """Tests for Planner interface."""
 
     def test_implementation(self) -> None:
         """Test that implementation works."""
@@ -113,7 +124,7 @@ class TestPlanningInterface:
 
 
 class TestControlInterface:
-    """Tests for ControlComponent interface."""
+    """Tests for Controller interface."""
 
     def test_implementation(self) -> None:
         """Test that implementation works."""

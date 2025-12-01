@@ -113,12 +113,12 @@ graph TD
 
 ```mermaid
 classDiagram
-    class PlanningComponent {
+    class Planner {
         <<interface>>
         +plan(observation, state) Trajectory
     }
 
-    class ControlComponent {
+    class Controller {
         <<interface>>
         +control(trajectory, state) Action
     }
@@ -136,9 +136,9 @@ classDiagram
         +generate(log, output_path, osm_path)
     }
 
-    PlanningComponent <|-- PurePursuitPlanner
-    ControlComponent <|-- PIDController
-    ControlComponent <|-- NeuralController
+    Planner <|-- PurePursuitPlanner
+    Controller <|-- PIDController
+    Controller <|-- NeuralController
     Simulator <|-- KinematicSimulator
     DashboardGenerator <|-- HTMLDashboardGenerator
 ```
@@ -147,9 +147,9 @@ classDiagram
 
 #### 📦 `core/` - コアフレームワーク
 **責務**: プロジェクト全体の基盤となるデータ構造とインターフェース定義。
-- **Interfaces**: `PlanningComponent`, `ControlComponent`, `Simulator`, `DashboardGenerator`
+- **Interfaces**: `Planner`, `Controller`, `Simulator`, `DashboardGenerator`
 - **Data Types**: `VehicleState`, `Trajectory`, `Action`, `Observation`, `SimulationLog`
-- **Utils**: 幾何計算、座標変換
+- **Utils**: 幾何計算、座標変換、設定ファイル処理
 
 **依存関係**: なし（最下層）
 
@@ -178,7 +178,9 @@ classDiagram
 #### 🧪 `experiment/runner/` - 実験実行フレームワーク
 **責務**: 設定ファイルに基づいたコンポーネントの組み立てと実験ループの実行。
 - **Config**: YAML設定の読み込みと検証
-- **Runner**: シミュレーションループの実行、メトリクス計算、MLflow記録
+- **Runner**: シミュレーションループの実行、MLflow記録
+- **Logging**: MCAP形式でのシミュレーションデータ記録
+- **Metrics**: シミュレーション評価指標の計算
 - **Integration**: 各コンポーネントとダッシュボードの統合
 
 **依存関係**: `core`, `simulators`, `components_packages`, `dashboard`

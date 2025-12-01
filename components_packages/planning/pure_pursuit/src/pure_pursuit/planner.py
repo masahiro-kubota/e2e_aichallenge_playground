@@ -1,11 +1,11 @@
 """Pure Pursuit Planner implementation."""
 
 from core.data import Observation, Trajectory, TrajectoryPoint, VehicleState
-from core.interfaces import PlanningComponent
+from core.interfaces import Planner
 from core.utils.geometry import distance
 
 
-class PurePursuitPlanner(PlanningComponent):
+class PurePursuitPlanner(Planner):
     """Pure Pursuit path tracking algorithm."""
 
     def __init__(self, lookahead_distance: float = 5.0) -> None:

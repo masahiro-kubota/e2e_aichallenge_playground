@@ -5,9 +5,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from mcap.writer import Writer
-
 from core.data import SimulationStep
+from mcap.writer import Writer
 
 
 class MCAPLogger:

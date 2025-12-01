@@ -3,11 +3,11 @@
 import math
 
 from core.data import Action, Observation, Trajectory, VehicleState
-from core.interfaces import ControlComponent
+from core.interfaces import Controller
 from core.utils.geometry import distance, normalize_angle
 
 
-class PIDController(ControlComponent):
+class PIDController(Controller):
     """PID Controller for velocity and Pure Pursuit for steering."""
 
     def __init__(

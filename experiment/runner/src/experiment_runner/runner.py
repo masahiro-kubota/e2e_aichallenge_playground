@@ -8,11 +8,11 @@ from typing import Any
 
 import mlflow
 from core.data import SimulationStep, VehicleState
-from core.interfaces import ControlComponent, PlanningComponent, Simulator
-from core.logging import MCAPLogger
-from core.metrics import MetricsCalculator
+from core.interfaces import Controller, Planner, Simulator
 
 from experiment_runner.config import ExperimentConfig
+from experiment_runner.logging import MCAPLogger
+from experiment_runner.metrics import MetricsCalculator
 
 
 class ExperimentRunner:
@@ -26,8 +26,8 @@ class ExperimentRunner:
         """
         self.config = config
         self.simulator: Simulator | None = None
-        self.planner: PlanningComponent | None = None
-        self.controller: ControlComponent | None = None
+        self.planner: Planner | None = None
+        self.controller: Controller | None = None
 
     def _instantiate_component(
         self, module_path: str, class_name: str, params: dict[str, Any]

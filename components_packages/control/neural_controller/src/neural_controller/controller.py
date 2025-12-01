@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 from core.data import Action, Observation, Trajectory, VehicleState
-from core.interfaces import ControlComponent
+from core.interfaces import Controller
 from core.utils.geometry import distance, normalize_angle
 
 
@@ -30,7 +30,7 @@ class MLP(nn.Module):
         return self.network(x)
 
 
-class NeuralController(ControlComponent):
+class NeuralController(Controller):
     """Neural Network based controller."""
 
     def __init__(
