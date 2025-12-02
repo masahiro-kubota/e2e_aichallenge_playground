@@ -3,10 +3,10 @@
 import os
 from pathlib import Path
 
-import mlflow
 import pytest
-
 from experiment_runner import ExperimentConfig, ExperimentRunner
+
+import mlflow
 
 
 @pytest.fixture(autouse=True)

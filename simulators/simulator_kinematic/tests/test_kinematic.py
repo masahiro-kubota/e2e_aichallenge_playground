@@ -2,9 +2,10 @@
 
 import math
 
-from core.data import Action, VehicleState
 from simulator_kinematic import KinematicSimulator
 from simulator_kinematic.vehicle import KinematicVehicleModel
+
+from core.data import Action, VehicleState
 
 
 class TestKinematicVehicleModel:

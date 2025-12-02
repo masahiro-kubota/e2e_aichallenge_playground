@@ -3,15 +3,15 @@
 import math
 from typing import TYPE_CHECKING, Any
 
-from core.data import Action, Observation, VehicleState
 from simulator_core.base import BaseSimulator
+
+from core.data import Action, Observation, VehicleParameters, VehicleState
 from simulator_dynamic.state import DynamicVehicleState
 from simulator_dynamic.vehicle import DynamicVehicleModel
 from simulator_dynamic.vehicle_params import VehicleParameters as DynamicVehicleParams
 
 if TYPE_CHECKING:
-    from simulator_core.environment import Scene
-    from simulator_core.vehicle import VehicleParameters
+    from core.data import Scene
 
 
 class DynamicSimulator(BaseSimulator):

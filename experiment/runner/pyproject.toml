@@ -14,7 +14,6 @@ dependencies = [
     "mcap>=1.0.0",
     "mcap-protobuf-support>=0.5.0",
     "experiment-training",
-    "simulator-core",
 ]
 
 
@@ -31,7 +30,6 @@ experiment-runner = "experiment_runner.cli:main"
 core = { workspace = true }
 dashboard = { workspace = true }
 experiment-training = { workspace = true }
-simulator-core = { workspace = true }
 
 
 [build-system]

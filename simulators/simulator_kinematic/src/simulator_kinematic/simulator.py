@@ -2,13 +2,13 @@
 
 from typing import TYPE_CHECKING, Any
 
-from core.data import Action, Observation, SimulationStep, VehicleState
 from simulator_core.base import BaseSimulator
-from simulator_core.vehicle import VehicleParameters
+
+from core.data import Action, Observation, SimulationStep, VehicleParameters, VehicleState
 from simulator_kinematic.vehicle import KinematicVehicleModel
 
 if TYPE_CHECKING:
-    from simulator_core.environment import Scene
+    from core.data import Scene
 
 
 class KinematicSimulator(BaseSimulator):

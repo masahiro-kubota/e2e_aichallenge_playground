@@ -128,7 +128,7 @@ def inject_simulation_data(
                 new_html_content = html_content.replace("</head>", f"{injection_script}</head>")
             else:
                 msg = "Cannot inject data: no marker or </head> tag found"
-                raise ValueError(msg)  # noqa: TRY301
+                raise ValueError(msg)
         else:
             # Replace the marker with the data
             new_html_content = pattern.sub(

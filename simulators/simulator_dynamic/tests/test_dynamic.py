@@ -1,10 +1,11 @@
 """Tests for Dynamic Simulator."""
 
-from core.data import Action, VehicleState
 from simulator_dynamic import DynamicSimulator
 from simulator_dynamic.state import DynamicVehicleState
 from simulator_dynamic.vehicle import DynamicVehicleModel
 from simulator_dynamic.vehicle_params import VehicleParameters
+
+from core.data import Action, VehicleState
 
 
 class TestVehicleParameters:

@@ -9,7 +9,6 @@ from typing import Any
 import mlflow
 from core.data import VehicleState
 from core.interfaces import Controller, Planner, Simulator
-
 from experiment_runner.config import ExperimentConfig, ExperimentType
 from experiment_runner.logging import MCAPLogger
 from experiment_runner.metrics import MetricsCalculator
@@ -129,7 +128,7 @@ class ExperimentRunner:
 
         # Handle vehicle configuration
         if "vehicle_config" in sim_params:
-            from simulator_core.vehicle import VehicleParameters
+            from core.data import VehicleParameters
 
             config_path = sim_params.pop("vehicle_config")
             # Resolve path relative to workspace root
@@ -143,7 +142,7 @@ class ExperimentRunner:
 
         # Handle scene configuration
         if "scene_config" in sim_params:
-            from simulator_core.environment import Scene
+            from core.data import Scene
 
             config_path = sim_params.pop("scene_config")
             # Resolve path relative to workspace root

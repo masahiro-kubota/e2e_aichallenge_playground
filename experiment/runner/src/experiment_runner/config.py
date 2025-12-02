@@ -102,9 +102,8 @@ class DataCollectionConfig(BaseModel):
         if self.storage_backend == "s3":
             if not (self.project and self.scenario and self.version):
                 raise ValueError("project, scenario, and version are required for S3 storage")
-        elif self.storage_backend == "local":
-            if not self.output_dir:
-                raise ValueError("output_dir is required for local storage")
+        elif self.storage_backend == "local" and not self.output_dir:
+            raise ValueError("output_dir is required for local storage")
         return self
 
 

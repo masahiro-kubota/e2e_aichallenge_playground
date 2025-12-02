@@ -28,6 +28,6 @@ class Obstacle:
     height: float  # 高さ [m]
     yaw: float = 0.0  # ヨー角 [rad]
 
-    # 動的障害物用(将来の拡張用)
+    # NOTE: 以下のフィールドは動的障害物の将来の拡張で使用予定
     velocity: float = 0.0  # 速度 [m/s]
     trajectory: list[tuple[float, float]] | None = None  # 軌道 [(x, y), ...]

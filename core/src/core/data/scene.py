@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import yaml
 
-from simulator_core.environment.obstacle import Obstacle, ObstacleType
+from core.data.obstacle import Obstacle, ObstacleType
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -96,12 +96,12 @@ class Scene:
 
         scene = cls()
 
-        # トラック情報の読み込み(将来の拡張用)
+        # NOTE: トラック情報の読み込みは将来の拡張で実装予定
         if "track" in data:
             # TODO: トラックファイルから読み込み
             pass
 
-        # 障害物の読み込み(将来の拡張用)
+        # NOTE: 障害物の読み込みは将来の拡張で実装予定
         if "obstacles" in data:
             for obs_data in data["obstacles"]:
                 obstacle = Obstacle(

@@ -363,7 +363,7 @@ requires-dist = [
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
 ]
 
@@ -644,7 +644,6 @@ dependencies = [
     { name = "numpy" },
     { name = "pydantic" },
     { name = "pyyaml" },
-    { name = "simulator-core" },
 ]
 
 [package.metadata]
@@ -659,7 +658,6 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.20.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "simulator-core", editable = "simulators/simulator_core" },
 ]
 
 [[package]]
@@ -2368,7 +2366,6 @@ source = { editable = "simulators/simulator_core" }
 dependencies = [
     { name = "core" },
     { name = "numpy" },
-    { name = "pyyaml" },
 ]
 
 [package.optional-dependencies]
@@ -2384,7 +2381,6 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.3.5" },
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
 ]
 

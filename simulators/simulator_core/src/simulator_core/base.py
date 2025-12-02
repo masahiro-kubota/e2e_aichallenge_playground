@@ -3,10 +3,15 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Any
 
-from core.data import Observation, SimulationLog, SimulationResult, VehicleState
+from core.data import (
+    Observation,
+    Scene,
+    SimulationLog,
+    SimulationResult,
+    VehicleParameters,
+    VehicleState,
+)
 from core.interfaces import Simulator
-from simulator_core.environment import Scene
-from simulator_core.vehicle import VehicleParameters
 
 if TYPE_CHECKING:
     from core.data import Trajectory

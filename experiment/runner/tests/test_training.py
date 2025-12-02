@@ -5,10 +5,10 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from core.data import Action, SimulationLog, SimulationStep, VehicleState
-
 from experiment_runner.config import ExperimentConfig
 from experiment_runner.runner import ExperimentRunner
+
+from core.data import Action, SimulationLog, SimulationStep, VehicleState
 
 
 class TestTrainingIntegration:

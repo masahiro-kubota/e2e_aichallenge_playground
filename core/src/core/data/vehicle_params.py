@@ -32,19 +32,19 @@ class VehicleParameters:
     mass: float | None = None  # 質量 [kg]
     inertia: float | None = None  # ヨー慣性モーメント [kg*m^2]
 
-    # 重心位置(DynamicSimulator用)
+    # NOTE: 以下は重心位置パラメータ (DynamicSimulator用)
     lf: float | None = None  # 重心から前軸までの距離 [m]
     lr: float | None = None  # 重心から後軸までの距離 [m]
 
-    # タイヤ特性(DynamicSimulator用)
+    # NOTE: 以下はタイヤ特性パラメータ (DynamicSimulator用)
     cf: float | None = None  # 前輪コーナリング剛性 [N/rad]
     cr: float | None = None  # 後輪コーナリング剛性 [N/rad]
 
-    # 抵抗係数(DynamicSimulator用)
+    # NOTE: 以下は抵抗係数パラメータ (DynamicSimulator用)
     c_drag: float | None = None  # 空気抵抗係数
     c_roll: float | None = None  # 転がり抵抗係数
 
-    # 駆動力(DynamicSimulator用)
+    # NOTE: 以下は駆動力パラメータ (DynamicSimulator用)
     max_drive_force: float | None = None  # 最大駆動力 [N]
     max_brake_force: float | None = None  # 最大制動力 [N]
 
