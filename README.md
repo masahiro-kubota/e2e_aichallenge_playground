@@ -106,7 +106,6 @@ graph TD
     %% Core dependencies
     ADCompCore --> Core
     SimCore --> Core
-    SimCore --> ADCompCore
 
     %% Simulators
     SimKin[simulator_kinematic] --> SimCore
@@ -121,16 +120,16 @@ graph TD
 
     %% Training
     Train[experiment/training] --> Core
-    Train --> ADCompCore
+    Train --> Control
 
     %% Experiment Runner
     Runner[experiment/runner] --> Core
     Runner --> ADCompCore
     Runner --> SimCore
-    Runner --> SimKin
-    Runner --> SimDyn
-    Runner --> Planning
-    Runner --> Control
+    Runner -.-> SimKin
+    Runner -.-> SimDyn
+    Runner -.-> Planning
+    Runner -.-> Control
     Runner --> Dash
     Runner --> Train
 
