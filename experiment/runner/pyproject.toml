@@ -8,12 +8,13 @@ dependencies = [
     "pyyaml>=6.0",
     "mlflow>=2.0.0",
     "boto3>=1.0.0",
+    "numpy>=1.20.0",
     "core",
     "dashboard",
-    "simulator_utils",
     "mcap>=1.0.0",
     "mcap-protobuf-support>=0.5.0",
     "experiment-training",
+    "simulator-core",
 ]
 
 
@@ -29,8 +30,8 @@ experiment-runner = "experiment_runner.cli:main"
 [tool.uv.sources]
 core = { workspace = true }
 dashboard = { workspace = true }
-simulator_utils = { workspace = true }
 experiment-training = { workspace = true }
+simulator-core = { workspace = true }
 
 
 [build-system]
@@ -68,3 +69,12 @@ include = ["src"]
 exclude = ["**/__pycache__", "**/.pytest_cache"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
+
+# Deptry configuration
+[tool.deptry]
+ignore_notebooks = true
+
+[tool.deptry.per_rule_ignores]
+DEP003 = ["experiment_runner", "botocore", "dotenv", "numpy", "planning_utils"]
+DEP001 = ["planning_utils", "components"]
+DEP002 = ["mcap-protobuf-support"]

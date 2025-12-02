@@ -1,10 +1,14 @@
 """Kinematic bicycle model simulator implementation."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from core.data import Action, Observation, SimulationStep, VehicleState
+from simulator_core.base import BaseSimulator
+from simulator_core.vehicle import VehicleParameters
 from simulator_kinematic.vehicle import KinematicVehicleModel
-from simulator_utils.base import BaseSimulator
+
+if TYPE_CHECKING:
+    from simulator_core.environment import Scene
 
 
 class KinematicSimulator(BaseSimulator):
@@ -12,19 +16,29 @@ class KinematicSimulator(BaseSimulator):
 
     def __init__(
         self,
+        vehicle_params: "VehicleParameters | None" = None,
+        scene: "Scene | None" = None,
         initial_state: VehicleState | None = None,
         dt: float = 0.1,
-        wheelbase: float = 2.5,
+        wheelbase: float | None = None,  # 後方互換性のため
     ) -> None:
         """初期化.
 
         Args:
+            vehicle_params: 車両パラメータ（Noneの場合はデフォルト値を使用）
+            scene: シミュレーション環境（Noneの場合は空のシーンを使用）
             initial_state: 初期車両状態
             dt: シミュレーション時間刻み [s]
-            wheelbase: ホイールベース [m]
+            wheelbase: ホイールベース [m]（後方互換性のため、vehicle_paramsより優先）
         """
-        super().__init__(initial_state=initial_state, dt=dt)
-        self.vehicle_model = KinematicVehicleModel(wheelbase=wheelbase)
+        # 後方互換性: wheelbaseが指定されている場合はVehicleParametersを作成
+        if wheelbase is not None and vehicle_params is None:
+            vehicle_params = VehicleParameters(wheelbase=wheelbase)
+
+        super().__init__(
+            vehicle_params=vehicle_params, scene=scene, initial_state=initial_state, dt=dt
+        )
+        self.vehicle_model = KinematicVehicleModel(wheelbase=self.vehicle_params.wheelbase)
 
     def step(self, action: Action) -> tuple[VehicleState, Observation, bool, dict[str, Any]]:
         """1ステップ実行.

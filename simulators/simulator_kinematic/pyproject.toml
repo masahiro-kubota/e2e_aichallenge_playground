@@ -5,13 +5,13 @@ description = "Kinematic bicycle model simulator"
 requires-python = ">=3.12"
 dependencies = [
     "core",
-    "simulator_utils",
+    "simulator-core",
     "numpy>=2.3.5",
 ]
 
 [tool.uv.sources]
 core = { workspace = true }
-simulator_utils = { workspace = true }
+simulator_core = { workspace = true }
 
 [project.optional-dependencies]
 dev = [
@@ -47,7 +47,7 @@ ignore = [
 "tests/**" = ["E501"]  # Allow long lines in tests
 
 [tool.ruff.lint.isort]
-known-first-party = ["simulator_kinematic", "simulator_utils", "core"]
+known-first-party = ["simulator_kinematic", "simulator_core", "core"]
 
 # Pyright configuration
 [tool.pyright]

@@ -1,0 +1,48 @@
+experiment:
+  name: "pure_pursuit_tracking_new_config"
+  type: "evaluation"
+  description: "Evaluate Pure Pursuit planner with PID controller using new config format"
+
+components:
+  perception: null
+  planning:
+    type: "pure_pursuit.PurePursuitPlanner"
+    params:
+      lookahead_distance: 5.0
+  control:
+    type: "pid.PIDController"
+    params:
+      kp: 1.0
+      ki: 0.1
+      kd: 0.05
+
+simulator:
+  type: "simulator_kinematic.KinematicSimulator"
+  params:
+    dt: 0.1
+    initial_state:
+      from_track: true
+    vehicle_config: "experiment/configs/vehicles/default_vehicle.yaml"
+    scene_config: "experiment/configs/scenes/default_scene.yaml"
+
+execution:
+  num_episodes: 1
+  max_steps_per_episode: 2000
+  parallel: false
+
+evaluation:
+  metrics:
+    - "lap_time"
+    - "lateral_error"
+    - "comfort"
+  generate_dashboard: true
+
+logging:
+  mlflow:
+    enabled: true
+    tracking_uri: "http://localhost:5000"
+  mcap:
+    enabled: true
+    output_dir: "/tmp"
+  dashboard:
+    enabled: true

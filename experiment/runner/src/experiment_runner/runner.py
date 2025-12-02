@@ -127,6 +127,34 @@ class ExperimentRunner:
             else:
                 raise ValueError("Planner does not have reference_trajectory")
 
+        # Handle vehicle configuration
+        if "vehicle_config" in sim_params:
+            from simulator_core.vehicle import VehicleParameters
+
+            config_path = sim_params.pop("vehicle_config")
+            # Resolve path relative to workspace root
+            workspace_root = Path(__file__).parent.parent.parent.parent.parent
+            full_path = workspace_root / config_path
+
+            if not full_path.exists():
+                raise FileNotFoundError(f"Vehicle config not found: {full_path}")
+
+            sim_params["vehicle_params"] = VehicleParameters.from_yaml(full_path)
+
+        # Handle scene configuration
+        if "scene_config" in sim_params:
+            from simulator_core.environment import Scene
+
+            config_path = sim_params.pop("scene_config")
+            # Resolve path relative to workspace root
+            workspace_root = Path(__file__).parent.parent.parent.parent.parent
+            full_path = workspace_root / config_path
+
+            if not full_path.exists():
+                raise FileNotFoundError(f"Scene config not found: {full_path}")
+
+            sim_params["scene"] = Scene.from_yaml(full_path)
+
         self.simulator = self._instantiate_component(sim_type, sim_params)
 
     def _setup_mlflow(self) -> None:

@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Any
 
 from core.data import Observation, SimulationLog, SimulationResult, VehicleState
 from core.interfaces import Simulator
+from simulator_core.environment import Scene
+from simulator_core.vehicle import VehicleParameters
 
 if TYPE_CHECKING:
     from core.data import Trajectory
@@ -19,15 +21,29 @@ class BaseSimulator(Simulator, ABC):
 
     def __init__(
         self,
+        vehicle_params: "VehicleParameters | None" = None,
+        scene: "Scene | None" = None,
         initial_state: VehicleState | None = None,
         dt: float = 0.1,
     ) -> None:
         """初期化.
 
         Args:
+            vehicle_params: 車両パラメータ（Noneの場合はデフォルト値を使用）
+            scene: シミュレーション環境（Noneの場合は空のシーンを使用）
             initial_state: 初期車両状態
             dt: シミュレーション時間刻み [s]
         """
+        # 後方互換性のため、vehicle_paramsがNoneの場合はデフォルト値を使用
+        if vehicle_params is None:
+            vehicle_params = VehicleParameters()
+
+        # 後方互換性のため、sceneがNoneの場合は空のシーンを使用
+        if scene is None:
+            scene = Scene()
+
+        self.vehicle_params = vehicle_params
+        self.scene = scene
         self.dt = dt
         self.initial_state = initial_state or VehicleState(
             x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0
@@ -75,7 +91,7 @@ class BaseSimulator(Simulator, ABC):
             action = controller.control(target_trajectory, current_state)
 
             # Simulate
-            next_state, observation, done, info = self.step(action)
+            next_state, _, done, _ = self.step(action)
 
             # Check goal
             if reference_trajectory is not None:

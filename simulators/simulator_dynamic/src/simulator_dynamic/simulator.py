@@ -1,12 +1,17 @@
 """Dynamic bicycle model simulator implementation."""
 
-from typing import Any
+import math
+from typing import TYPE_CHECKING, Any
 
 from core.data import Action, Observation, VehicleState
+from simulator_core.base import BaseSimulator
 from simulator_dynamic.state import DynamicVehicleState
 from simulator_dynamic.vehicle import DynamicVehicleModel
-from simulator_dynamic.vehicle_params import VehicleParameters
-from simulator_utils.base import BaseSimulator
+from simulator_dynamic.vehicle_params import VehicleParameters as DynamicVehicleParams
+
+if TYPE_CHECKING:
+    from simulator_core.environment import Scene
+    from simulator_core.vehicle import VehicleParameters
 
 
 class DynamicSimulator(BaseSimulator):
@@ -14,19 +19,45 @@ class DynamicSimulator(BaseSimulator):
 
     def __init__(
         self,
+        vehicle_params: "VehicleParameters | None" = None,
+        scene: "Scene | None" = None,
         initial_state: VehicleState | None = None,
         dt: float = 0.01,  # Smaller dt for RK4 stability
-        params: VehicleParameters | None = None,
+        params: DynamicVehicleParams | None = None,  # 後方互換性のため
     ) -> None:
         """初期化.
 
         Args:
+            vehicle_params: 車両パラメータ（Noneの場合はデフォルト値を使用）
+            scene: シミュレーション環境（Noneの場合は空のシーンを使用）
             initial_state: 初期車両状態(キネマティクス形式)
             dt: シミュレーション時間刻み [s]
-            params: 車両パラメータ
+            params: 動力学車両パラメータ（後方互換性のため、vehicle_paramsより優先）
         """
-        super().__init__(initial_state=initial_state, dt=dt)
-        self.vehicle_model = DynamicVehicleModel(params=params)
+        super().__init__(
+            vehicle_params=vehicle_params, scene=scene, initial_state=initial_state, dt=dt
+        )
+
+        # 後方互換性: paramsが指定されている場合はそれを使用
+        if params is not None:
+            dynamic_params = params
+        else:
+            # simulator_core.VehicleParametersをDynamicVehicleParamsに変換
+            dynamic_params = DynamicVehicleParams(
+                mass=self.vehicle_params.mass or 1500.0,
+                iz=self.vehicle_params.inertia or 2500.0,
+                wheelbase=self.vehicle_params.wheelbase,
+                lf=self.vehicle_params.lf or 1.2,
+                lr=self.vehicle_params.lr or 1.3,
+                cf=self.vehicle_params.cf or 80000.0,
+                cr=self.vehicle_params.cr or 80000.0,
+                c_drag=self.vehicle_params.c_drag or 0.3,
+                c_roll=self.vehicle_params.c_roll or 0.015,
+                max_drive_force=self.vehicle_params.max_drive_force or 5000.0,
+                max_brake_force=self.vehicle_params.max_brake_force or 8000.0,
+            )
+
+        self.vehicle_model = DynamicVehicleModel(params=dynamic_params)
 
         # Convert kinematic state to dynamic state
         self._dynamic_state = self._kinematic_to_dynamic(self.initial_state)
@@ -84,7 +115,6 @@ class DynamicSimulator(BaseSimulator):
         Returns:
             ダイナミクス状態
         """
-        import math
 
         # Assume no lateral velocity initially
         vx = state.velocity * math.cos(0.0)  # beta = 0

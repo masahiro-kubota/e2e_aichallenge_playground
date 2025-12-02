@@ -37,6 +37,27 @@ def test_pure_pursuit_experiment() -> None:
     runner = ExperimentRunner(config)
     runner.run()
 
+
+@pytest.mark.integration
+def test_pure_pursuit_experiment_new_config() -> None:
+    """Test Pure Pursuit experiment execution with new config format (vehicle/scene)."""
+    # Load config
+    workspace_root = Path(__file__).parent.parent.parent.parent
+    config_path = workspace_root / "experiment/configs/experiments/pure_pursuit_new_config.yaml"
+    config = ExperimentConfig.from_yaml(config_path)
+
+    # Verify configuration
+    assert config.experiment.name == "pure_pursuit_tracking_new_config"
+    assert (
+        config.simulator.params["vehicle_config"]
+        == "experiment/configs/vehicles/default_vehicle.yaml"
+    )
+    assert config.simulator.params["scene_config"] == "experiment/configs/scenes/default_scene.yaml"
+
+    # Run experiment
+    runner = ExperimentRunner(config)
+    runner.run()
+
     # Verify MLflow run was created
     if not os.getenv("CI"):
         mlflow.set_tracking_uri(config.logging.mlflow.tracking_uri)
@@ -90,7 +111,7 @@ def test_config_loading() -> None:
     assert config.experiment.name == "pure_pursuit_tracking"
     assert config.components.planning.params["lookahead_distance"] == 5.0
     assert config.components.control.params["kp"] == 1.0
-    assert config.simulator.type == "KinematicSimulator"
+    assert config.simulator.type == "simulator_kinematic.KinematicSimulator"
 
     assert config.logging.mlflow.enabled is True
 

@@ -14,6 +14,13 @@ dev = [
     "pytest>=8.0.0",
     "lark>=1.0.0",
     "ruff>=0.8.0",
+    "pure-pursuit",
+    "planning-utils",
+    "pid-controller",
+    "neural-controller",
+    "simulator-core",
+    "simulator-kinematic",
+    "simulator-dynamic",
 ]
 
 [tool.uv]
@@ -21,13 +28,20 @@ managed = true
 
 [tool.uv.sources]
 experiment-runner = { workspace = true }
+pure-pursuit = { workspace = true }
+planning-utils = { workspace = true }
+pid-controller = { workspace = true }
+neural-controller = { workspace = true }
+simulator-core = { workspace = true }
+simulator-kinematic = { workspace = true }
+simulator-dynamic = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "core",
     "dashboard",
     "experiment/runner",
-    "simulators/simulator_utils",
+    "simulators/simulator_core",
     "simulators/simulator_kinematic",
     "simulators/simulator_dynamic",
     "component_packages/planning/pure_pursuit",

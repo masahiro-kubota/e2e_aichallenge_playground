@@ -52,6 +52,23 @@ data_collection:
   stage: "raw"
 ```
 
+### Simulator Configuration
+
+シミュレータの設定は `simulator` セクションで行います。
+
+```yaml
+simulator:
+  type: "simulator_kinematic.KinematicSimulator"
+  params:
+    dt: 0.1
+    initial_state:
+      from_track: true
+    # 車両・シーン設定ファイルのパス（オプション）
+    # 指定しない場合はデフォルト値または後方互換パラメータが使用されます
+    vehicle_config: "experiment/configs/vehicles/default_vehicle.yaml"
+    scene_config: "experiment/configs/scenes/default_scene.yaml"
+```
+
 ### Training
 
 ```yaml

@@ -12,9 +12,9 @@ members = [
     "pid-controller",
     "planning-utils",
     "pure-pursuit",
+    "simulator-core",
     "simulator-dynamic",
     "simulator-kinematic",
-    "simulator-utils",
 ]
 
 [[package]]
@@ -600,9 +600,16 @@ dependencies = [
 dev = [
     { name = "deptry" },
     { name = "lark" },
+    { name = "neural-controller" },
+    { name = "pid-controller" },
+    { name = "planning-utils" },
     { name = "pre-commit" },
+    { name = "pure-pursuit" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "simulator-core" },
+    { name = "simulator-dynamic" },
+    { name = "simulator-kinematic" },
 ]
 
 [package.metadata]
@@ -610,9 +617,16 @@ requires-dist = [
     { name = "deptry", marker = "extra == 'dev'", specifier = ">=0.12.0" },
     { name = "experiment-runner", editable = "experiment/runner" },
     { name = "lark", marker = "extra == 'dev'", specifier = ">=1.0.0" },
+    { name = "neural-controller", marker = "extra == 'dev'", editable = "component_packages/control/neural_controller" },
+    { name = "pid-controller", marker = "extra == 'dev'", editable = "component_packages/control/pid" },
+    { name = "planning-utils", marker = "extra == 'dev'", editable = "component_packages/planning/planning_utils" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0.0" },
+    { name = "pure-pursuit", marker = "extra == 'dev'", editable = "component_packages/planning/pure_pursuit" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+    { name = "simulator-core", marker = "extra == 'dev'", editable = "simulators/simulator_core" },
+    { name = "simulator-dynamic", marker = "extra == 'dev'", editable = "simulators/simulator_dynamic" },
+    { name = "simulator-kinematic", marker = "extra == 'dev'", editable = "simulators/simulator_kinematic" },
 ]
 
 [[package]]
@@ -627,9 +641,10 @@ dependencies = [
     { name = "mcap" },
     { name = "mcap-protobuf-support" },
     { name = "mlflow" },
+    { name = "numpy" },
     { name = "pydantic" },
     { name = "pyyaml" },
-    { name = "simulator-utils" },
+    { name = "simulator-core" },
 ]
 
 [package.metadata]
@@ -641,9 +656,10 @@ requires-dist = [
     { name = "mcap", specifier = ">=1.0.0" },
     { name = "mcap-protobuf-support", specifier = ">=0.5.0" },
     { name = "mlflow", specifier = ">=2.0.0" },
+    { name = "numpy", specifier = ">=1.20.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pyyaml", specifier = ">=6.0" },
-    { name = "simulator-utils", editable = "simulators/simulator_utils" },
+    { name = "simulator-core", editable = "simulators/simulator_core" },
 ]
 
 [[package]]
@@ -2346,13 +2362,40 @@ wheels = [
 ]
 
 [[package]]
+name = "simulator-core"
+version = "0.1.0"
+source = { editable = "simulators/simulator_core" }
+dependencies = [
+    { name = "core" },
+    { name = "numpy" },
+    { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "numpy", specifier = ">=2.3.5" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+]
+
+[[package]]
 name = "simulator-dynamic"
 version = "0.1.0"
 source = { editable = "simulators/simulator_dynamic" }
 dependencies = [
     { name = "core" },
     { name = "numpy" },
-    { name = "simulator-utils" },
+    { name = "simulator-core" },
 ]
 
 [package.optional-dependencies]
@@ -2369,7 +2412,7 @@ requires-dist = [
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
-    { name = "simulator-utils", editable = "simulators/simulator_utils" },
+    { name = "simulator-core", editable = "simulators/simulator_core" },
 ]
 
 [[package]]
@@ -2379,7 +2422,7 @@ source = { editable = "simulators/simulator_kinematic" }
 dependencies = [
     { name = "core" },
     { name = "numpy" },
-    { name = "simulator-utils" },
+    { name = "simulator-core" },
 ]
 
 [package.optional-dependencies]
@@ -2396,32 +2439,7 @@ requires-dist = [
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
-    { name = "simulator-utils", editable = "simulators/simulator_utils" },
-]
-
-[[package]]
-name = "simulator-utils"
-version = "0.1.0"
-source = { editable = "simulators/simulator_utils" }
-dependencies = [
-    { name = "core" },
-    { name = "numpy" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "core", editable = "core" },
-    { name = "numpy", specifier = ">=2.3.5" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+    { name = "simulator-core", editable = "simulators/simulator_core" },
 ]
 
 [[package]]

@@ -1,0 +1,11 @@
+# デフォルト車両パラメータ
+
+# 基本形状
+wheelbase: 2.5  # ホイールベース [m]
+width: 1.8      # 車幅 [m]
+length: 4.5     # 車長 [m]
+
+# 運動学パラメータ
+max_steering_angle: 0.6  # 最大操舵角 [rad]
+max_velocity: 20.0       # 最大速度 [m/s]
+max_acceleration: 3.0    # 最大加速度 [m/s^2]
