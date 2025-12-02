@@ -5,8 +5,6 @@
 ## 機能
 
 - **BaseSimulator**: 全てのシミュレータの基底クラス。共通のインターフェースとヘルパーメソッドを提供します。
-- **VehicleParameters**: 車両パラメータの統一管理クラス。YAMLファイルからの読み込みに対応しています。
-- **Environment**: シミュレーション環境（シーン、トラック、障害物）を管理するクラス群。
 - **Integration**: 数値積分（Euler法、RK4法）のユーティリティ。
 
 ## 使用方法
@@ -14,7 +12,7 @@
 ### 車両パラメータの読み込み
 
 ```python
-from simulator_core.vehicle import VehicleParameters
+from core.data import VehicleParameters
 from pathlib import Path
 
 # YAMLファイルから読み込み
@@ -28,7 +26,7 @@ print(params.max_velocity)
 ### シーンの読み込み
 
 ```python
-from simulator_core.environment import Scene
+from core.data import Scene
 from pathlib import Path
 
 # YAMLファイルから読み込み
@@ -42,9 +40,8 @@ for obstacle in scene.obstacles:
 ### シミュレータの実装
 
 ```python
-from simulator_core.base import BaseSimulator
-from simulator_core.vehicle import VehicleParameters
-from simulator_core.environment import Scene
+from simulators_core.base import BaseSimulator
+from core.data import VehicleParameters, Scene
 
 class MySimulator(BaseSimulator):
     def __init__(

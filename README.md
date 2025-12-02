@@ -145,143 +145,6 @@ graph TD
     class Runner app;
 ```
 
-### コアインターフェース
-
-`core` と `ad_components_core` パッケージが、全てのコンポーネントが準拠すべきインターフェースを定義しています。
-
-```mermaid
-classDiagram
-    class Planner {
-        <<interface>>
-        +plan(observation, state) Trajectory
-        +reset() void
-    }
-
-    class Controller {
-        <<interface>>
-        +control(trajectory, state) Action
-        +reset() void
-    }
-
-    class Simulator {
-        <<interface>>
-        +reset() VehicleState
-        +step(action) tuple
-        +run(planner, controller) SimulationResult
-        +get_log() SimulationLog
-    }
-
-    class DashboardGenerator {
-        <<interface>>
-        +generate(log, output_path, osm_path)
-    }
-
-    Planner <|-- PurePursuitPlanner
-    Controller <|-- PIDController
-    Controller <|-- NeuralController
-    Simulator <|-- KinematicSimulator
-    Simulator <|-- DynamicSimulator
-    DashboardGenerator <|-- HTMLDashboardGenerator
-```
-
-### パッケージ詳細
-
-#### 📦 `core/` - コアフレームワーク
-**責務**: プロジェクト全体の基盤となるデータ構造とインターフェース定義。
-
-**主要な型**:
-- **AD Components**: `VehicleState`, `Action`, `Trajectory`, `Sensing`, `ADComponentConfig`, `ADComponentLog`
-- **Experiment**: `ExperimentConfig`, `ExperimentResult`
-- **Simulation**: `SimulationConfig`, `SimulationResult`, `SimulationLog`, `SimulationStep`
-- **Environment**: `Scene`, `TrackBoundary`, `Obstacle`
-- **Vehicle**: `VehicleParameters`
-
-**インターフェース**: `Simulator`, `DashboardGenerator`, `ExperimentRunner`
-
-**依存関係**: `ad_components_core`
-
-#### 🧩 `ad_components/core/` - コンポーネント共通基盤
-**責務**: 自動運転コンポーネント間で共有されるインターフェースとデータ型。
-
-**主要な型**:
-- `Observation` - コンポーネントが使用する観測データ
-- `Trajectory`, `TrajectoryPoint` - 軌道データ
-
-**インターフェース**: `Planner`, `Controller`, `Perception`, `ADComponent`
-
-**依存関係**: `core`
-
-#### 🎮 `simulators/core/` - シミュレータ基底クラス
-**責務**: シミュレータの共通機能と基底クラス。
-
-**主要なクラス**:
-- `BaseSimulator` - シミュレータの基底実装
-- 数値積分関数 (`euler_step`, `rk4_step`)
-
-**依存関係**: `core`
-
-#### 🏎️ `simulators/simulator_kinematic/` - 運動学シミュレータ
-**責務**: 自転車モデルに基づく運動学シミュレーション。
-
-**主要なクラス**:
-- `KinematicSimulator` - 運動学シミュレータ
-- `KinematicVehicleModel` - 車両運動モデル
-
-**依存関係**: `simulators_core`, `core`
-
-#### 🏁 `simulators/simulator_dynamic/` - 動力学シミュレータ
-**責務**: 動力学モデルに基づく高精度シミュレーション。
-
-**主要なクラス**:
-- `DynamicSimulator` - 動力学シミュレータ
-- `DynamicVehicleModel` - 車両動力学モデル
-
-**依存関係**: `simulators_core`, `core`
-
-#### 🗺️ `ad_components/planning/` - 計画コンポーネント
-**責務**: 経路計画アルゴリズムの実装。
-
-**実装**:
-- `pure_pursuit` - Pure Pursuit経路追従
-- `planning_utils` - 計画用ユーティリティ
-
-**依存関係**: `ad_components_core`, `core`
-
-#### 🎮 `ad_components/control/` - 制御コンポーネント
-**責務**: 車両制御アルゴリズムの実装。
-
-**実装**:
-- `pid_controller` - PID縦横制御
-- `neural_controller` - ニューラルネットワークベース制御
-
-**依存関係**: `ad_components_core`, `core`
-
-#### 📊 `dashboard/` - 可視化ダッシュボード
-**責務**: シミュレーション結果の可視化と分析。
-- **Python Package**: `HTMLDashboardGenerator` (ログデータの注入、HTML生成)
-- **Frontend**: React + Vite + Recharts によるインタラクティブな可視化
-- **Assets**: 地図データ (`lanelet2_map.osm`)
-
-**依存関係**: `core`
-
-#### 🧪 `experiment/runner/` - 実験実行フレームワーク
-**責務**: 設定ファイルに基づいたコンポーネントの組み立てと実験ループの実行。
-- **Config**: YAML設定の読み込みと検証 (Pydantic)
-- **Runner**: シミュレーションループの実行、MLflow記録
-- **Logging**: MCAP形式でのシミュレーションデータ記録
-- **Metrics**: シミュレーション評価指標の計算
-- **Integration**: 各コンポーネントとダッシュボードの統合
-
-**依存関係**: `core`, `ad_components_core`, `simulators_core`, 各コンポーネント, `dashboard`
-
-#### 🧠 `experiment/training/` - 学習機能
-**責務**: データセット管理とモデル学習の実行。
-- **Dataset**: MinIOからのデータ読み込み、PyTorch Dataset実装
-- **Trainer**: 学習ループ、検証、モデル保存
-- **FunctionTrainer**: 関数近似タスク用の簡易トレーナー
-
-**依存関係**: `core`, `ad_components_core`
-
 ---
 
 ## 📖 開発フロー
@@ -329,19 +192,23 @@ uv run pre-commit run --all-files
 # experiment/configs/experiments/custom.yaml
 experiment:
   name: "custom_experiment"
-  simulator: "simple_2d"
+  type: "evaluation"
+  description: "Custom experiment example"
 
 simulator:
-  track_file: "data/tracks/raceline_awsim_1500.csv"
+  type: "simulator_kinematic.KinematicSimulator"
+  params:
+    dt: 0.1
+    track_file: "data/tracks/raceline_awsim_1500.csv"
 
 components:
   planning:
-    type: "pure_pursuit"  # または "neural_planner"
-    config:
+    type: "pure_pursuit.PurePursuitPlanner"
+    params:
       lookahead_distance: 5.0
 
   control:
-    type: "pid"  # または "neural_controller"
-    config:
+    type: "pid_controller.PIDController"
+    params:
       kp: 1.0
 ```

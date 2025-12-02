@@ -145,4 +145,4 @@ for exp in experiments:
 - `mlflow`: 実験トラッキング
 - `boto3`: MLflow S3アーティファクトストレージ
 - `core`, `simulators`, `dashboard`, `experiment-training`: 内部パッケージ
-- `pure-pursuit`, `pid-controller`, `neural-controller`, `planning-utils`: コンポーネントパッケージ
+- `pure_pursuit`, `pid_controller`, `neural_controller`, `planning_utils`: コンポーネントパッケージ
