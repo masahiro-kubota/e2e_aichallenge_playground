@@ -53,10 +53,17 @@ jobs:
             touch dashboard.html
           fi
 
-      - name: Upload dashboard artifact
+      - name: Build Documentation
+        run: |
+          cd docs
+          uv run make html
+
+      - name: Upload pages artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: simulation-dashboard
-          path: dashboard.html
+          name: github-pages-content
+          path: |
+            dashboard.html
+            docs/build/html/
           retention-days: 7
