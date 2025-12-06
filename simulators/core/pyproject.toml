@@ -70,5 +70,5 @@ addopts = ["-v", "--strict-markers", "--tb=short"]
 ignore_notebooks = true
 
 [tool.deptry.per_rule_ignores]
-DEP003 = ["simulators_core"]
+DEP003 = ["simulator_core"]
 DEP002 = ["ruff", "pyright", "pytest"]

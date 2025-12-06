@@ -29,6 +29,7 @@ class BaseSimulator(Simulator, ABC):
         vehicle_params: "VehicleParameters | None" = None,
         initial_state: VehicleState | None = None,
         dt: float = 0.1,
+        map_path: str | None = None,
     ) -> None:
         """初期化.
 
@@ -36,6 +37,7 @@ class BaseSimulator(Simulator, ABC):
             vehicle_params: 車両パラメータ（Noneの場合はデフォルト値を使用）
             initial_state: 初期車両状態
             dt: シミュレーション時間刻み [s]
+            map_path: Lanelet2マップファイルへのパス
         """
         # 後方互換性のため、vehicle_paramsがNoneの場合はデフォルト値を使用
         if vehicle_params is None:
@@ -57,6 +59,15 @@ class BaseSimulator(Simulator, ABC):
 
         self._current_state = self.initial_state
         self.log = SimulationLog()
+
+        # マップの読み込み
+        self.map: Any = None  # LaneletMap | None (runtime import)
+        if map_path:
+            import pathlib
+
+            from simulator_core.data.environment import LaneletMap
+
+            self.map = LaneletMap(pathlib.Path(map_path))
 
     def reset(self) -> VehicleState:
         """シミュレーションをリセット.
@@ -83,7 +94,13 @@ class BaseSimulator(Simulator, ABC):
         # 1. Update state (Subclass responsibility)
         self._current_state = self._update_state(action)
 
-        # 2. Logging
+        # 2. Map validation (if map is loaded)
+        if self.map is not None and not self.map.is_drivable(
+            self._current_state.x, self._current_state.y
+        ):
+            self._current_state.off_track = True
+
+        # 3. Logging
         step_log = SimulationStep(
             timestamp=self._current_state.timestamp or 0.0,
             vehicle_state=self._current_state,
