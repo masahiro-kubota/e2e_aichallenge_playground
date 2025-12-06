@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from simulator_core.map import LaneletMap
+from simulator_core.lanelet_map import LaneletMap
 
 
 class TestLaneletMap:
@@ -64,3 +64,16 @@ class TestLaneletMap:
 
         for x, y in outside_points:
             assert lanelet_map.is_drivable(x, y) is False, f"Point ({x}, {y}) should be outside"
+
+    def test_empty_map_behavior(self) -> None:
+        """Test behavior when map fails to load or has no lanelets."""
+        from unittest.mock import patch
+
+        # Patch _load_map to prevent actual file loading
+        with patch("simulator_core.lanelet_map.LaneletMap._load_map"):
+            lanelet_map = LaneletMap(Path("dummy.osm"))
+            # Force drivable_area to None (default)
+            lanelet_map.drivable_area = None
+
+            # Should return True (drivable) when map is not loaded/empty
+            assert lanelet_map.is_drivable(0.0, 0.0) is True

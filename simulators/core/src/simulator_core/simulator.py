@@ -67,7 +67,7 @@ class BaseSimulator(Simulator, ABC):
         if map_path:
             import pathlib
 
-            from simulator_core.map import LaneletMap
+            from simulator_core.lanelet_map import LaneletMap
 
             self.map = LaneletMap(pathlib.Path(map_path))
 
