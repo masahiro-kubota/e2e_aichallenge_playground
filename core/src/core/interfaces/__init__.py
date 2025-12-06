@@ -1,7 +1,7 @@
 """Abstract interfaces for autonomous driving components."""
 
-from core.interfaces.ad_component import ADComponent
-from core.interfaces.components import (
+from core.interfaces.ad_components import (
+    ADComponent,
     Controller,
     Perception,
     Planner,

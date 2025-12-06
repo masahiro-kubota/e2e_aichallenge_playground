@@ -5,6 +5,22 @@ from typing import Any
 
 from core.data import Action, Observation, VehicleState
 from core.data.ad_components import Trajectory
+from core.data.ad_components.sensing import Sensing
+
+
+class ADComponent(ABC):
+    """自動運転コンポーネントのインターフェース."""
+
+    @abstractmethod
+    def run(self, sensing: Sensing) -> Action:
+        """コンポーネントを実行して制御指令を生成する.
+
+        Args:
+            sensing: センシングデータ（車両状態、障害物など）
+
+        Returns:
+            Action: 制御指令
+        """
 
 
 class Perception(ABC):

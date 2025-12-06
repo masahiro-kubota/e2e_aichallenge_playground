@@ -1,3 +1,5 @@
 """Component core data structures."""
 
-__all__ = []
+from core.data import Observation
+
+__all__ = ["Observation"]

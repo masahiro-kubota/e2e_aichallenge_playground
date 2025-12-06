@@ -157,15 +157,20 @@ uv run experiment-runner --config experiment/configs/experiments/imitation_learn
 
 ### テストの実行
 
+> **注意**: ROSがインストールされている環境では、`PYTHONPATH`環境変数にROSのパスが含まれているため、pytestが干渉を受けます。`PYTHONPATH=""`を付けてテストを実行してください。
+
 ```bash
-# ユニットテストの実行
-uv run pytest
+# 全テストの実行
+PYTHONPATH="" uv run pytest
 
 # 統合テストの実行
-uv run pytest experiment/runner/tests -m integration -v
+PYTHONPATH="" uv run pytest -m integration -v
 
-# シミュレーションテストの実行（Pure Pursuit実験）
-uv run pytest experiment/runner/tests/test_integration.py::test_pure_pursuit_experiment -v
+# 統合テストを除外（単体テストのみ）
+PYTHONPATH="" uv run pytest -m "not integration"
+
+# 特定のテストファイルを実行
+PYTHONPATH="" uv run pytest core/tests/test_config.py -v
 
 # Pre-commitフックの実行（全ファイル）
 uv run pre-commit run --all-files

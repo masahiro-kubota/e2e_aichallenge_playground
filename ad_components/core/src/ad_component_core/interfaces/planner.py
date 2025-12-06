@@ -1,31 +1,5 @@
 """Planner interface."""
 
-from abc import ABC, abstractmethod
+from core.interfaces import Planner
 
-# Import from ad_components_core.data instead from abc import ABC, abstractmethod
-from core.data import Observation, VehicleState
-from core.data.ad_components import Trajectory
-
-
-class Planner(ABC):
-    """計画コンポーネントの抽象基底クラス."""
-
-    @abstractmethod
-    def plan(
-        self,
-        observation: Observation,
-        vehicle_state: VehicleState,
-    ) -> Trajectory:
-        """観測と車両状態から軌道を生成.
-
-        Args:
-            observation: 観測データ
-            vehicle_state: 車両状態
-
-        Returns:
-            Trajectory: 計画された軌道
-        """
-
-    @abstractmethod
-    def reset(self) -> None:
-        """計画コンポーネントをリセット."""
+__all__ = ["Planner"]
