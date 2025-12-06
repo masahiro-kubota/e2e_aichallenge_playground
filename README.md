@@ -99,6 +99,11 @@ e2e_aichallenge_playground/
 
 ### アーキテクチャ概要
 
+> **Note**: この図は `scripts/generate_architecture_diagram.py` によって自動生成されています。更新する際は以下のコマンドを実行してください：
+> ```bash
+> uv run python scripts/generate_architecture_diagram.py
+> ```
+
 <!-- ARCHITECTURE_DIAGRAM_START -->
 ```mermaid
 graph TD
