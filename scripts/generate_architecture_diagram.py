@@ -94,7 +94,7 @@ def generate_mermaid(projects: dict[str, ProjectInfo]) -> str:
 
     # Nodes
     for group_name, members in groups.items():
-        lines.append(f"    subgraph {group_name}")
+        lines.append(f"    subgraph group_{group_name} [{group_name}]")
         for p in members:
             # Escape description for mermaid
             desc = p.description.replace('"', "'")

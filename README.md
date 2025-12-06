@@ -108,15 +108,15 @@ graph TD
     classDef impl fill:#bbf,stroke:#333,stroke-width:2px;
     classDef app fill:#bfb,stroke:#333,stroke-width:2px;
     classDef default fill:#fff,stroke:#333,stroke-width:1px;
-    subgraph core
+    subgraph group_core [core]
         core["core<br/>Core data structures.."]
         class core core;
     end
-    subgraph dashboard
+    subgraph group_dashboard [dashboard]
         dashboard["dashboard<br/>Interactive HTML das.."]
         class dashboard impl;
     end
-    subgraph ad_components
+    subgraph group_ad_components [ad_components]
         ad_component_core["ad-component-core<br/>Core interfaces and .."]
         class ad_component_core base;
         pure_pursuit["pure-pursuit<br/>Pure Pursuit path tr.."]
@@ -128,13 +128,13 @@ graph TD
         neural_controller["neural-controller<br/>Neural Network contr.."]
         class neural_controller impl;
     end
-    subgraph experiment
+    subgraph group_experiment [experiment]
         experiment_runner["experiment_runner<br/>Unified experiment e.."]
         class experiment_runner app;
         experiment_training["experiment-training<br/>Training logic for E.."]
         class experiment_training impl;
     end
-    subgraph simulators
+    subgraph group_simulators [simulators]
         simulator_core["simulator-core<br/>Core utilities and b.."]
         class simulator_core base;
         simulator_dynamic["simulator_dynamic<br/>Dynamic bicycle mode.."]
