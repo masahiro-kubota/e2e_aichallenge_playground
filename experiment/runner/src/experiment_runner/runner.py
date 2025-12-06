@@ -285,6 +285,7 @@ class ExperimentRunner:
                 mlflow.log_artifact(str(mcap_path))
 
             # Generate dashboard
+            dashboard_path = None
             if self.config.logging.dashboard.enabled:
                 print("Generating interactive dashboard...")
                 dashboard_path = Path("/tmp/dashboard.html")
@@ -323,7 +324,7 @@ class ExperimentRunner:
             # Clean up
             if mcap_path.exists():
                 mcap_path.unlink()
-            if dashboard_path.exists() and not is_ci:
+            if dashboard_path and dashboard_path.exists() and not is_ci:
                 dashboard_path.unlink()
 
             # Print MLflow links (skip in CI)

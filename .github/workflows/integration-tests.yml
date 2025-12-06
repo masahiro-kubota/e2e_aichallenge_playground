@@ -42,6 +42,11 @@ jobs:
         env:
           CI: 'true'
 
+      - name: Run overrun experiment (off-track detection test)
+        run: uv run experiment-runner --config experiment/configs/experiments/overrun.yaml
+        env:
+          CI: 'true'
+
       - name: Copy dashboard
         if: always()
         run: |

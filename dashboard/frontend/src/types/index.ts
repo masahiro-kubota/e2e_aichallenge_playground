@@ -20,10 +20,15 @@ export interface MapLine {
   points: { x: number; y: number }[];
 }
 
+export interface MapPolygon {
+  points: { x: number; y: number }[];
+}
+
 export interface SimulationData {
   metadata: SimulationMetadata;
   steps: TrajectoryPoint[];
   map_lines?: MapLine[];
+  map_polygons?: MapPolygon[];
 }
 
 declare global {

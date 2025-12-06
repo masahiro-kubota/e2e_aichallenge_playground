@@ -19,6 +19,28 @@ export const TrajectoryView: React.FC<TrajectoryViewProps> = ({ width, height })
 
     const traces: Plotly.Data[] = [];
 
+    // Map Polygons (Lanelets - drivable area)
+    // Fill with background color to cover the blue outside area
+    if (data.map_polygons) {
+      data.map_polygons.forEach((poly, idx) => {
+        traces.push({
+          x: poly.points.map((p) => p.x),
+          y: poly.points.map((p) => p.y),
+          mode: 'lines',
+          fill: 'toself',
+          fillcolor: theme.palette.background.default, // Cover blue outside area
+          type: 'scatter',
+          name: `Lanelet ${idx + 1}`,
+          line: {
+            color: 'transparent',
+            width: 0,
+          },
+          showlegend: false,
+          hoverinfo: 'skip',
+        });
+      });
+    }
+
     // Map lines (Lanelet)
     if (data.map_lines) {
       data.map_lines.forEach((line, idx) => {
@@ -133,17 +155,20 @@ export const TrajectoryView: React.FC<TrajectoryViewProps> = ({ width, height })
       hovermode: 'closest',
       dragmode: 'pan',
       paper_bgcolor: theme.palette.background.paper,
-      plot_bgcolor: theme.palette.background.default,
+      plot_bgcolor:
+        theme.palette.mode === 'dark'
+          ? `${theme.palette.info.dark}33` // Add 20% opacity (33 in hex)
+          : `${theme.palette.info.light}4D`, // Add 30% opacity (4D in hex) for outside area
       font: {
         color: theme.palette.text.primary,
       },
       annotations: currentPoint
         ? [
             {
-              x: currentPoint.x,
-              y: currentPoint.y,
-              ax: currentPoint.x + 20 * Math.cos(currentPoint.yaw),
-              ay: currentPoint.y + 20 * Math.sin(currentPoint.yaw),
+              x: currentPoint.x + 20 * Math.cos(currentPoint.yaw),
+              y: currentPoint.y + 20 * Math.sin(currentPoint.yaw),
+              ax: currentPoint.x,
+              ay: currentPoint.y,
               xref: 'x',
               yref: 'y',
               axref: 'x',

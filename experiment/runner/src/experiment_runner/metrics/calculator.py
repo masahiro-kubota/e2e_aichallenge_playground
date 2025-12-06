@@ -84,9 +84,9 @@ class MetricsCalculator:
         # Success (reached goal)
         success = 1 if self._check_success(log) else 0
 
-        # Collision & lane departure (placeholder - need collision detection)
+        # Collision & lane departure (collision is placeholder)
         collision_count = 0
-        lane_departure_rate = 0.0
+        lane_departure_rate = self._calculate_lane_departure_rate(log)
 
         return SimulationMetrics(
             lap_time_sec=lap_time_sec,
@@ -169,3 +169,13 @@ class MetricsCalculator:
         dist = np.sqrt((final_state.x - goal.x) ** 2 + (final_state.y - goal.y) ** 2)
 
         return bool(dist < 5.0)  # Within 5m of goal
+
+    def _calculate_lane_departure_rate(self, log: SimulationLog) -> float:
+        """Calculate lane departure rate (fraction of time off-track)."""
+        if not log.steps:
+            return 0.0
+
+        off_track_count = sum(
+            1 for step in log.steps if getattr(step.vehicle_state, "off_track", False)
+        )
+        return float(off_track_count) / len(log.steps)

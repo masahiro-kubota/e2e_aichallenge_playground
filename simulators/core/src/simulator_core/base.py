@@ -40,12 +40,21 @@ class BaseSimulator(Simulator, ABC):
         # 後方互換性のため、vehicle_paramsがNoneの場合はデフォルト値を使用
         if vehicle_params is None:
             vehicle_params = VehicleParameters()
+        elif isinstance(vehicle_params, dict):
+            vehicle_params = VehicleParameters(**vehicle_params)
 
         self.vehicle_params = vehicle_params
         self.dt = dt
-        self.initial_state = initial_state or VehicleState(
-            x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0
-        )
+        self.vehicle_params = vehicle_params
+        self.dt = dt
+
+        if initial_state is None:
+            self.initial_state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0)
+        elif isinstance(initial_state, dict):
+            self.initial_state = VehicleState(**initial_state)
+        else:
+            self.initial_state = initial_state
+
         self._current_state = self.initial_state
         self.log = SimulationLog()
 
