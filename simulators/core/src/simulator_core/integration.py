@@ -56,26 +56,12 @@ def rk4_step(
 
     k4 = derivative_func(state4)
 
-    # Weighted average of derivatives
-    # new_state = state + (k1 + 2*k2 + 2*k3 + k4) * dt / 6
-    # We need to implement this using add_func
-    # First, create a combined derivative
-    def combined_derivative(_: StateT) -> StateT:
-        # This is a bit of a hack, but we need to combine k1, k2, k3, k4
-        # We'll use the add_func to build up the weighted sum
-        # Start with k1
-        temp = k1
-        # Add 2*k2 (add k2 twice)
-        temp = add_func(temp, k2, 1.0)
-        temp = add_func(temp, k2, 1.0)
-        # Add 2*k3
-        temp = add_func(temp, k3, 1.0)
-        temp = add_func(temp, k3, 1.0)
-        # Add k4
-        return add_func(temp, k4, 1.0)
+    # Accumulate changes
+    # y_{n+1} = y_n + (dt/6) * (k1 + 2*k2 + 2*k3 + k4)
+    # We apply the updates sequentially
+    new_state = add_func(state, k1, dt / 6)
+    new_state = add_func(new_state, k2, dt / 3)
+    new_state = add_func(new_state, k3, dt / 3)
+    new_state = add_func(new_state, k4, dt / 6)
 
-    # This approach won't work cleanly. Let's return a simpler implementation
-    # that requires the caller to handle the weighted combination.
-    # For now, we'll document that RK4 requires special handling per state type.
-    msg = "RK4 integration requires state-specific implementation"
-    raise NotImplementedError(msg)
+    return new_state

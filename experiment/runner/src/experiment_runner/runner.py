@@ -138,19 +138,9 @@ class ExperimentRunner:
 
             sim_params["vehicle_params"] = VehicleParameters.from_yaml(full_path)
 
-        # Handle scene configuration
+        # Ignore scene configuration (deprecated)
         if "scene_config" in sim_params:
-            from core.data import Scene
-
-            config_path = sim_params.pop("scene_config")
-            # Resolve path relative to workspace root
-            workspace_root = Path(__file__).parent.parent.parent.parent.parent
-            full_path = workspace_root / config_path
-
-            if not full_path.exists():
-                raise FileNotFoundError(f"Scene config not found: {full_path}")
-
-            sim_params["scene"] = Scene.from_yaml(full_path)
+            sim_params.pop("scene_config")
 
         self.simulator = self._instantiate_component(sim_type, sim_params)
 

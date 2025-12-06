@@ -60,14 +60,6 @@ class Simulator(ABC):
         """シミュレータを終了."""
 
     @abstractmethod
-    def render(self) -> Any | None:
-        """シミュレーションを描画(オプション).
-
-        Returns:
-            描画結果(画像など)、またはNone
-        """
-
-    @abstractmethod
     def get_log(self) -> SimulationLog:
         """シミュレーションログを取得.
 

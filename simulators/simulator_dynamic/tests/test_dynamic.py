@@ -3,9 +3,8 @@
 from simulator_dynamic import DynamicSimulator
 from simulator_dynamic.state import DynamicVehicleState
 from simulator_dynamic.vehicle import DynamicVehicleModel
-from simulator_dynamic.vehicle_params import VehicleParameters
 
-from core.data import Action, VehicleState
+from core.data import Action, VehicleParameters, VehicleState
 
 
 class TestVehicleParameters:
@@ -29,28 +28,30 @@ class TestDynamicVehicleModel:
     """Tests for DynamicVehicleModel."""
 
     def test_straight_line_low_speed(self) -> None:
-        """Test straight line motion at low speed."""
+        """Test straight line motion derivative."""
         model = DynamicVehicleModel()
         state = DynamicVehicleState(x=0.0, y=0.0, yaw=0.0, vx=5.0, vy=0.0, yaw_rate=0.0)
 
-        # Move straight with no steering
-        new_state = model.step(state, steering=0.0, throttle=0.0, dt=0.1)
+        # Get derivatives for straight motion
+        derivative = model.calculate_derivative(state, steering=0.0, throttle=0.0)
 
-        # Should move forward
-        assert new_state.x > 0.0
-        assert abs(new_state.y) < 0.1
-        assert abs(new_state.vy) < 0.5  # Small lateral velocity
+        # x_dot should be approx vx (5.0) in global frame if yaw is 0
+        assert abs(derivative.x - 5.0) < 1e-1
+        assert abs(derivative.y) < 1e-1
+        # Should simulate drag, so vx should decrease (negative derivative)
+        # unless throttle compensates. Here throttle is 0.
+        assert derivative.vx < 0.0
 
     def test_acceleration(self) -> None:
-        """Test acceleration."""
+        """Test acceleration derivative."""
         model = DynamicVehicleModel()
         state = DynamicVehicleState(x=0.0, y=0.0, yaw=0.0, vx=0.0, vy=0.0, yaw_rate=0.0)
 
         # Apply throttle
-        new_state = model.step(state, steering=0.0, throttle=0.5, dt=0.1)
+        derivative = model.calculate_derivative(state, steering=0.0, throttle=0.5)
 
-        # Should accelerate
-        assert new_state.vx > 0.0
+        # vx_dot should be positive
+        assert derivative.vx > 0.0
 
 
 class TestDynamicSimulator:
