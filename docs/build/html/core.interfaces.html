@@ -1,0 +1,662 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.interfaces package &mdash; E2E AI Challenge Playground 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="core.utils package" href="core.utils.html" />
+    <link rel="prev" title="core.data.vehicle package" href="core.data.vehicle.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            E2E AI Challenge Playground
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">core</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="core.html">core package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="core.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="core.data.html">core.data package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">core.interfaces package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.utils.html">core.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#module-core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">E2E AI Challenge Playground</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">core</a></li>
+          <li class="breadcrumb-item"><a href="core.html">core package</a></li>
+      <li class="breadcrumb-item active">core.interfaces package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/core.interfaces.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="core-interfaces-package">
+<h1>core.interfaces package<a class="headerlink" href="#core-interfaces-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-core.interfaces.ad_components">
+<span id="core-interfaces-ad-components-module"></span><h2>core.interfaces.ad_components module<a class="headerlink" href="#module-core.interfaces.ad_components" title="Link to this heading"></a></h2>
+<p>Autonomous driving component interfaces.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.ADComponent">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.ad_components.</span></span><span class="sig-name descname"><span class="pre">ADComponent</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#ADComponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.ADComponent" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>自動運転コンポーネントのインターフェース.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.ADComponent.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.sensing.Sensing" title="core.data.ad_components.sensing.Sensing"><span class="pre">Sensing</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#ADComponent.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.ADComponent.run" title="Link to this definition"></a></dt>
+<dd><p>コンポーネントを実行して制御指令を生成する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sensing</strong> – センシングデータ（車両状態、障害物など）</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>制御指令</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.html#core.Action" title="core.Action">Action</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Perception">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.ad_components.</span></span><span class="sig-name descname"><span class="pre">Perception</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Perception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Perception" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>認識コンポーネントの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Perception.perceive">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">perceive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation"><span class="pre">Observation</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Perception.perceive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Perception.perceive" title="Link to this definition"></a></dt>
+<dd><p>センサーデータから観測を生成.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sensor_data</strong> – センサーデータ(カメラ画像、LiDARなど)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>観測データ</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation">Observation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Perception.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Perception.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Perception.reset" title="Link to this definition"></a></dt>
+<dd><p>認識コンポーネントをリセット.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Planner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.ad_components.</span></span><span class="sig-name descname"><span class="pre">Planner</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Planner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Planner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>計画コンポーネントの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Planner.plan">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation"><span class="pre">Observation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.trajectory.Trajectory" title="core.data.ad_components.trajectory.Trajectory"><span class="pre">Trajectory</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Planner.plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Planner.plan" title="Link to this definition"></a></dt>
+<dd><p>観測と車両状態から軌道を生成.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>observation</strong> – 観測データ</p></li>
+<li><p><strong>vehicle_state</strong> – 車両状態</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>計画された軌道</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.html#core.data.Trajectory" title="core.data.Trajectory">Trajectory</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Planner.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Planner.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Planner.reset" title="Link to this definition"></a></dt>
+<dd><p>計画コンポーネントをリセット.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Controller">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.ad_components.</span></span><span class="sig-name descname"><span class="pre">Controller</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Controller" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>制御コンポーネントの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Controller.control">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.trajectory.Trajectory" title="core.data.ad_components.trajectory.Trajectory"><span class="pre">Trajectory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation"><span class="pre">Observation</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Controller.control"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Controller.control" title="Link to this definition"></a></dt>
+<dd><p>軌道と車両状態から制御指令を生成.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectory</strong> – 目標軌道</p></li>
+<li><p><strong>vehicle_state</strong> – 車両状態</p></li>
+<li><p><strong>observation</strong> – 観測データ(オプション)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>制御指令</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.html#core.Action" title="core.Action">Action</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ad_components.Controller.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Controller.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ad_components.Controller.reset" title="Link to this definition"></a></dt>
+<dd><p>制御コンポーネントをリセット.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.interfaces.dashboard">
+<span id="core-interfaces-dashboard-module"></span><h2>core.interfaces.dashboard module<a class="headerlink" href="#module-core.interfaces.dashboard" title="Link to this heading"></a></h2>
+<p>Dashboard generation interface.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.dashboard.DashboardGenerator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.dashboard.</span></span><span class="sig-name descname"><span class="pre">DashboardGenerator</span></span><a class="reference internal" href="_modules/core/interfaces/dashboard.html#DashboardGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.dashboard.DashboardGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Dashboard generation interface.</p>
+<p>This abstract base class defines the interface for generating interactive dashboards
+from simulation logs. Implementations should generate HTML dashboards that
+can be viewed in a web browser.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.dashboard.DashboardGenerator.generate">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.simulation.html#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">osm_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/dashboard.html#DashboardGenerator.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.dashboard.DashboardGenerator.generate" title="Link to this definition"></a></dt>
+<dd><p>Generate interactive dashboard from simulation log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log</strong> – Simulation log containing trajectory and metadata</p></li>
+<li><p><strong>output_path</strong> – Path where the generated HTML dashboard will be saved</p></li>
+<li><p><strong>osm_path</strong> – Optional path to OSM map file for map visualization</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If template or required files are not found</p></li>
+<li><p><strong>ValueError</strong> – If log data is invalid or incomplete</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.interfaces.experiment_runner">
+<span id="core-interfaces-experiment-runner-module"></span><h2>core.interfaces.experiment_runner module<a class="headerlink" href="#module-core.interfaces.experiment_runner" title="Link to this heading"></a></h2>
+<p>Experiment Runner interface.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.experiment_runner.ExperimentRunner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.experiment_runner.</span></span><span class="sig-name descname"><span class="pre">ExperimentRunner</span></span><a class="reference internal" href="_modules/core/interfaces/experiment_runner.html#ExperimentRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.experiment_runner.ExperimentRunner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>実験実行のインターフェース.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.experiment_runner.ExperimentRunner.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.experiment.html#core.data.experiment.result.ExperimentResult" title="core.data.experiment.result.ExperimentResult"><span class="pre">ExperimentResult</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/experiment_runner.html#ExperimentRunner.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.experiment_runner.ExperimentRunner.run" title="Link to this definition"></a></dt>
+<dd><p>実験を実行する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>実験結果</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="core.html#core.ExperimentResult" title="core.ExperimentResult">ExperimentResult</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.interfaces.simulator">
+<span id="core-interfaces-simulator-module"></span><h2>core.interfaces.simulator module<a class="headerlink" href="#module-core.interfaces.simulator" title="Link to this heading"></a></h2>
+<p>Simulator interface for autonomous driving simulation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.simulator.Simulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.simulator.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.simulator.Simulator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>シミュレータの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.simulator.Simulator.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.simulator.Simulator.reset" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションをリセット.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>初期車両状態</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="core.html#core.VehicleState" title="core.VehicleState">VehicleState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.simulator.Simulator.step">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.simulator.Simulator.step" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションを1ステップ進める.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> – 実行するアクション</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>next_state: 次の車両状態</p></li>
+<li><p>done: エピソード終了フラグ</p></li>
+<li><p>info: 追加情報</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[<a class="reference internal" href="core.html#core.VehicleState" title="core.VehicleState">VehicleState</a>, bool, dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.simulator.Simulator.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">planner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.html#core.Planner" title="core.Planner"><span class="pre">Planner</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">controller</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.html#core.Controller" title="core.Controller"><span class="pre">Controller</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_trajectory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.html#core.data.Trajectory" title="core.data.Trajectory"><span class="pre">Trajectory</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.html#core.SimulationResult" title="core.SimulationResult"><span class="pre">SimulationResult</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.simulator.Simulator.run" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションを実行.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>planner</strong> – プランナー</p></li>
+<li><p><strong>controller</strong> – コントローラー</p></li>
+<li><p><strong>max_steps</strong> – 最大ステップ数</p></li>
+<li><p><strong>reference_trajectory</strong> – 参照軌道（ゴール判定用）</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>シミュレーション結果</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.html#core.SimulationResult" title="core.SimulationResult">SimulationResult</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.simulator.Simulator.close">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.simulator.Simulator.close" title="Link to this definition"></a></dt>
+<dd><p>シミュレータを終了.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.simulator.Simulator.get_log">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.simulation.html#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.get_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.simulator.Simulator.get_log" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションログを取得.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>シミュレーションログ</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="core.html#core.SimulationLog" title="core.SimulationLog">SimulationLog</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.interfaces">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core.interfaces" title="Link to this heading"></a></h2>
+<p>Abstract interfaces for autonomous driving components.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.ADComponent">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">ADComponent</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#ADComponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ADComponent" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>自動運転コンポーネントのインターフェース.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ADComponent.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.sensing.Sensing" title="core.data.ad_components.sensing.Sensing"><span class="pre">Sensing</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#ADComponent.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ADComponent.run" title="Link to this definition"></a></dt>
+<dd><p>コンポーネントを実行して制御指令を生成する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sensing</strong> – センシングデータ（車両状態、障害物など）</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>制御指令</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.html#core.Action" title="core.Action">Action</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.Controller">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">Controller</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Controller" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>制御コンポーネントの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Controller.control">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.trajectory.Trajectory" title="core.data.ad_components.trajectory.Trajectory"><span class="pre">Trajectory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation"><span class="pre">Observation</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Controller.control"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Controller.control" title="Link to this definition"></a></dt>
+<dd><p>軌道と車両状態から制御指令を生成.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectory</strong> – 目標軌道</p></li>
+<li><p><strong>vehicle_state</strong> – 車両状態</p></li>
+<li><p><strong>observation</strong> – 観測データ(オプション)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>制御指令</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.html#core.Action" title="core.Action">Action</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Controller.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Controller.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Controller.reset" title="Link to this definition"></a></dt>
+<dd><p>制御コンポーネントをリセット.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.DashboardGenerator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">DashboardGenerator</span></span><a class="reference internal" href="_modules/core/interfaces/dashboard.html#DashboardGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.DashboardGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Dashboard generation interface.</p>
+<p>This abstract base class defines the interface for generating interactive dashboards
+from simulation logs. Implementations should generate HTML dashboards that
+can be viewed in a web browser.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.DashboardGenerator.generate">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.simulation.html#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">osm_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/dashboard.html#DashboardGenerator.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.DashboardGenerator.generate" title="Link to this definition"></a></dt>
+<dd><p>Generate interactive dashboard from simulation log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log</strong> – Simulation log containing trajectory and metadata</p></li>
+<li><p><strong>output_path</strong> – Path where the generated HTML dashboard will be saved</p></li>
+<li><p><strong>osm_path</strong> – Optional path to OSM map file for map visualization</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If template or required files are not found</p></li>
+<li><p><strong>ValueError</strong> – If log data is invalid or incomplete</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.ExperimentRunner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">ExperimentRunner</span></span><a class="reference internal" href="_modules/core/interfaces/experiment_runner.html#ExperimentRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ExperimentRunner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>実験実行のインターフェース.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.ExperimentRunner.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.experiment.html#core.data.experiment.result.ExperimentResult" title="core.data.experiment.result.ExperimentResult"><span class="pre">ExperimentResult</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/experiment_runner.html#ExperimentRunner.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.ExperimentRunner.run" title="Link to this definition"></a></dt>
+<dd><p>実験を実行する.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>実験結果</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="core.html#core.ExperimentResult" title="core.ExperimentResult">ExperimentResult</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.Perception">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">Perception</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Perception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Perception" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>認識コンポーネントの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Perception.perceive">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">perceive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sensor_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation"><span class="pre">Observation</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Perception.perceive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Perception.perceive" title="Link to this definition"></a></dt>
+<dd><p>センサーデータから観測を生成.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sensor_data</strong> – センサーデータ(カメラ画像、LiDARなど)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>観測データ</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation">Observation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Perception.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Perception.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Perception.reset" title="Link to this definition"></a></dt>
+<dd><p>認識コンポーネントをリセット.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.Planner">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">Planner</span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Planner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Planner" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>計画コンポーネントの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Planner.plan">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.html#core.data.observation.Observation" title="core.data.observation.Observation"><span class="pre">Observation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.trajectory.Trajectory" title="core.data.ad_components.trajectory.Trajectory"><span class="pre">Trajectory</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Planner.plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Planner.plan" title="Link to this definition"></a></dt>
+<dd><p>観測と車両状態から軌道を生成.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>observation</strong> – 観測データ</p></li>
+<li><p><strong>vehicle_state</strong> – 車両状態</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>計画された軌道</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.html#core.data.Trajectory" title="core.data.Trajectory">Trajectory</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Planner.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/ad_components.html#Planner.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Planner.reset" title="Link to this definition"></a></dt>
+<dd><p>計画コンポーネントをリセット.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.interfaces.Simulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.interfaces.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Simulator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>シミュレータの抽象基底クラス.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Simulator.close">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Simulator.close" title="Link to this definition"></a></dt>
+<dd><p>シミュレータを終了.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Simulator.get_log">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.simulation.html#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.get_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Simulator.get_log" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションログを取得.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>シミュレーションログ</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="core.html#core.SimulationLog" title="core.SimulationLog">SimulationLog</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Simulator.reset">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Simulator.reset" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションをリセット.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>初期車両状態</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="core.html#core.VehicleState" title="core.VehicleState">VehicleState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Simulator.run">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">planner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#core.interfaces.Planner" title="core.interfaces.Planner"><span class="pre">Planner</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">controller</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#core.interfaces.Controller" title="core.interfaces.Controller"><span class="pre">Controller</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_trajectory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.html#core.data.Trajectory" title="core.data.Trajectory"><span class="pre">Trajectory</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="core.html#core.SimulationResult" title="core.SimulationResult"><span class="pre">SimulationResult</span></a></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Simulator.run" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションを実行.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>planner</strong> – プランナー</p></li>
+<li><p><strong>controller</strong> – コントローラー</p></li>
+<li><p><strong>max_steps</strong> – 最大ステップ数</p></li>
+<li><p><strong>reference_trajectory</strong> – 参照軌道（ゴール判定用）</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>シミュレーション結果</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.html#core.SimulationResult" title="core.SimulationResult">SimulationResult</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.interfaces.Simulator.step">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/core/interfaces/simulator.html#Simulator.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.interfaces.Simulator.step" title="Link to this definition"></a></dt>
+<dd><p>シミュレーションを1ステップ進める.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> – 実行するアクション</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>next_state: 次の車両状態</p></li>
+<li><p>done: エピソード終了フラグ</p></li>
+<li><p>info: 追加情報</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[<a class="reference internal" href="core.html#core.VehicleState" title="core.VehicleState">VehicleState</a>, bool, dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core.data.vehicle.html" class="btn btn-neutral float-left" title="core.data.vehicle package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core.utils.html" class="btn btn-neutral float-right" title="core.utils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Masa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

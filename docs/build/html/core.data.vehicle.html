@@ -1,0 +1,392 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.data.vehicle package &mdash; E2E AI Challenge Playground 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="core.interfaces package" href="core.interfaces.html" />
+    <link rel="prev" title="core.data.simulation package" href="core.data.simulation.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            E2E AI Challenge Playground
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">core</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="core.html">core package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="core.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="core.data.html">core.data package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.interfaces.html">core.interfaces package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.utils.html">core.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#module-core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">E2E AI Challenge Playground</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">core</a></li>
+          <li class="breadcrumb-item"><a href="core.html">core package</a></li>
+          <li class="breadcrumb-item"><a href="core.data.html">core.data package</a></li>
+      <li class="breadcrumb-item active">core.data.vehicle package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/core.data.vehicle.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="core-data-vehicle-package">
+<h1>core.data.vehicle package<a class="headerlink" href="#core-data-vehicle-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-core.data.vehicle.params">
+<span id="core-data-vehicle-params-module"></span><h2>core.data.vehicle.params module<a class="headerlink" href="#module-core.data.vehicle.params" title="Link to this heading"></a></h2>
+<p>Vehicle parameters management.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.vehicle.params.</span></span><span class="sig-name descname"><span class="pre">VehicleParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wheelbase:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steering_angle:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_velocity:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_acceleration:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inertia:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_drag:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_roll:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.015</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_drive_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_brake_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">8000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tire_params:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/vehicle/params.html#VehicleParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>統一車両パラメータ定義.</p>
+<p>運動学・動力学シミュレータの両方で使用可能な車両パラメータ。</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.wheelbase">
+<span class="sig-name descname"><span class="pre">wheelbase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.5</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.wheelbase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.8</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.width" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.length">
+<span class="sig-name descname"><span class="pre">length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4.5</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.max_steering_angle">
+<span class="sig-name descname"><span class="pre">max_steering_angle</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.6</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.max_steering_angle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.max_velocity">
+<span class="sig-name descname"><span class="pre">max_velocity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.max_velocity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.max_acceleration">
+<span class="sig-name descname"><span class="pre">max_acceleration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.max_acceleration" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1500.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.mass" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.inertia">
+<span class="sig-name descname"><span class="pre">inertia</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2500.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.inertia" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.lf">
+<span class="sig-name descname"><span class="pre">lf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.2</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.lf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.lr">
+<span class="sig-name descname"><span class="pre">lr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.3</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.lr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.cf">
+<span class="sig-name descname"><span class="pre">cf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80000.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.cf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.cr">
+<span class="sig-name descname"><span class="pre">cr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80000.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.cr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.c_drag">
+<span class="sig-name descname"><span class="pre">c_drag</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.c_drag" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.c_roll">
+<span class="sig-name descname"><span class="pre">c_roll</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.015</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.c_roll" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.max_drive_force">
+<span class="sig-name descname"><span class="pre">max_drive_force</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5000.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.max_drive_force" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.max_brake_force">
+<span class="sig-name descname"><span class="pre">max_brake_force</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8000.0</span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.max_brake_force" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.tire_params">
+<span class="sig-name descname"><span class="pre">tire_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.tire_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.from_yaml">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></span></span><a class="reference internal" href="_modules/core/data/vehicle/params.html#VehicleParameters.from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.from_yaml" title="Link to this definition"></a></dt>
+<dd><p>YAMLファイルから車両パラメータを読み込む.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – YAMLファイルのパス</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>車両パラメータ</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters">VehicleParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/core/data/vehicle/params.html#VehicleParameters.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.to_dict" title="Link to this definition"></a></dt>
+<dd><p>辞書形式に変換.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>車両パラメータの辞書</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.vehicle.params.VehicleParameters.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wheelbase:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steering_angle:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_velocity:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_acceleration:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inertia:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_drag:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_roll:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.015</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_drive_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_brake_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">8000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tire_params:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.vehicle.params.VehicleParameters.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.data.vehicle">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core.data.vehicle" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.vehicle.</span></span><span class="sig-name descname"><span class="pre">VehicleParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wheelbase:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steering_angle:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_velocity:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_acceleration:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inertia:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_drag:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_roll:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.015</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_drive_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_brake_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">8000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tire_params:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/vehicle/params.html#VehicleParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.vehicle.VehicleParameters" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>統一車両パラメータ定義.</p>
+<p>運動学・動力学シミュレータの両方で使用可能な車両パラメータ。</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wheelbase:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">4.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steering_angle:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_velocity:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">20.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_acceleration:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inertia:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cf:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cr:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">80000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_drag:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_roll:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.015</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_drive_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_brake_force:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">8000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tire_params:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.vehicle.VehicleParameters.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.c_drag">
+<span class="sig-name descname"><span class="pre">c_drag</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.c_drag" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.c_roll">
+<span class="sig-name descname"><span class="pre">c_roll</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.015</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.c_roll" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.cf">
+<span class="sig-name descname"><span class="pre">cf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80000.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.cf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.cr">
+<span class="sig-name descname"><span class="pre">cr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80000.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.cr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.from_yaml">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#core.data.vehicle.VehicleParameters" title="core.data.vehicle.VehicleParameters"><span class="pre">VehicleParameters</span></a></span></span><a class="reference internal" href="_modules/core/data/vehicle/params.html#VehicleParameters.from_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.vehicle.VehicleParameters.from_yaml" title="Link to this definition"></a></dt>
+<dd><p>YAMLファイルから車両パラメータを読み込む.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – YAMLファイルのパス</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>車両パラメータ</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#core.data.vehicle.VehicleParameters" title="core.data.vehicle.VehicleParameters">VehicleParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.inertia">
+<span class="sig-name descname"><span class="pre">inertia</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2500.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.inertia" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.length">
+<span class="sig-name descname"><span class="pre">length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4.5</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.lf">
+<span class="sig-name descname"><span class="pre">lf</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.2</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.lf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.lr">
+<span class="sig-name descname"><span class="pre">lr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.3</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.lr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1500.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.mass" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.max_acceleration">
+<span class="sig-name descname"><span class="pre">max_acceleration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.max_acceleration" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.max_brake_force">
+<span class="sig-name descname"><span class="pre">max_brake_force</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8000.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.max_brake_force" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.max_drive_force">
+<span class="sig-name descname"><span class="pre">max_drive_force</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5000.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.max_drive_force" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.max_steering_angle">
+<span class="sig-name descname"><span class="pre">max_steering_angle</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.6</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.max_steering_angle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.max_velocity">
+<span class="sig-name descname"><span class="pre">max_velocity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20.0</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.max_velocity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/core/data/vehicle/params.html#VehicleParameters.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.vehicle.VehicleParameters.to_dict" title="Link to this definition"></a></dt>
+<dd><p>辞書形式に変換.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>車両パラメータの辞書</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.wheelbase">
+<span class="sig-name descname"><span class="pre">wheelbase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.5</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.wheelbase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.8</span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.width" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.vehicle.VehicleParameters.tire_params">
+<span class="sig-name descname"><span class="pre">tire_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#core.data.vehicle.VehicleParameters.tire_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core.data.simulation.html" class="btn btn-neutral float-left" title="core.data.simulation package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core.interfaces.html" class="btn btn-neutral float-right" title="core.interfaces package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Masa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

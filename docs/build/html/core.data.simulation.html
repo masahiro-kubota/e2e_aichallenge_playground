@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.data.simulation package &mdash; E2E AI Challenge Playground 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="core.data.vehicle package" href="core.data.vehicle.html" />
+    <link rel="prev" title="core.data.experiment package" href="core.data.experiment.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            E2E AI Challenge Playground
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">core</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="core.html">core package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="core.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="core.data.html">core.data package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.interfaces.html">core.interfaces package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="core.utils.html">core.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="core.html#module-core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">E2E AI Challenge Playground</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">core</a></li>
+          <li class="breadcrumb-item"><a href="core.html">core package</a></li>
+          <li class="breadcrumb-item"><a href="core.data.html">core.data package</a></li>
+      <li class="breadcrumb-item active">core.data.simulation package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/core.data.simulation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="core-data-simulation-package">
+<h1>core.data.simulation package<a class="headerlink" href="#core-data-simulation-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-core.data.simulation.config">
+<span id="core-data-simulation-config-module"></span><h2>core.data.simulation.config module<a class="headerlink" href="#module-core.data.simulation.config" title="Link to this heading"></a></h2>
+<p>Simulation configuration data structure.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.config.</span></span><span class="sig-name descname"><span class="pre">SimulationConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene"><span class="pre">Scene</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig"><span class="pre">ADComponentConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulator_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'kinematic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/config.html#SimulationConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.config.SimulationConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>1回のシミュレーション実行に必要な設定.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.scene">
+<span class="sig-name descname"><span class="pre">scene</span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.scene" title="Link to this definition"></a></dt>
+<dd><p>環境データ（トラック境界、障害物）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene">core.data.environment.scene.Scene</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.vehicle_params">
+<span class="sig-name descname"><span class="pre">vehicle_params</span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.vehicle_params" title="Link to this definition"></a></dt>
+<dd><p>車両諸元</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters">core.data.vehicle.params.VehicleParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.initial_state">
+<span class="sig-name descname"><span class="pre">initial_state</span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.initial_state" title="Link to this definition"></a></dt>
+<dd><p>初期車両状態</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState">core.data.ad_components.state.VehicleState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.ad_component_config">
+<span class="sig-name descname"><span class="pre">ad_component_config</span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.ad_component_config" title="Link to this definition"></a></dt>
+<dd><p>自動運転コンポーネント設定</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig">core.data.ad_components.config.ADComponentConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.dt">
+<span class="sig-name descname"><span class="pre">dt</span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.dt" title="Link to this definition"></a></dt>
+<dd><p>タイムステップ（秒）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.simulator_type">
+<span class="sig-name descname"><span class="pre">simulator_type</span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.simulator_type" title="Link to this definition"></a></dt>
+<dd><p>シミュレータタイプ（kinematic / dynamic）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">scene</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene"><span class="pre">Scene</span></a></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">vehicle_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">initial_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">ad_component_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig"><span class="pre">ADComponentConfig</span></a></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.1</span></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">simulator_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'kinematic'</span></em><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.config.SimulationConfig.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene"><span class="pre">Scene</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig"><span class="pre">ADComponentConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulator_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'kinematic'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.simulation.config.SimulationConfig.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.data.simulation.log">
+<span id="core-data-simulation-log-module"></span><h2>core.data.simulation.log module<a class="headerlink" href="#module-core.data.simulation.log" title="Link to this heading"></a></h2>
+<p>Simulation log data structures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.log.</span></span><span class="sig-name descname"><span class="pre">SimulationStep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog"><span class="pre">ADComponentLog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationStep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.log.SimulationStep" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Single step in a simulation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><a class="headerlink" href="#core.data.simulation.log.SimulationStep.timestamp" title="Link to this definition"></a></dt>
+<dd><p>タイムスタンプ [s]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep.vehicle_state">
+<span class="sig-name descname"><span class="pre">vehicle_state</span></span><a class="headerlink" href="#core.data.simulation.log.SimulationStep.vehicle_state" title="Link to this definition"></a></dt>
+<dd><p>車両状態</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState">core.data.ad_components.state.VehicleState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep.action">
+<span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#core.data.simulation.log.SimulationStep.action" title="Link to this definition"></a></dt>
+<dd><p>実行されたアクション</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action">core.data.ad_components.action.Action</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep.ad_component_log">
+<span class="sig-name descname"><span class="pre">ad_component_log</span></span><a class="headerlink" href="#core.data.simulation.log.SimulationStep.ad_component_log" title="Link to this definition"></a></dt>
+<dd><p>ADコンポーネントのログ（任意）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog">core.data.ad_components.log.ADComponentLog</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep.info">
+<span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#core.data.simulation.log.SimulationStep.info" title="Link to this definition"></a></dt>
+<dd><p>追加情報（任意）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Any] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">vehicle_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></em><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></em><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">ad_component_log</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog"><span class="pre">ADComponentLog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">info</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationStep.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog"><span class="pre">ADComponentLog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.simulation.log.SimulationStep.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationLog">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.log.</span></span><span class="sig-name descname"><span class="pre">SimulationLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#core.data.simulation.log.SimulationStep" title="core.data.simulation.log.SimulationStep"><span class="pre">SimulationStep</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.log.SimulationLog" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Log of a simulation run.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationLog.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#core.data.simulation.log.SimulationStep" title="core.data.simulation.log.SimulationStep"><span class="pre">SimulationStep</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.log.SimulationLog.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize simulation log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>steps</strong> – Optional list of simulation steps</p></li>
+<li><p><strong>metadata</strong> – Optional metadata about the simulation (e.g. track name, config)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationLog.add_step">
+<span class="sig-name descname"><span class="pre">add_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#core.data.simulation.log.SimulationStep" title="core.data.simulation.log.SimulationStep"><span class="pre">SimulationStep</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.add_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.log.SimulationLog.add_step" title="Link to this definition"></a></dt>
+<dd><p>Add a step to the log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>step</strong> – Simulation step</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationLog.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.log.SimulationLog.save" title="Link to this definition"></a></dt>
+<dd><p>Save log to file (JSON format).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> – Output file path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.log.SimulationLog.load">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.log.SimulationLog.load" title="Link to this definition"></a></dt>
+<dd><p>Load log from file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> – Input file path</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SimulationLog object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.data.simulation.result">
+<span id="core-data-simulation-result-module"></span><h2>core.data.simulation.result module<a class="headerlink" href="#module-core.data.simulation.result" title="Link to this heading"></a></h2>
+<p>Simulation result data structure.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.result.</span></span><span class="sig-name descname"><span class="pre">SimulationResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_state:</span> <span class="pre">~core.data.ad_components.state.VehicleState</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log:</span> <span class="pre">~core.data.simulation.log.SimulationLog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/result.html#SimulationResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.result.SimulationResult" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>シミュレーション結果.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult.success">
+<span class="sig-name descname"><span class="pre">success</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#core.data.simulation.result.SimulationResult.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult.reason">
+<span class="sig-name descname"><span class="pre">reason</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#core.data.simulation.result.SimulationResult.reason" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult.final_state">
+<span class="sig-name descname"><span class="pre">final_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></em><a class="headerlink" href="#core.data.simulation.result.SimulationResult.final_state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult.log">
+<span class="sig-name descname"><span class="pre">log</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></em><a class="headerlink" href="#core.data.simulation.result.SimulationResult.log" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#core.data.simulation.result.SimulationResult.metrics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.result.SimulationResult.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_state:</span> <span class="pre">~core.data.ad_components.state.VehicleState</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log:</span> <span class="pre">~core.data.simulation.log.SimulationLog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.simulation.result.SimulationResult.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-core.data.simulation">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core.data.simulation" title="Link to this heading"></a></h2>
+<p>Simulation data structures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.</span></span><span class="sig-name descname"><span class="pre">SimulationConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene"><span class="pre">Scene</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig"><span class="pre">ADComponentConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulator_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'kinematic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/config.html#SimulationConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>1回のシミュレーション実行に必要な設定.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.scene">
+<span class="sig-name descname"><span class="pre">scene</span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.scene" title="Link to this definition"></a></dt>
+<dd><p>環境データ（トラック境界、障害物）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene">core.data.environment.scene.Scene</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.vehicle_params">
+<span class="sig-name descname"><span class="pre">vehicle_params</span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.vehicle_params" title="Link to this definition"></a></dt>
+<dd><p>車両諸元</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters">core.data.vehicle.params.VehicleParameters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.initial_state">
+<span class="sig-name descname"><span class="pre">initial_state</span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.initial_state" title="Link to this definition"></a></dt>
+<dd><p>初期車両状態</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState">core.data.ad_components.state.VehicleState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.ad_component_config">
+<span class="sig-name descname"><span class="pre">ad_component_config</span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.ad_component_config" title="Link to this definition"></a></dt>
+<dd><p>自動運転コンポーネント設定</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig">core.data.ad_components.config.ADComponentConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.dt">
+<span class="sig-name descname"><span class="pre">dt</span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.dt" title="Link to this definition"></a></dt>
+<dd><p>タイムステップ（秒）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.simulator_type">
+<span class="sig-name descname"><span class="pre">simulator_type</span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.simulator_type" title="Link to this definition"></a></dt>
+<dd><p>シミュレータタイプ（kinematic / dynamic）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationConfig.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene"><span class="pre">Scene</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig"><span class="pre">ADComponentConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulator_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'kinematic'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.simulation.SimulationConfig.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">dt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.1</span></em><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">simulator_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'kinematic'</span></em><a class="headerlink" href="#id12" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">scene</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.environment.html#core.data.environment.scene.Scene" title="core.data.environment.scene.Scene"><span class="pre">Scene</span></a></em><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">vehicle_params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.vehicle.html#core.data.vehicle.params.VehicleParameters" title="core.data.vehicle.params.VehicleParameters"><span class="pre">VehicleParameters</span></a></em><a class="headerlink" href="#id14" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">initial_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></em><a class="headerlink" href="#id15" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">ad_component_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.config.ADComponentConfig" title="core.data.ad_components.config.ADComponentConfig"><span class="pre">ADComponentConfig</span></a></em><a class="headerlink" href="#id16" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationLog">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.</span></span><span class="sig-name descname"><span class="pre">SimulationLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#core.data.simulation.log.SimulationStep" title="core.data.simulation.log.SimulationStep"><span class="pre">SimulationStep</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationLog" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Log of a simulation run.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationLog.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#core.data.simulation.log.SimulationStep" title="core.data.simulation.log.SimulationStep"><span class="pre">SimulationStep</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationLog.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initialize simulation log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>steps</strong> – Optional list of simulation steps</p></li>
+<li><p><strong>metadata</strong> – Optional metadata about the simulation (e.g. track name, config)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationLog.add_step">
+<span class="sig-name descname"><span class="pre">add_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#core.data.simulation.log.SimulationStep" title="core.data.simulation.log.SimulationStep"><span class="pre">SimulationStep</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.add_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationLog.add_step" title="Link to this definition"></a></dt>
+<dd><p>Add a step to the log.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>step</strong> – Simulation step</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationLog.load">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationLog.load" title="Link to this definition"></a></dt>
+<dd><p>Load log from file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> – Input file path</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SimulationLog object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationLog.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationLog.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationLog.save" title="Link to this definition"></a></dt>
+<dd><p>Save log to file (JSON format).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> – Output file path</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.</span></span><span class="sig-name descname"><span class="pre">SimulationResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_state:</span> <span class="pre">~core.data.ad_components.state.VehicleState</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log:</span> <span class="pre">~core.data.simulation.log.SimulationLog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/result.html#SimulationResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationResult" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>シミュレーション結果.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success:</span> <span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_state:</span> <span class="pre">~core.data.ad_components.state.VehicleState</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log:</span> <span class="pre">~core.data.simulation.log.SimulationLog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.simulation.SimulationResult.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult.success">
+<span class="sig-name descname"><span class="pre">success</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#core.data.simulation.SimulationResult.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult.reason">
+<span class="sig-name descname"><span class="pre">reason</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#core.data.simulation.SimulationResult.reason" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult.final_state">
+<span class="sig-name descname"><span class="pre">final_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></em><a class="headerlink" href="#core.data.simulation.SimulationResult.final_state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult.log">
+<span class="sig-name descname"><span class="pre">log</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#core.data.simulation.log.SimulationLog" title="core.data.simulation.log.SimulationLog"><span class="pre">SimulationLog</span></a></em><a class="headerlink" href="#core.data.simulation.SimulationResult.log" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationResult.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#core.data.simulation.SimulationResult.metrics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">core.data.simulation.</span></span><span class="sig-name descname"><span class="pre">SimulationStep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog"><span class="pre">ADComponentLog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/data/simulation/log.html#SimulationStep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#core.data.simulation.SimulationStep" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Single step in a simulation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><a class="headerlink" href="#core.data.simulation.SimulationStep.timestamp" title="Link to this definition"></a></dt>
+<dd><p>タイムスタンプ [s]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep.vehicle_state">
+<span class="sig-name descname"><span class="pre">vehicle_state</span></span><a class="headerlink" href="#core.data.simulation.SimulationStep.vehicle_state" title="Link to this definition"></a></dt>
+<dd><p>車両状態</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState">core.data.ad_components.state.VehicleState</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep.action">
+<span class="sig-name descname"><span class="pre">action</span></span><a class="headerlink" href="#core.data.simulation.SimulationStep.action" title="Link to this definition"></a></dt>
+<dd><p>実行されたアクション</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action">core.data.ad_components.action.Action</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep.ad_component_log">
+<span class="sig-name descname"><span class="pre">ad_component_log</span></span><a class="headerlink" href="#core.data.simulation.SimulationStep.ad_component_log" title="Link to this definition"></a></dt>
+<dd><p>ADコンポーネントのログ（任意）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog">core.data.ad_components.log.ADComponentLog</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep.info">
+<span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#core.data.simulation.SimulationStep.info" title="Link to this definition"></a></dt>
+<dd><p>追加情報（任意）</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, Any] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="core.data.simulation.SimulationStep.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vehicle_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ad_component_log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog"><span class="pre">ADComponentLog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#core.data.simulation.SimulationStep.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">ad_component_log</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.log.ADComponentLog" title="core.data.ad_components.log.ADComponentLog"><span class="pre">ADComponentLog</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id17" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">info</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id18" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#id19" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">vehicle_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.state.VehicleState" title="core.data.ad_components.state.VehicleState"><span class="pre">VehicleState</span></a></em><a class="headerlink" href="#id20" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="core.data.ad_components.html#core.data.ad_components.action.Action" title="core.data.ad_components.action.Action"><span class="pre">Action</span></a></em><a class="headerlink" href="#id21" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core.data.experiment.html" class="btn btn-neutral float-left" title="core.data.experiment package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core.data.vehicle.html" class="btn btn-neutral float-right" title="core.data.vehicle package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Masa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

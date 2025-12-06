@@ -1,0 +1,201 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>core.data.vehicle.params &mdash; E2E AI Challenge Playground 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="../../../../index.html" class="icon icon-home">
+            E2E AI Challenge Playground
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">core</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">E2E AI Challenge Playground</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">core.data.vehicle.params</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Source code for core.data.vehicle.params</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Vehicle parameters management.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+
+<div class="viewcode-block" id="VehicleParameters">
+<a class="viewcode-back" href="../../../../core.data.vehicle.html#core.VehicleParameters">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VehicleParameters</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;統一車両パラメータ定義.</span>
+
+<span class="sd">    運動学・動力学シミュレータの両方で使用可能な車両パラメータ。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># 基本形状</span>
+    <span class="n">wheelbase</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span>  <span class="c1"># ホイールベース [m]</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.8</span>  <span class="c1"># 車幅 [m]</span>
+    <span class="n">length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span>  <span class="c1"># 車長 [m]</span>
+
+    <span class="c1"># 運動学パラメータ</span>
+    <span class="n">max_steering_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span>  <span class="c1"># 最大操舵角 [rad]</span>
+    <span class="n">max_velocity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.0</span>  <span class="c1"># 最大速度 [m/s]</span>
+    <span class="n">max_acceleration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span>  <span class="c1"># 最大加速度 [m/s^2]</span>
+
+    <span class="c1"># 動力学パラメータ(DynamicSimulator用、オプション)</span>
+    <span class="n">mass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1500.0</span>  <span class="c1"># 質量 [kg]</span>
+    <span class="n">inertia</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2500.0</span>  <span class="c1"># ヨー慣性モーメント [kg*m^2]</span>
+
+    <span class="c1"># NOTE: 以下は重心位置パラメータ (DynamicSimulator用)</span>
+    <span class="n">lf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.2</span>  <span class="c1"># 重心から前軸までの距離 [m]</span>
+    <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.3</span>  <span class="c1"># 重心から後軸までの距離 [m]</span>
+
+    <span class="c1"># NOTE: 以下はタイヤ特性パラメータ (DynamicSimulator用)</span>
+    <span class="n">cf</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">80000.0</span>  <span class="c1"># 前輪コーナリング剛性 [N/rad]</span>
+    <span class="n">cr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">80000.0</span>  <span class="c1"># 後輪コーナリング剛性 [N/rad]</span>
+
+    <span class="c1"># NOTE: 以下は抵抗係数パラメータ (DynamicSimulator用)</span>
+    <span class="n">c_drag</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># 空気抵抗係数</span>
+    <span class="n">c_roll</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.015</span>  <span class="c1"># 転がり抵抗係数</span>
+
+    <span class="c1"># NOTE: 以下は駆動力パラメータ (DynamicSimulator用)</span>
+    <span class="n">max_drive_force</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5000.0</span>  <span class="c1"># 最大駆動力 [N]</span>
+    <span class="n">max_brake_force</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">8000.0</span>  <span class="c1"># 最大制動力 [N]</span>
+
+    <span class="n">tire_params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># タイヤパラメータ(将来の拡張用)</span>
+
+<div class="viewcode-block" id="VehicleParameters.from_yaml">
+<a class="viewcode-back" href="../../../../core.data.vehicle.html#core.VehicleParameters.from_yaml">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_yaml</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VehicleParameters</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;YAMLファイルから車両パラメータを読み込む.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: YAMLファイルのパス</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            VehicleParameters: 車両パラメータ</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="VehicleParameters.to_dict">
+<a class="viewcode-back" href="../../../../core.data.vehicle.html#core.VehicleParameters.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;辞書形式に変換.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: 車両パラメータの辞書</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;wheelbase&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wheelbase</span><span class="p">,</span>
+            <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+            <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span>
+            <span class="s2">&quot;max_steering_angle&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steering_angle</span><span class="p">,</span>
+            <span class="s2">&quot;max_velocity&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span>
+            <span class="s2">&quot;max_acceleration&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_acceleration</span><span class="p">,</span>
+            <span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span>
+            <span class="s2">&quot;inertia&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inertia</span><span class="p">,</span>
+            <span class="s2">&quot;lf&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lf</span><span class="p">,</span>
+            <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span>
+            <span class="s2">&quot;cf&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cf</span><span class="p">,</span>
+            <span class="s2">&quot;cr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cr</span><span class="p">,</span>
+            <span class="s2">&quot;c_drag&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_drag</span><span class="p">,</span>
+            <span class="s2">&quot;c_roll&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_roll</span><span class="p">,</span>
+            <span class="s2">&quot;max_drive_force&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_drive_force</span><span class="p">,</span>
+            <span class="s2">&quot;max_brake_force&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_brake_force</span><span class="p">,</span>
+            <span class="s2">&quot;tire_params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tire_params</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Masa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
