@@ -130,8 +130,6 @@ graph TD
         class planning_utils impl;
         pid_controller["pid-controller<br/>PID controller"]
         class pid_controller impl;
-        neural_controller["neural-controller<br/>Neural Network contr.."]
-        class neural_controller impl;
     end
     subgraph group_experiment [experiment]
         experiment_runner["experiment_runner<br/>Unified experiment e.."]
@@ -155,13 +153,15 @@ graph TD
     planning_utils --> core
     pid_controller --> core
     pid_controller --> ad_component_core
-    neural_controller --> core
-    neural_controller --> ad_component_core
     experiment_runner --> core
     experiment_runner --> dashboard
     experiment_runner --> experiment_training
+    experiment_runner --> pure_pursuit
+    experiment_runner --> pid_controller
+    experiment_runner --> planning_utils
+    experiment_runner --> ad_component_core
     experiment_training --> core
-    experiment_training --> neural_controller
+    experiment_training --> simulator_core
     simulator_core --> core
     simulator_dynamic --> core
     simulator_dynamic --> simulator_core

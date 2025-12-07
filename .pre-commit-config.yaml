@@ -105,6 +105,12 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: import-linter
+        name: import-linter (architecture check)
+        entry: uv run lint-imports
+        language: system
+        pass_filenames: false
+        always_run: true
 
 
 

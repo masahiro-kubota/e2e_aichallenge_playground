@@ -107,4 +107,5 @@ dev = [
     "sphinx>=8.2.3",
     "sphinx-rtd-theme>=3.0.2",
     "vulture>=2.14",
+    "import-linter>=2.0",
 ]
