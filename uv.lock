@@ -1891,15 +1891,11 @@ name = "pid-controller"
 version = "0.1.0"
 source = { editable = "ad_components/control/pid_controller" }
 dependencies = [
-    { name = "ad-component-core" },
     { name = "core" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "ad-component-core", editable = "ad_components/core" },
-    { name = "core", editable = "core" },
-]
+requires-dist = [{ name = "core", editable = "core" }]
 
 [[package]]
 name = "pillow"
@@ -2039,14 +2035,12 @@ name = "pure-pursuit"
 version = "0.1.0"
 source = { editable = "ad_components/planning/pure_pursuit" }
 dependencies = [
-    { name = "ad-component-core" },
     { name = "core" },
     { name = "planning-utils" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "ad-component-core", editable = "ad_components/core" },
     { name = "core", editable = "core" },
     { name = "planning-utils", editable = "ad_components/planning/planning_utils" },
 ]

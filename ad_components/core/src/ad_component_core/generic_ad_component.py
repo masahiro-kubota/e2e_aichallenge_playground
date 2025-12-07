@@ -4,7 +4,7 @@ import importlib
 import inspect
 from typing import Any, TypeVar
 
-from core.interfaces import ADComponent, Controller, Planner
+from core.interfaces import ADComponent
 
 T = TypeVar("T")
 
@@ -12,7 +12,7 @@ T = TypeVar("T")
 class GenericADComponent(ADComponent):
     """Generic ADComponent that loads planner and controller from packages."""
 
-    def _create_planner(self, **kwargs: Any) -> Planner:
+    def _create_planner(self, **kwargs: Any) -> Any:
         """Create planner from package.
 
         Args:
@@ -27,9 +27,9 @@ class GenericADComponent(ADComponent):
         if not package_name:
             raise ValueError("planner_package must be specified")
 
-        return self._create_instance_from_package(Planner, package_name, **kwargs)
+        return self._create_instance_from_package(object, package_name, **kwargs)
 
-    def _create_controller(self, **kwargs: Any) -> Controller:
+    def _create_controller(self, **kwargs: Any) -> Any:
         """Create controller from package.
 
         Args:
@@ -44,7 +44,7 @@ class GenericADComponent(ADComponent):
         if not package_name:
             raise ValueError("controller_package must be specified")
 
-        return self._create_instance_from_package(Controller, package_name, **kwargs)
+        return self._create_instance_from_package(object, package_name, **kwargs)
 
     def _create_instance_from_package(
         self, base_cls: type[T], package_name: str, **kwargs: Any

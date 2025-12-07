@@ -278,13 +278,10 @@ module:
 
           - name: "Planning"
             processor:
-              type: "core.adapters.planner_adapter.PlannerAdapter"
+              type: "pure_pursuit.PurePursuitPlanner"
               params:
-                planner:
-                  type: "pure_pursuit.PurePursuitPlanner"
-                  params:
-                    lookahead_distance: 5.0
-                    track_path: "path/to/track.csv"
+                lookahead_distance: 5.0
+                track_path: "path/to/track.csv"
             io:
               inputs: ["vehicle_state", "observation"]
               output: "trajectory"
@@ -292,12 +289,9 @@ module:
 
           - name: "Control"
             processor:
-              type: "core.adapters.controller_adapter.ControllerAdapter"
+              type: "pid_controller.PIDController"
               params:
-                controller:
-                  type: "pid_controller.PIDController"
-                  params:
-                    kp: 1.0
+                kp: 1.0
             io:
               inputs: ["trajectory", "vehicle_state", "observation"]
               output: "action"

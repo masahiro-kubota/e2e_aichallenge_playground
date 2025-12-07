@@ -62,12 +62,6 @@ class FlexibleADComponent(ADComponent):
         processor_type = processor_config["type"]
         params = processor_config.get("params", {}).copy()
 
-        # Adapter用のネストされたprocessor作成
-        for nested_key in ["planner", "controller", "simulator"]:
-            if nested_key in params:
-                nested_config = params[nested_key]
-                params[nested_key] = self._create_processor(nested_config, vehicle_params)
-
         # パスパラメータを解決
         path_keys = {"track_path", "model_path", "scaler_path"}
         workspace_root = get_project_root()
@@ -104,10 +98,3 @@ class FlexibleADComponent(ADComponent):
         # 必要に応じて各Processorのリセット処理を呼び出す
         # 現時点では未実装
         pass
-
-    # ADComponentの抽象メソッド実装(ダミー)
-    def _create_planner(self, **_kwargs: Any) -> Any:
-        return None
-
-    def _create_controller(self, **_kwargs: Any) -> Any:
-        return None

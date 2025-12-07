@@ -1,16 +1,14 @@
 """PID Controller implementation."""
 
 import math
-
-from ad_component_core.data import Observation
+from typing import Any
 
 from core.data import Action, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory
-from core.interfaces import Controller
 from core.utils.geometry import distance, normalize_angle
 
 
-class PIDController(Controller):
+class PIDController:
     """PID Controller for velocity and Pure Pursuit for steering."""
 
     def __init__(
@@ -37,18 +35,18 @@ class PIDController(Controller):
         self.integral_error = 0.0
         self.prev_error = 0.0
 
-    def control(
+    def process(
         self,
         trajectory: Trajectory,
         vehicle_state: VehicleState,
-        _observation: Observation | None = None,
+        **_kwargs: Any,
     ) -> Action:
         """Compute control action.
 
         Args:
             trajectory: Target trajectory (expected to contain at least one point as target)
             vehicle_state: Current vehicle state
-            _observation: Current observation (unused)
+            **_kwargs: Other inputs (ignored)
 
         Returns:
             Control action (steering, acceleration)

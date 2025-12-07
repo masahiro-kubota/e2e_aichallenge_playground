@@ -5,10 +5,8 @@ from unittest.mock import MagicMock
 import pytest
 from experiment_runner.executor import SingleProcessExecutor
 
-from core.adapters.controller_adapter import ControllerAdapter
-from core.adapters.planner_adapter import PlannerAdapter
 from core.data import Action, Observation, SimulationLog, Trajectory, TrajectoryPoint, VehicleState
-from core.interfaces import Controller, Planner, Simulator
+from core.interfaces import Simulator
 from core.interfaces.node import SimulationContext
 from core.interfaces.node_io import NodeIO
 from core.nodes import GenericProcessingNode, PhysicsNode
@@ -34,8 +32,8 @@ def mock_simulator():
 
 @pytest.fixture
 def mock_planner():
-    planner = MagicMock(spec=Planner)
-    planner.plan.return_value = Trajectory(
+    planner = MagicMock()
+    planner.process.return_value = Trajectory(
         points=[TrajectoryPoint(x=1.0, y=1.0, yaw=0.0, velocity=1.0)]
     )
     return planner
@@ -43,8 +41,8 @@ def mock_planner():
 
 @pytest.fixture
 def mock_controller():
-    controller = MagicMock(spec=Controller)
-    controller.control.return_value = Action(acceleration=1.0, steering=0.1)
+    controller = MagicMock()
+    controller.process.return_value = Action(acceleration=1.0, steering=0.1)
     return controller
 
 
@@ -63,16 +61,14 @@ def test_executor_timing(mock_simulator, mock_planner, mock_controller):
     sensor_node = GenericProcessingNode("Sensor", sensor_processor, sensor_io, rate_hz=10.0)
     sensor_node.on_run = MagicMock(wraps=sensor_node.on_run)
 
-    # Planning Node (Generic + Adapter)
-    planner_adapter = PlannerAdapter(mock_planner)
+    # Planning Node (Generic)
     planner_io = NodeIO(inputs=["vehicle_state", "observation"], output="trajectory")
-    planning_node = GenericProcessingNode("Planning", planner_adapter, planner_io, rate_hz=5.0)
+    planning_node = GenericProcessingNode("Planning", mock_planner, planner_io, rate_hz=5.0)
     planning_node.on_run = MagicMock(wraps=planning_node.on_run)
 
-    # Control Node (Generic + Adapter)
-    controller_adapter = ControllerAdapter(mock_controller)
+    # Control Node (Generic)
     controller_io = NodeIO(inputs=["trajectory", "vehicle_state", "observation"], output="action")
-    control_node = GenericProcessingNode("Control", controller_adapter, controller_io, rate_hz=10.0)
+    control_node = GenericProcessingNode("Control", mock_controller, controller_io, rate_hz=10.0)
     control_node.on_run = MagicMock(wraps=control_node.on_run)
 
     nodes = [physics_node, sensor_node, planning_node, control_node]
@@ -114,7 +110,7 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     # Planning
     planning_node = GenericProcessingNode(
         "Planning",
-        PlannerAdapter(mock_planner),
+        mock_planner,
         NodeIO(inputs=["vehicle_state", "observation"], output="trajectory"),
         rate_hz=10.0,
     )
@@ -122,7 +118,7 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     # Control
     control_node = GenericProcessingNode(
         "Control",
-        ControllerAdapter(mock_controller),
+        mock_controller,
         NodeIO(inputs=["trajectory", "vehicle_state", "observation"], output="action"),
         rate_hz=10.0,
     )
@@ -145,9 +141,9 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     assert isinstance(context.observation, Observation)
 
     # Planning should have produced trajectory
-    mock_planner.plan.assert_called()
+    mock_planner.process.assert_called()
     assert context.trajectory is not None
 
     # Control should have produced action
-    mock_controller.control.assert_called()
+    mock_controller.process.assert_called()
     assert context.action is not None
