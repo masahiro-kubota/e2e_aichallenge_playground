@@ -147,6 +147,7 @@ graph TD
     ad_component_core --> core
     pure_pursuit --> core
     pure_pursuit --> ad_component_core
+    pure_pursuit --> planning_utils
     planning_utils --> core
     pid_controller --> core
     pid_controller --> ad_component_core
