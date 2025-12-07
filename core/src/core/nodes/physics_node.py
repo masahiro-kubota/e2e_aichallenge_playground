@@ -1,19 +1,18 @@
-"""Concrete Node implementations."""
-
 from typing import Any
 
-from core.data import Action, ADComponentLog, Observation
-from core.interfaces import Controller, Planner, Simulator
+from core.data import Action, ADComponentLog
+from core.interfaces import Simulator
 from core.interfaces.node import Node, SimulationContext
 
 
 class PhysicsNode(Node):
     """Node responsible for stepping the simulator physics."""
 
-    def __init__(self, simulator: Simulator, rate_hz: float):
+    def __init__(self, simulator: Simulator, rate_hz: float, goal_radius: float = 5.0):
         super().__init__("Physics", rate_hz)
         self.simulator = simulator
         self.step_count = 0
+        self.goal_radius = goal_radius
 
     def on_run(self, context: SimulationContext) -> None:
         if context.done:
@@ -65,63 +64,7 @@ class PhysicsNode(Node):
 
             if goal_x is not None and goal_y is not None:
                 dist = ((state.x - goal_x) ** 2 + (state.y - goal_y) ** 2) ** 0.5
-                if dist < 5.0:  # Hardcoded 5.0m threshold
+                if dist < self.goal_radius:
                     context.done = True
                     context.done_reason = "goal_reached"
                     context.success = True
-
-
-class SensorNode(Node):
-    """Node responsible for perception/sensing."""
-
-    def __init__(self, rate_hz: float):
-        super().__init__("Sensor", rate_hz)
-
-    def on_run(self, context: SimulationContext) -> None:
-        if context.sim_state:
-            context.vehicle_state = context.sim_state
-            context.observation = Observation(
-                lateral_error=0.0,
-                heading_error=0.0,
-                velocity=context.vehicle_state.velocity,
-                target_velocity=0.0,
-                timestamp=context.current_time,
-            )
-
-
-class PlanningNode(Node):
-    """Node responsible for path planning."""
-
-    def __init__(self, planner: Planner, rate_hz: float):
-        super().__init__("Planning", rate_hz)
-        self.planner = planner
-
-    def on_run(self, context: SimulationContext) -> None:
-        if context.vehicle_state:
-            observation = context.observation or Observation(
-                lateral_error=0.0,
-                heading_error=0.0,
-                velocity=context.vehicle_state.velocity,
-                target_velocity=0.0,
-                timestamp=context.current_time,
-            )
-            # Ensure observation has valid values if defaults were used
-            if observation.timestamp is None:
-                observation.timestamp = context.current_time
-
-            context.trajectory = self.planner.plan(observation, context.vehicle_state)
-
-
-class ControlNode(Node):
-    """Node responsible for vehicle control."""
-
-    def __init__(self, controller: Controller, rate_hz: float):
-        super().__init__("Control", rate_hz)
-        self.controller = controller
-
-    def on_run(self, context: SimulationContext) -> None:
-        if context.vehicle_state and context.trajectory:
-            observation = context.observation
-            context.action = self.controller.control(
-                context.trajectory, context.vehicle_state, observation
-            )

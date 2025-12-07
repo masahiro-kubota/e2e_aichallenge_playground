@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import mlflow
-from core.data import VehicleParameters, VehicleState
+from core.data import VehicleParameters
 from core.data.experiment import Artifact, ExperimentResult
 from core.data.simulator import SimulationLog
 from core.interfaces import ADComponent, Simulator
@@ -173,47 +173,7 @@ class ExperimentRunner:
         # 3. Setup Simulator
         sim_type = self.config.simulator.type
 
-        # Handle initial_state from track if specified
-        if sim_params.get("initial_state", {}).get("from_track"):
-            # We cannot easily check for reference_trajectory on generic ADComponent
-            # unless we add that property to interface or check planner specifically.
-            # For now, let's assume if the component has a planner attribute with ref traj
-            if hasattr(self.ad_component, "planner") and hasattr(
-                self.ad_component.planner, "reference_trajectory"
-            ):
-                track = self.ad_component.planner.reference_trajectory  # type: ignore
-                sim_params["initial_state"] = VehicleState(
-                    x=track[0].x,
-                    y=track[0].y,
-                    yaw=track[0].yaw,
-                    velocity=0.0,
-                    timestamp=0.0,
-                )
-            # Or if it IS the standard component
-            elif hasattr(self.ad_component, "reference_trajectory"):
-                track = self.ad_component.reference_trajectory  # type: ignore
-                sim_params["initial_state"] = VehicleState(
-                    x=track[0].x,
-                    y=track[0].y,
-                    yaw=track[0].yaw,
-                    velocity=0.0,
-                    timestamp=0.0,
-                )
-            else:
-                raise ValueError("ADComponent or its planner does not have reference_trajectory")
-
-            # Only set goal if track is not a closed loop
-            first_point = track[0]
-            last_point = track[-1]
-            distance = (
-                (last_point.x - first_point.x) ** 2 + (last_point.y - first_point.y) ** 2
-            ) ** 0.5
-
-            if distance > 5.0:  # Not a closed loop (threshold: 5 meters)
-                sim_params["goal_x"] = last_point.x
-                sim_params["goal_y"] = last_point.y
-            # else: Don't set goal for closed loop tracks (will run until max_steps)
-
+        # Remove scene_config if present (not used by simulator)
         if "scene_config" in sim_params:
             sim_params.pop("scene_config")
 
@@ -301,7 +261,12 @@ class ExperimentRunner:
             # Collect Nodes
             nodes = []
             # 1. Physics
-            nodes.append(PhysicsNode(self.simulator, rate_hz=sim_rate))
+            goal_radius = (
+                self.config.execution.goal_radius
+                if self.config.execution and hasattr(self.config.execution, "goal_radius")
+                else 5.0
+            )
+            nodes.append(PhysicsNode(self.simulator, rate_hz=sim_rate, goal_radius=goal_radius))
 
             # 2. ADComponent Nodes
             nodes.extend(self.ad_component.get_schedulable_nodes())

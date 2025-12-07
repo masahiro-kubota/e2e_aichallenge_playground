@@ -3,28 +3,57 @@ module:
 
   components:
     ad_component:
-      type: "experiment_runner.ad_components.StandardADComponent"
+      type: "experiment_runner.flexible_ad_component.FlexibleADComponent"
       params:
-        updates:
-          planning_hz: 10.0
-          control_hz: 30.0
-        planning:
-          type: "PurePursuitPlanner"
-          params:
-            # Defaults used: lookahead=5.0, min=2.0, max=15.0
-            track_path: "ad_components/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
-        control:
-          type: "PIDController"
-          params:
-            kp: 1.0
-            ki: 0.1
-            kd: 0.05
-            u_min: -1.0
-            u_max: 1.0
+        nodes:
+          - name: "Sensor"
+            processor:
+              type: "core.processors.sensor.IdealSensorProcessor"
+              params: {}
+            io:
+              inputs: ["sim_state"]
+              output: "vehicle_state"
+            rate_hz: 50.0
+
+          - name: "Perception"
+            processor:
+              type: "core.processors.perception.BasicPerceptionProcessor"
+              params: {}
+            io:
+              inputs: ["vehicle_state"]
+              output: "observation"
+            rate_hz: 50.0
+
+          - name: "Planning"
+            processor:
+              type: "core.adapters.planner_adapter.PlannerAdapter"
+              params:
+                planner:
+                  type: "pure_pursuit.PurePursuitPlanner"
+                  params:
+                    lookahead_distance: 5.0
+                    track_path: "ad_components/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
+            io:
+              inputs: ["vehicle_state", "observation"]
+              output: "trajectory"
+            rate_hz: 10.0
+
+          - name: "Control"
+            processor:
+              type: "core.adapters.controller_adapter.ControllerAdapter"
+              params:
+                controller:
+                  type: "pid_controller.PIDController"
+                  params:
+                    kp: 1.0
+                    ki: 0.1
+                    kd: 0.05
+            io:
+              inputs: ["trajectory", "vehicle_state", "observation"]
+              output: "action"
+            rate_hz: 30.0
 
     simulator:
       type: "KinematicSimulator"
       params:
         dt: 0.1
-        initial_state:
-          from_track: true

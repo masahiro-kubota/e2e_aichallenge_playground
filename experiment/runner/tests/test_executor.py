@@ -5,10 +5,15 @@ from unittest.mock import MagicMock
 import pytest
 from experiment_runner.executor import SingleProcessExecutor
 
-from core.data import Action, SimulationLog, Trajectory, TrajectoryPoint, VehicleState
+from core.adapters.controller_adapter import ControllerAdapter
+from core.adapters.planner_adapter import PlannerAdapter
+from core.data import Action, Observation, SimulationLog, Trajectory, TrajectoryPoint, VehicleState
 from core.interfaces import Controller, Planner, Simulator
 from core.interfaces.node import SimulationContext
-from core.nodes import ControlNode, PhysicsNode, PlanningNode, SensorNode
+from core.interfaces.node_io import NodeIO
+from core.nodes import GenericProcessingNode, PhysicsNode
+from core.processors.perception import BasicPerceptionProcessor
+from core.processors.sensor import IdealSensorProcessor
 
 
 @pytest.fixture
@@ -48,18 +53,27 @@ def test_executor_timing(mock_simulator, mock_planner, mock_controller):
 
     context = SimulationContext()
 
-    # Manually assembling nodes (like StandardADComponent would do)
+    # Physics Node
     physics_node = PhysicsNode(mock_simulator, rate_hz=10.0)
-    planning_node = PlanningNode(mock_planner, rate_hz=5.0)
-    control_node = ControlNode(mock_controller, rate_hz=10.0)
-    sensor_node = SensorNode(rate_hz=10.0)
-
     physics_node.on_run = MagicMock(wraps=physics_node.on_run)
-    planning_node.on_run = MagicMock(wraps=planning_node.on_run)
-    control_node.on_run = MagicMock(wraps=control_node.on_run)
-    # Sensor node needs mocks for on_run context updates?
-    # SensorNode logic is simple, so no need to mock logic, just count calls
+
+    # Sensor Node (Generic)
+    sensor_processor = IdealSensorProcessor()
+    sensor_io = NodeIO(inputs=["sim_state"], output="vehicle_state")
+    sensor_node = GenericProcessingNode("Sensor", sensor_processor, sensor_io, rate_hz=10.0)
     sensor_node.on_run = MagicMock(wraps=sensor_node.on_run)
+
+    # Planning Node (Generic + Adapter)
+    planner_adapter = PlannerAdapter(mock_planner)
+    planner_io = NodeIO(inputs=["vehicle_state", "observation"], output="trajectory")
+    planning_node = GenericProcessingNode("Planning", planner_adapter, planner_io, rate_hz=5.0)
+    planning_node.on_run = MagicMock(wraps=planning_node.on_run)
+
+    # Control Node (Generic + Adapter)
+    controller_adapter = ControllerAdapter(mock_controller)
+    controller_io = NodeIO(inputs=["trajectory", "vehicle_state", "observation"], output="action")
+    control_node = GenericProcessingNode("Control", controller_adapter, controller_io, rate_hz=10.0)
+    control_node.on_run = MagicMock(wraps=control_node.on_run)
 
     nodes = [physics_node, sensor_node, planning_node, control_node]
     executor = SingleProcessExecutor(nodes, context)
@@ -77,12 +91,43 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     """Test data flow between nodes via Context."""
     context = SimulationContext()
 
+    # Physics
     physics_node = PhysicsNode(mock_simulator, rate_hz=10.0)
-    sensor_node = SensorNode(rate_hz=10.0)
-    planning_node = PlanningNode(mock_planner, rate_hz=10.0)
-    control_node = ControlNode(mock_controller, rate_hz=10.0)
 
-    nodes = [physics_node, sensor_node, planning_node, control_node]
+    # Sensor
+    sensor_node = GenericProcessingNode(
+        "Sensor",
+        IdealSensorProcessor(),
+        NodeIO(inputs=["sim_state"], output="vehicle_state"),
+        rate_hz=10.0,
+    )
+
+    # Perception
+    # Need perception to produce "observation" for planner/controller
+    perception_node = GenericProcessingNode(
+        "Perception",
+        BasicPerceptionProcessor(),
+        NodeIO(inputs=["vehicle_state"], output="observation"),
+        rate_hz=10.0,
+    )
+
+    # Planning
+    planning_node = GenericProcessingNode(
+        "Planning",
+        PlannerAdapter(mock_planner),
+        NodeIO(inputs=["vehicle_state", "observation"], output="trajectory"),
+        rate_hz=10.0,
+    )
+
+    # Control
+    control_node = GenericProcessingNode(
+        "Control",
+        ControllerAdapter(mock_controller),
+        NodeIO(inputs=["trajectory", "vehicle_state", "observation"], output="action"),
+        rate_hz=10.0,
+    )
+
+    nodes = [physics_node, sensor_node, perception_node, planning_node, control_node]
     executor = SingleProcessExecutor(nodes, context)
 
     # Run one step
@@ -92,9 +137,12 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     mock_simulator.step.assert_called()
     assert context.sim_state is not None
 
-    # Sensor should have updated vehicle_state & observation
+    # Sensor should have updated vehicle_state
     assert context.vehicle_state is not None
+
+    # Perception should have updated observation
     assert context.observation is not None
+    assert isinstance(context.observation, Observation)
 
     # Planning should have produced trajectory
     mock_planner.plan.assert_called()

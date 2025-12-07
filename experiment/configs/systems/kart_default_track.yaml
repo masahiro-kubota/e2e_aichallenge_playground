@@ -12,11 +12,15 @@ system:
     config_path: "experiment/configs/scenes/default_scene.yaml"
     use_case: "time_attack"
 
-  simulator_overrides:
+  simulator:
+    type: "KinematicSimulator"
     params:
       dt: 0.1
       initial_state:
-        from_track: true
+        x: 0.0
+        y: 0.0
+        yaw: 0.0
+        velocity: 0.0
 
   runtime:
     mode: "singleprocess"
