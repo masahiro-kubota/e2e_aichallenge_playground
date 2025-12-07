@@ -1,32 +1,7 @@
-"""Metrics calculator for simulation evaluation."""
-
-from dataclasses import asdict, dataclass
-
 import numpy as np
 
 from core.data import SimulationLog, Trajectory
-
-
-@dataclass
-class SimulationMetrics:
-    """Standard metrics for simulation evaluation."""
-
-    lap_time_sec: float
-    collision_count: int
-    lane_departure_rate: float
-    avg_lateral_accel: float
-    max_lateral_accel: float
-    comfort_score: float
-    success: int
-
-    # Additional metrics
-    avg_lateral_error: float
-    max_lateral_error: float
-    avg_velocity: float
-
-    def to_dict(self) -> dict[str, float | int]:
-        """Convert to dictionary for MLflow."""
-        return asdict(self)
+from core.data.experiment import EvaluationMetrics
 
 
 class MetricsCalculator:
@@ -44,7 +19,7 @@ class MetricsCalculator:
         self.reference_trajectory = reference_trajectory
         self.wheelbase = wheelbase
 
-    def calculate(self, log: SimulationLog) -> SimulationMetrics:
+    def calculate(self, log: SimulationLog) -> EvaluationMetrics:
         """Calculate all metrics from log.
 
         Args:
@@ -88,7 +63,7 @@ class MetricsCalculator:
         collision_count = 0
         lane_departure_rate = self._calculate_lane_departure_rate(log)
 
-        return SimulationMetrics(
+        return EvaluationMetrics(
             lap_time_sec=lap_time_sec,
             collision_count=collision_count,
             lane_departure_rate=lane_departure_rate,

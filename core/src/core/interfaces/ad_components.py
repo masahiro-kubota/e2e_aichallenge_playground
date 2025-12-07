@@ -3,15 +3,50 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from core.data import Action, Observation, VehicleState
+from core.data import Action, Observation, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory
 from core.data.ad_components.sensing import Sensing
 
 
 class ADComponent(ABC):
-    """自動運転コンポーネントのインターフェース."""
+    """自動運転コンポーネントの統合インターフェース.
+
+    PlannerとControllerを内部で管理し、統合的な実行を提供する。
+    """
+
+    def __init__(self, vehicle_params: VehicleParameters, **kwargs: Any) -> None:
+        """初期化.
+
+        Args:
+            vehicle_params: 車両パラメータ
+            **kwargs: コンポーネント固有のパラメータ
+        """
+        self.vehicle_params = vehicle_params
+        self.planner = self._create_planner(**kwargs)
+        self.controller = self._create_controller(**kwargs)
 
     @abstractmethod
+    def _create_planner(self, **kwargs: Any) -> "Planner":
+        """Plannerを作成（サブクラスで実装）.
+
+        Args:
+            **kwargs: Planner固有のパラメータ
+
+        Returns:
+            Planner: 作成されたPlanner
+        """
+
+    @abstractmethod
+    def _create_controller(self, **kwargs: Any) -> "Controller":
+        """Controllerを作成（サブクラスで実装）.
+
+        Args:
+            **kwargs: Controller固有のパラメータ
+
+        Returns:
+            Controller: 作成されたController
+        """
+
     def run(self, sensing: Sensing) -> Action:
         """コンポーネントを実行して制御指令を生成する.
 
@@ -21,6 +56,21 @@ class ADComponent(ABC):
         Returns:
             Action: 制御指令
         """
+        # 1. 認識 (現在は未実装、将来の拡張用)
+        observation = Observation()
+
+        # 2. 計画
+        trajectory = self.planner.plan(observation, sensing.vehicle_state)
+
+        # 3. 制御
+        action = self.controller.control(trajectory, sensing.vehicle_state, observation)
+
+        return action
+
+    def reset(self) -> None:
+        """コンポーネントをリセット."""
+        self.planner.reset()
+        self.controller.reset()
 
 
 class Perception(ABC):

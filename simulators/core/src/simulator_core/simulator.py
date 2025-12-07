@@ -15,6 +15,8 @@ from core.interfaces import Simulator
 from simulator_core.data import SimulationVehicleState
 
 if TYPE_CHECKING:
+    from shapely.geometry import Polygon
+
     from core.data import ADComponentLog, Trajectory
     from core.interfaces import Controller, Planner
 
@@ -46,8 +48,6 @@ class BaseSimulator(Simulator, ABC):
         elif isinstance(vehicle_params, dict):
             vehicle_params = VehicleParameters(**vehicle_params)
 
-        self.vehicle_params = vehicle_params
-        self.dt = dt
         self.vehicle_params = vehicle_params
         self.dt = dt
 
@@ -100,8 +100,21 @@ class BaseSimulator(Simulator, ABC):
         vehicle_state = self._current_state.to_vehicle_state(action)
 
         # 3. Map validation (if map is loaded)
-        if self.map is not None and not self.map.is_drivable(vehicle_state.x, vehicle_state.y):
-            vehicle_state.off_track = True
+        if self.map is not None:
+            # Check if vehicle polygon is within drivable area
+            # If implementation of _get_vehicle_polygon is missing (e.g. older subclasses),
+            # fallback to point check or error?
+            # Since we control subclasses, we assume implementation.
+            # But for safety, we can wrap try-excerpt? No, let's enforce it.
+
+            try:
+                poly = self._get_vehicle_polygon(vehicle_state)
+                if not self.map.is_drivable_polygon(poly):
+                    vehicle_state.off_track = True
+            except NotImplementedError:
+                # Fallback to point check if not implemented
+                if not self.map.is_drivable(vehicle_state.x, vehicle_state.y):
+                    vehicle_state.off_track = True
 
         # 4. Logging
         step_log = SimulationStep(
@@ -276,3 +289,66 @@ class BaseSimulator(Simulator, ABC):
         # Use time threshold to avoid early goal detection
         elapsed_time = step * self.dt
         return dist_to_end < goal_threshold and elapsed_time > min_elapsed_time
+
+    def _get_vehicle_polygon(self, state: VehicleState) -> "Polygon":
+        """車両のポリゴンを取得（サブクラスで実装）.
+
+        Args:
+            state: 車両状態
+
+        Returns:
+            Polygon: 車両のポリゴン
+        """
+        raise NotImplementedError("Subclasses must implement _get_vehicle_polygon")
+
+    def _create_vehicle_polygon(
+        self,
+        x: float,
+        y: float,
+        yaw: float,
+        front_edge_dist: float,
+        rear_edge_dist: float,
+        half_width: float,
+    ) -> "Polygon":
+        """車両パラメータからポリゴンを生成するヘルパー関数.
+
+        Args:
+            x: 基準点X座標
+            y: 基準点Y座標
+            yaw: ヨー角
+            front_edge_dist: 基準点からフロントバンパーまでの距離（正）
+            rear_edge_dist: 基準点からリアバンパーまでの距離（負）
+            half_width: 車幅の半分
+
+        Returns:
+            Polygon: 回転・平行移動したポリゴン
+        """
+        import math
+
+        from shapely.geometry import Polygon
+
+        # Vehicle frame coordinates (x forward, y left)
+        # p1: Front Left
+        # p2: Front Right
+        # p3: Rear Right
+        # p4: Rear Left
+
+        p1 = (front_edge_dist, half_width)
+        p2 = (front_edge_dist, -half_width)
+        p3 = (rear_edge_dist, -half_width)
+        p4 = (rear_edge_dist, half_width)
+
+        cos_yaw = math.cos(yaw)
+        sin_yaw = math.sin(yaw)
+
+        points = []
+        for px, py in [p1, p2, p3, p4]:
+            # Rotate
+            rx = px * cos_yaw - py * sin_yaw
+            ry = px * sin_yaw + py * cos_yaw
+            # Translate
+            tx = rx + x
+            ty = ry + y
+            points.append((tx, ty))
+
+        return Polygon(points)

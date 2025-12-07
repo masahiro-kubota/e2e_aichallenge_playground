@@ -139,6 +139,9 @@ class DashboardConfig(BaseModel):
 class LoggingConfig(BaseModel):
     """Configuration for logging."""
 
+    inputs: list[str] = Field(
+        default_factory=list, description="List of input files to log as artifacts"
+    )
     mlflow: MLflowConfig = Field(default_factory=MLflowConfig)
     mcap: MCAPConfig = Field(default_factory=MCAPConfig)
     dashboard: DashboardConfig = Field(default_factory=DashboardConfig)
@@ -155,9 +158,7 @@ class ExperimentMetadata(BaseModel):
 class ComponentsConfig(BaseModel):
     """Configuration for all components."""
 
-    perception: ComponentConfig | None = Field(None, description="Perception component config")
-    planning: ComponentConfig = Field(..., description="Planning component config")
-    control: ComponentConfig = Field(..., description="Control component config")
+    ad_component: ComponentConfig = Field(..., description="AD component config")
 
 
 class ModelCheckpointConfig(BaseModel):

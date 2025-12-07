@@ -15,6 +15,7 @@ from core.utils.geometry import (
     normalize_angle,
     rotate_point,
 )
+from core.utils.paths import get_project_root
 from core.utils.transforms import (
     global_to_local,
     local_to_global,
@@ -29,14 +30,12 @@ __all__ = [
     "curvature_from_points",
     "distance",
     "get_nested_value",
-    # transforms
+    "get_project_root",
     "global_to_local",
-    # config
     "load_yaml",
     "local_to_global",
     "merge_configs",
     "nearest_point_on_line",
-    # geometry
     "normalize_angle",
     "rotate_point",
     "rotation_matrix_2d",

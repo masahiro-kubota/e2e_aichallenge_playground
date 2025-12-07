@@ -2,4 +2,6 @@
 
 from core.data import Observation
 
-__all__ = ["Observation"]
+from .generic_ad_component import GenericADComponent
+
+__all__ = ["GenericADComponent", "Observation"]

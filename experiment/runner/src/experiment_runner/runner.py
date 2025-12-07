@@ -7,11 +7,15 @@ from pathlib import Path
 from typing import Any
 
 import mlflow
-from core.data import VehicleState
-from core.interfaces import Controller, Planner, Simulator
+from core.data import VehicleParameters, VehicleState
+from core.data.experiment import Artifact, ExperimentResult
+from core.data.simulation import SimulationLog
+from core.interfaces import ADComponent, Simulator
+from core.utils import get_project_root
 from experiment_runner.config import ExperimentConfig, ExperimentType
-from experiment_runner.logging import MCAPLogger
-from experiment_runner.metrics import MetricsCalculator
+from experiment_runner.mcap_logger import MCAPLogger
+from experiment_runner.metrics import EvaluationMetrics, MetricsCalculator
+from experiment_runner.mlflow_logger import MLflowExperimentLogger
 
 
 class ExperimentRunner:
@@ -27,15 +31,25 @@ class ExperimentRunner:
         self.config = config
         self.config_path = Path(config_path) if config_path else None
         self.simulator: Simulator | None = None
-        self.planner: Planner | None = None
-        self.controller: Controller | None = None
+        self.vehicle_params: VehicleParameters | None = None
+        self.ad_component: ADComponent | None = None
+        self.logger = MLflowExperimentLogger(
+            tracking_uri=self.config.logging.mlflow.tracking_uri,
+            experiment_name=self.config.experiment.name,
+        )
 
-    def _instantiate_component(self, component_type: str, params: dict[str, Any]) -> Any:
+    def _instantiate_component(
+        self,
+        component_type: str,
+        params: dict[str, Any],
+        vehicle_params: VehicleParameters | None = None,
+    ) -> Any:
         """Dynamically instantiate a component.
 
         Args:
             component_type: Component type in "module.ClassName" format
             params: Component parameters
+            vehicle_params: Vehicle parameters to inject if provided
 
         Returns:
             Instantiated component
@@ -47,9 +61,13 @@ class ExperimentRunner:
         for key, value in params.items():
             if key in path_keys and isinstance(value, str):
                 # User specified custom path
-                resolved_params[key] = self.workspace_root / value
+                resolved_params[key] = get_project_root() / value
             else:
                 resolved_params[key] = value
+
+        # Inject vehicle_params if provided
+        if vehicle_params is not None:
+            resolved_params["vehicle_params"] = vehicle_params
 
         try:
             module_name, class_name = component_type.rsplit(".", 1)
@@ -61,59 +79,46 @@ class ExperimentRunner:
 
         module = importlib.import_module(module_name)
         cls = getattr(module, class_name)
+
         return cls(**resolved_params)
 
     def _setup_components(self) -> None:
         """Set up all components based on configuration."""
-        # Planning
-        planning_type = self.config.components.planning.type
-        planning_params = self.config.components.planning.params.copy()
+        from core.data import VehicleParameters
 
-        # Handle track_path specially for PurePursuitPlanner
-        track_path = None
-        if "track_path" in planning_params:
-            # User specified custom track path
-            workspace_root = Path(__file__).parent.parent.parent.parent.parent
-            track_path = workspace_root / planning_params.pop("track_path")
-        elif "PurePursuitPlanner" in planning_type:
-            # Use default track from component directory
-            # __file__ is in src/experiment_runner/runner.py
-            # Go to components_packages/planning/pure_pursuit/src/pure_pursuit/data/tracks/
-            components_root = Path(__file__).parent.parent.parent.parent.parent / "ad_components"
-            default_track = (
-                components_root
-                / "planning/pure_pursuit/src/pure_pursuit/data/tracks"
-                / "raceline_awsim_15km.csv"
-            )
-            if default_track.exists():
-                track_path = default_track
-
-        self.planner = self._instantiate_component(planning_type, planning_params)
-
-        # Load track if specified and store for artifact logging
-        self.track_path = None
-        if track_path is not None:
-            # Dynamically import load_track_csv to avoid hard dependency
-            from planning_utils import load_track_csv
-
-            track = load_track_csv(track_path)
-            self.planner.set_reference_trajectory(track)  # type: ignore
-            self.track_path = track_path  # Store for artifact logging
-
-        # Control
-        control_type = self.config.components.control.type
-        control_params = self.config.components.control.params
-
-        self.controller = self._instantiate_component(control_type, control_params)
-
-        # Simulator
-        sim_type = self.config.simulator.type
+        workspace_root = get_project_root()
         sim_params = self.config.simulator.params.copy()
+
+        # 1. Load Vehicle Parameters
+        if "vehicle_config" in sim_params:
+            config_path = sim_params.pop("vehicle_config")
+            full_path = workspace_root / config_path
+
+            if not full_path.exists():
+                raise FileNotFoundError(f"Vehicle config not found: {full_path}")
+
+            self.vehicle_params = VehicleParameters.from_yaml(full_path)
+            sim_params["vehicle_params"] = self.vehicle_params
+        else:
+            self.vehicle_params = VehicleParameters()
+            if "vehicle_params" not in sim_params:
+                sim_params["vehicle_params"] = self.vehicle_params
+
+        # 2. Setup ADComponent
+        ad_component_type = self.config.components.ad_component.type
+        ad_component_params = self.config.components.ad_component.params.copy()
+
+        # Instantiate ADComponent with vehicle_params
+        ad_component_params["vehicle_params"] = self.vehicle_params
+        self.ad_component = self._instantiate_component(ad_component_type, ad_component_params)
+
+        # 3. Setup Simulator
+        sim_type = self.config.simulator.type
 
         # Handle initial_state from track if specified
         if sim_params.get("initial_state", {}).get("from_track"):
-            if hasattr(self.planner, "reference_trajectory"):
-                track = self.planner.reference_trajectory  # type: ignore
+            if hasattr(self.ad_component.planner, "reference_trajectory"):
+                track = self.ad_component.planner.reference_trajectory  # type: ignore
                 sim_params["initial_state"] = VehicleState(
                     x=track[0].x,
                     y=track[0].y,
@@ -124,53 +129,17 @@ class ExperimentRunner:
             else:
                 raise ValueError("Planner does not have reference_trajectory")
 
-        # Handle vehicle configuration
-        if "vehicle_config" in sim_params:
-            from core.data import VehicleParameters
-
-            config_path = sim_params.pop("vehicle_config")
-            # Resolve path relative to workspace root
-            workspace_root = Path(__file__).parent.parent.parent.parent.parent
-            full_path = workspace_root / config_path
-
-            if not full_path.exists():
-                raise FileNotFoundError(f"Vehicle config not found: {full_path}")
-
-            sim_params["vehicle_params"] = VehicleParameters.from_yaml(full_path)
-
         if "scene_config" in sim_params:
             sim_params.pop("scene_config")
 
-        # Pass map_path if available (either from config or default)
+        # Pass map_path if available
         if "map_path" in sim_params:
-            # Already in params, resolve path
             config_path = sim_params.pop("map_path")
-            workspace_root = Path(__file__).parent.parent.parent.parent.parent
             sim_params["map_path"] = str(workspace_root / config_path)
-        elif self.track_path is not None:
-            # Fallback: try to infer from track path if possible, but lanelet map is different from CSV track
-            # For now, we rely on explicit map_path in config
-            pass
 
-        self.simulator = self._instantiate_component(sim_type, sim_params)
-
-    def _setup_mlflow(self) -> None:
-        """Set up MLflow tracking."""
-        # Skip MLflow in CI environments
-        if os.getenv("CI"):
-            print("CI environment detected - skipping MLflow setup")
-            return
-
-        if not self.config.logging.mlflow.enabled:
-            return
-
-        mlflow_uri = self.config.logging.mlflow.tracking_uri
-        os.environ["AWS_ACCESS_KEY_ID"] = "minioadmin"
-        os.environ["AWS_SECRET_ACCESS_KEY"] = "minioadmin"
-        os.environ["MLFLOW_S3_ENDPOINT_URL"] = "http://localhost:9000"
-
-        mlflow.set_tracking_uri(mlflow_uri)
-        mlflow.set_experiment(self.config.experiment.name)
+        self.simulator = self._instantiate_component(
+            sim_type, sim_params, vehicle_params=self.vehicle_params
+        )
 
     def run(self) -> None:
         """Run the experiment."""
@@ -178,182 +147,208 @@ class ExperimentRunner:
 
         if exp_type == ExperimentType.DATA_COLLECTION:
             self._setup_components()
-            self._setup_mlflow()
             self._run_data_collection()
         elif exp_type == ExperimentType.TRAINING:
-            self._setup_mlflow()
             self._run_training()
         elif exp_type == ExperimentType.EVALUATION:
             self._setup_components()
-            self._setup_mlflow()
             self._run_evaluation()
         else:
             raise ValueError(f"Unknown experiment type: {exp_type}")
 
+    def log_result(self, result: ExperimentResult) -> None:
+        """実験結果をログに記録する.
+
+        Args:
+            result: 記録する実験結果
+        """
+        self.logger.log_result(result)
+
     def _run_evaluation(self) -> None:
         """Run evaluation mode."""
         assert self.simulator is not None
-        assert self.planner is not None
-        assert self.controller is not None
+        assert self.ad_component is not None
+        assert self.ad_component.planner is not None
+        assert self.ad_component.controller is not None
 
         # Check if running in CI environment
         is_ci = bool(os.getenv("CI"))
 
         # Get reference trajectory for metrics
-        if hasattr(self.planner, "reference_trajectory"):
-            reference_trajectory = self.planner.reference_trajectory  # type: ignore
+        if hasattr(self.ad_component.planner, "reference_trajectory"):
+            reference_trajectory = self.ad_component.planner.reference_trajectory  # type: ignore
         else:
             reference_trajectory = None
 
-        # Context manager for MLflow (no-op in CI)
         if is_ci:
             # Use a dummy context manager in CI
             from contextlib import nullcontext
 
             mlflow_context = nullcontext()
-            params = {}  # Empty params for CI
         else:
             mlflow_context = mlflow.start_run()
 
         with mlflow_context:
-            # Log parameters (skip in CI)
-            if not is_ci:
-                params = {
-                    "planner": self.config.components.planning.type,
-                    "controller": self.config.components.control.type,
-                    **self.config.components.planning.params,
-                    **self.config.components.control.params,
-                }
-                mlflow.log_params(params)
-
-                # Log input data files as artifacts for reproducibility
-                if self.track_path is not None:
-                    mlflow.log_artifact(str(self.track_path), artifact_path="input_data")
+            result_artifacts = self._collect_input_artifacts()
 
             # Initialize metadata
             from datetime import datetime
 
-            params["execution_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            result_params = {
+                "ad_component": self.config.components.ad_component.type,
+                **self.config.components.ad_component.params,
+                "execution_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+
             mcap_path = Path(self.config.logging.mcap.output_dir) / "simulation.mcap"
 
             print("Starting simulation...")
             start_time = time.time()
 
-            # Run simulation using simulator.run()
+            # Run simulation
             max_steps = (
                 self.config.execution.max_steps_per_episode if self.config.execution else 2000
             )
-            result = self.simulator.run(
-                planner=self.planner,
-                controller=self.controller,
+            sim_result = self.simulator.run(
+                planner=self.ad_component.planner,
+                controller=self.ad_component.controller,
                 max_steps=max_steps,
                 reference_trajectory=reference_trajectory,
             )
 
             end_time = time.time()
             print(f"Simulation finished in {end_time - start_time:.2f}s")
-            print(f"Result: {result.reason} (success={result.success})")
+            print(f"Result: {sim_result.reason} (success={sim_result.success})")
 
-            # Get log from result
-            log = result.log
-            log.metadata = params
+            # Add metadata to log
+            sim_result.log.metadata = result_params
 
-            # Log to MCAP
-            with MCAPLogger(mcap_path) as mcap_logger:
-                for step in log.steps:
-                    mcap_logger.log_step(step)
+            # Save MCAP
+            self._save_mcap(sim_result.log, mcap_path)
+            if self.config.logging.mcap.enabled and mcap_path.exists():
+                result_artifacts.append(Artifact(local_path=mcap_path))
 
             # Calculate metrics
+            result_metrics = None
             if reference_trajectory is not None:
-                print("Calculating metrics...")
-                calculator = MetricsCalculator(reference_trajectory=reference_trajectory)
-                metrics = calculator.calculate(log)
-
-                # Override success metric with SimulationResult.success
-                metrics.success = 1 if result.success else 0
-
-                if not is_ci:
-                    mlflow.log_metrics(metrics.to_dict())
-
-                print("\nMetrics:")
-                for key, value in metrics.to_dict().items():
-                    print(f"  {key}: {value}")
-
-            # Upload MCAP (skip in CI)
-            if self.config.logging.mcap.enabled and not is_ci:
-                print("Uploading MCAP file...")
-                mlflow.log_artifact(str(mcap_path))
+                _, metrics_obj = self._calculate_metrics(
+                    sim_result.log, sim_result.success, reference_trajectory
+                )
+                result_metrics = metrics_obj
 
             # Generate dashboard
-            dashboard_path = None
-            if self.config.logging.dashboard.enabled:
-                print("Generating interactive dashboard...")
-                dashboard_path = Path("/tmp/dashboard.html")
+            dashboard_artifact = self._generate_dashboard(sim_result.log, is_ci)
+            if dashboard_artifact:
+                result_artifacts.append(dashboard_artifact)
 
-                # Use dashboard package
-                from dashboard import HTMLDashboardGenerator
+            # Create ExperimentResult
+            from core.data.experiment import ExperimentResult
 
-                # Find OSM file in dashboard assets
-                workspace_root = Path(__file__).parent.parent.parent.parent.parent
-                osm_path = workspace_root / "dashboard" / "assets" / "lanelet2_map.osm"
-                if not osm_path.exists():
-                    osm_path = None
-                    print(
-                        "Warning: lanelet2_map.osm not found in dashboard/assets, "
-                        "dashboard will not include map data"
-                    )
+            experiment_result = ExperimentResult(
+                experiment_name=self.config.experiment.name,
+                experiment_type=self.config.experiment.type.value,
+                execution_time=datetime.now(),
+                simulation_results=[sim_result],
+                config=self.config,
+                params=result_params,
+                metrics=result_metrics,
+                artifacts=result_artifacts,
+            )
 
-                generator = HTMLDashboardGenerator()
-                generator.generate(log, dashboard_path, osm_path)
-                if not is_ci:
-                    mlflow.log_artifact(str(dashboard_path))
-                else:
-                    # In CI, save simulation log as JSON for dashboard injection
-                    ci_log_path = Path("simulation_log.json")
-                    log.save(ci_log_path)
-                    print(f"Simulation log saved to {ci_log_path} for CI dashboard injection")
-
-                    # Also save dashboard to persistent location for artifact upload
-                    ci_dashboard_path = Path("dashboard.html")
-                    if dashboard_path.exists():
-                        import shutil
-
-                        shutil.copy(dashboard_path, ci_dashboard_path)
-                        print(f"Dashboard saved to {ci_dashboard_path} for CI artifact upload")
+            # Log Consolidated Result
+            self.log_result(experiment_result)
 
             # Clean up
             if mcap_path.exists():
                 mcap_path.unlink()
-            if dashboard_path and dashboard_path.exists() and not is_ci:
-                dashboard_path.unlink()
 
-            # Print MLflow links (skip in CI)
-            if not is_ci:
-                run_info = mlflow.active_run().info  # type: ignore
-                run_id = run_info.run_id
-                experiment_id = run_info.experiment_id
+    def _collect_input_artifacts(self) -> list[Artifact]:
+        """Collect input artifacts from configuration."""
+        artifacts: list[Artifact] = []
+        for input_path in self.config.logging.inputs:
+            full_path = get_project_root() / input_path
+            if full_path.exists():
+                artifacts.append(Artifact(local_path=full_path, remote_path="input_data"))
+            else:
+                print(f"Warning: Input file not found: {full_path}")
+        return artifacts
 
-                print(f"\n{'='*70}")
-                print("MLflow Tracking")
-                print(f"{'='*70}")
-                print(f"Run ID: {run_id}")
-                print(f"Experiment: {self.config.experiment.name}")
-                print("\nView this run:")
-                print(
-                    f"  {self.config.logging.mlflow.tracking_uri}/#/experiments/{experiment_id}/runs/{run_id}"
-                )
-                print("\nView artifacts (dashboard, MCAP):")
-                print(
-                    f"  {self.config.logging.mlflow.tracking_uri}/#/experiments/{experiment_id}/runs/{run_id}/artifacts"
-                )
-                print("\nView all runs in this experiment:")
-                print(f"  {self.config.logging.mlflow.tracking_uri}/#/experiments/{experiment_id}")
-                print(f"{'='*70}\n")
+    def _save_mcap(self, log: SimulationLog, output_path: Path) -> None:
+        """Save simulation log to MCAP."""
+        with MCAPLogger(output_path) as mcap_logger:
+            for step in log.steps:
+                mcap_logger.log_step(step)
+
+    def _calculate_metrics(
+        self, log: SimulationLog, success: bool, reference_trajectory: Any
+    ) -> tuple[dict[str, float], EvaluationMetrics]:
+        """Calculate simulation metrics."""
+        print("Calculating metrics...")
+        calculator = MetricsCalculator(reference_trajectory=reference_trajectory)
+        metrics = calculator.calculate(log)
+
+        # Override success metric with SimulationResult.success
+        metrics.success = 1 if success else 0
+
+        result_metrics = metrics.to_dict()
+
+        print("\nMetrics:")
+        for key, value in result_metrics.items():
+            print(f"  {key}: {value}")
+
+        return result_metrics, metrics
+
+    def _generate_dashboard(self, log: SimulationLog, is_ci: bool) -> Artifact | None:
+        """Generate interactive dashboard."""
+        if not self.config.logging.dashboard.enabled:
+            return None
+
+        print("Generating interactive dashboard...")
+        dashboard_path = Path("/tmp/dashboard.html")
+
+        # Use dashboard package
+        from dashboard import HTMLDashboardGenerator
+
+        # Find OSM file in dashboard assets
+        workspace_root = get_project_root()
+        osm_path = workspace_root / "dashboard" / "assets" / "lanelet2_map.osm"
+        if not osm_path.exists():
+            osm_path = None
+            print(
+                "Warning: lanelet2_map.osm not found in dashboard/assets, "
+                "dashboard will not include map data"
+            )
+
+        generator = HTMLDashboardGenerator()
+        generator.generate(log, dashboard_path, osm_path)
+
+        artifact = None
+        if dashboard_path.exists():
+            artifact = Artifact(local_path=dashboard_path)
+
+        if is_ci:
+            # In CI, save simulation log as JSON for dashboard injection
+            ci_log_path = Path("simulation_log.json")
+            log.save(ci_log_path)
+            print(f"Simulation log saved to {ci_log_path} for CI dashboard injection")
+
+            # Also save dashboard to persistent location for artifact upload
+            ci_dashboard_path = Path("dashboard.html")
+            if dashboard_path.exists():
+                import shutil
+
+                shutil.copy(dashboard_path, ci_dashboard_path)
+                print(f"Dashboard saved to {ci_dashboard_path} for CI artifact upload")
+
+        # Cleanup is handled by caller or assumed temporary
+        # Note: Caller cleans up dashboard_path if not CI.
+        # But here we return artifact pointing to it.
+        # The artifact logging happens BEFORE cleanup in caller.
+        return artifact
 
     def _run_data_collection(self) -> None:
         """Run data collection mode."""
         assert self.simulator is not None
-        assert self.planner is not None
         assert self.controller is not None
         assert self.config.data_collection is not None
         assert self.config.execution is not None
@@ -404,8 +399,8 @@ class ExperimentRunner:
 
                 # Run episode using simulator.run()
                 result = self.simulator.run(
-                    planner=self.planner,
-                    controller=self.controller,
+                    planner=self.ad_component.planner,
+                    controller=self.ad_component.controller,
                     max_steps=self.config.execution.max_steps_per_episode,
                     reference_trajectory=reference_trajectory,
                 )
@@ -576,7 +571,7 @@ class ExperimentRunner:
 
                 from planning_utils import load_track_csv
 
-                workspace_root = Path(__file__).parent.parent.parent.parent.parent
+                workspace_root = get_project_root()
                 ref_traj_path = workspace_root / self.config.training.reference_trajectory_path
                 reference_trajectory = load_track_csv(ref_traj_path)
 

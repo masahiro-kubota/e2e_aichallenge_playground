@@ -29,8 +29,8 @@ def test_pure_pursuit_experiment() -> None:
 
     # Verify configuration
     assert config.experiment.name == "pure_pursuit_tracking"
-    assert config.components.planning.type == "pure_pursuit.PurePursuitPlanner"
-    assert config.components.control.type == "pid_controller.PIDController"
+    assert config.components.ad_component.type == "ad_component_core.GenericADComponent"
+    assert config.components.ad_component.params["planner_package"] == "pure-pursuit"
     assert config.execution.max_steps_per_episode == 2000
 
     # Run experiment
@@ -83,10 +83,8 @@ def test_pure_pursuit_experiment_new_config() -> None:
         assert latest_run["metrics.lap_time_sec"] > 0, "Lap time should be positive"
 
         # Verify parameters were logged
-        assert "params.planner" in latest_run, "Planner parameter should be logged"
-        assert latest_run["params.planner"] == "pure_pursuit.PurePursuitPlanner"
-        assert "params.controller" in latest_run, "Controller parameter should be logged"
-        assert latest_run["params.controller"] == "pid_controller.PIDController"
+        assert "params.ad_component" in latest_run, "ADComponent parameter should be logged"
+        assert latest_run["params.ad_component"] == "ad_component_core.GenericADComponent"
 
         # Verify artifacts were uploaded
         run_id = latest_run["run_id"]
@@ -109,8 +107,10 @@ def test_config_loading() -> None:
 
     # Verify structure
     assert config.experiment.name == "pure_pursuit_tracking"
-    assert config.components.planning.params["lookahead_distance"] == 5.0
-    assert config.components.control.params["kp"] == 1.0
+    assert config.components.ad_component.type == "ad_component_core.GenericADComponent"
+    assert config.components.ad_component.params["planner_package"] == "pure-pursuit"
+    assert config.components.ad_component.params["lookahead_distance"] == 5.0
+    assert config.components.ad_component.params["kp"] == 1.0
     assert config.simulator.type == "simulator_kinematic.KinematicSimulator"
 
     assert config.logging.mlflow.enabled is True
@@ -147,19 +147,17 @@ def test_custom_track_loading(_setup_mlflow_env: None) -> None:
 
     try:
         # Modify to use custom track
-        config.components.planning.params["track_path"] = custom_track_path
+        config.components.ad_component.params["track_path"] = custom_track_path
 
         # Run experiment setup
         runner = ExperimentRunner(config)
         runner._setup_components()
 
-        # Verify track was loaded from custom path
-        assert runner.track_path is not None
-        assert str(runner.track_path).endswith(custom_track_path)
-        assert runner.planner is not None
+        # Verify track was loaded (via planner state)
+        assert runner.ad_component.planner is not None
         # Check if reference trajectory is set (implies track loaded successfully)
-        assert hasattr(runner.planner, "reference_trajectory")
-        assert len(runner.planner.reference_trajectory) > 0  # type: ignore
+        assert hasattr(runner.ad_component.planner, "reference_trajectory")
+        assert len(runner.ad_component.planner.reference_trajectory) > 0  # type: ignore
 
     finally:
         # Cleanup

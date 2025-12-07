@@ -69,12 +69,6 @@ repos:
         language: system
         pass_filenames: false
         files: ^ad_components/control/pid_controller/
-      - id: deptry-neural-controller
-        name: deptry (control/neural_controller)
-        entry: uv run --directory ad_components/control/neural_controller deptry .
-        language: system
-        pass_filenames: false
-        files: ^ad_components/control/neural_controller/
       - id: deptry-simulators-core
         name: deptry (simulators/core)
         entry: uv run --directory simulators/core deptry .

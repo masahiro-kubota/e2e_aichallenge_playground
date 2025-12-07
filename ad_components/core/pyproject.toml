@@ -43,3 +43,4 @@ pythonVersion = "3.12"
 typeCheckingMode = "strict"
 
 [tool.deptry.per_rule_ignores]
+DEP003 = ["pure_pursuit", "planning_utils", "ad_component_core"]

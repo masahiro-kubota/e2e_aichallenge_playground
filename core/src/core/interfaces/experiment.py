@@ -1,8 +1,8 @@
-"""Experiment Runner interface."""
+"""Experiment interfaces."""
 
 from abc import ABC, abstractmethod
 
-from core.data.experiment.result import ExperimentResult
+from core.data.experiment import ExperimentResult
 
 
 class ExperimentRunner(ABC):
@@ -14,4 +14,12 @@ class ExperimentRunner(ABC):
 
         Returns:
             ExperimentResult: 実験結果
+        """
+
+    @abstractmethod
+    def log_result(self, result: ExperimentResult) -> None:
+        """実験結果をログに記録する.
+
+        Args:
+            result: 記録する実験結果
         """

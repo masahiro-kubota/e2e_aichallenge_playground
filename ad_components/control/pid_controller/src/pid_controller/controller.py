@@ -4,7 +4,7 @@ import math
 
 from ad_component_core.data import Observation
 
-from core.data import Action, VehicleState
+from core.data import Action, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory
 from core.interfaces import Controller
 from core.utils.geometry import distance, normalize_angle
@@ -18,7 +18,7 @@ class PIDController(Controller):
         kp: float = 1.0,
         ki: float = 0.0,
         kd: float = 0.0,
-        wheelbase: float = 2.5,
+        vehicle_params: VehicleParameters | None = None,
     ) -> None:
         """Initialize PID controller.
 
@@ -26,12 +26,13 @@ class PIDController(Controller):
             kp: Proportional gain
             ki: Integral gain
             kd: Derivative gain
-            wheelbase: Vehicle wheelbase [m]
+            vehicle_params: Vehicle parameters
         """
         self.kp = kp
         self.ki = ki
         self.kd = kd
-        self.wheelbase = wheelbase
+        self.vehicle_params = vehicle_params or VehicleParameters()
+        self.wheelbase = self.vehicle_params.wheelbase
 
         self.integral_error = 0.0
         self.prev_error = 0.0

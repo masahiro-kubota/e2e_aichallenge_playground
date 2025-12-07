@@ -7,7 +7,7 @@ from core.interfaces.ad_components import (
     Planner,
 )
 from core.interfaces.dashboard import DashboardGenerator
-from core.interfaces.experiment_runner import ExperimentRunner
+from core.interfaces.experiment import ExperimentRunner
 from core.interfaces.simulator import Simulator
 
 __all__ = [

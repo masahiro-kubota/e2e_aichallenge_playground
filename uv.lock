@@ -9,7 +9,6 @@ members = [
     "e2e-aichallenge-playground",
     "experiment-runner",
     "experiment-training",
-    "neural-controller",
     "pid-controller",
     "planning-utils",
     "pure-pursuit",
@@ -629,7 +628,6 @@ dependencies = [
     { name = "deptry" },
     { name = "experiment-runner" },
     { name = "lark" },
-    { name = "neural-controller" },
     { name = "pid-controller" },
     { name = "planning-utils" },
     { name = "pre-commit" },
@@ -657,7 +655,6 @@ requires-dist = [
     { name = "deptry", specifier = ">=0.12.0" },
     { name = "experiment-runner", editable = "experiment/runner" },
     { name = "lark", specifier = ">=1.0.0" },
-    { name = "neural-controller", editable = "ad_components/control/neural_controller" },
     { name = "pid-controller", editable = "ad_components/control/pid_controller" },
     { name = "planning-utils", editable = "ad_components/planning/planning_utils" },
     { name = "pre-commit", specifier = ">=3.0.0" },
@@ -683,6 +680,7 @@ name = "experiment-runner"
 version = "0.1.0"
 source = { editable = "experiment/runner" }
 dependencies = [
+    { name = "ad-component-core" },
     { name = "boto3" },
     { name = "core" },
     { name = "dashboard" },
@@ -691,12 +689,16 @@ dependencies = [
     { name = "mcap-protobuf-support" },
     { name = "mlflow" },
     { name = "numpy" },
+    { name = "pid-controller" },
+    { name = "planning-utils" },
+    { name = "pure-pursuit" },
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "ad-component-core", editable = "ad_components/core" },
     { name = "boto3", specifier = ">=1.0.0" },
     { name = "core", editable = "core" },
     { name = "dashboard", editable = "dashboard" },
@@ -705,6 +707,9 @@ requires-dist = [
     { name = "mcap-protobuf-support", specifier = ">=0.5.0" },
     { name = "mlflow", specifier = ">=2.0.0" },
     { name = "numpy", specifier = ">=1.20.0" },
+    { name = "pid-controller", editable = "ad_components/control/pid_controller" },
+    { name = "planning-utils", editable = "ad_components/planning/planning_utils" },
+    { name = "pure-pursuit", editable = "ad_components/planning/pure_pursuit" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pyyaml", specifier = ">=6.0" },
 ]
@@ -716,7 +721,6 @@ source = { editable = "experiment/training" }
 dependencies = [
     { name = "core" },
     { name = "mlflow" },
-    { name = "neural-controller" },
     { name = "numpy" },
     { name = "torch" },
 ]
@@ -725,7 +729,6 @@ dependencies = [
 requires-dist = [
     { name = "core", editable = "core" },
     { name = "mlflow", specifier = ">=2.0.0" },
-    { name = "neural-controller", editable = "ad_components/control/neural_controller" },
     { name = "numpy", specifier = ">=1.20.0" },
     { name = "torch", specifier = ">=2.0.0" },
 ]
@@ -1496,25 +1499,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e8/fc/7b6fd4d22c8c4dc5704430140d8b3f520531d4fe7328b8f8d03f5a7950e8/networkx-3.6.tar.gz", hash = "sha256:285276002ad1f7f7da0f7b42f004bcba70d381e936559166363707fdad3d72ad", size = 2511464 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/c7/d64168da60332c17d24c0d2f08bdf3987e8d1ae9d84b5bbd0eec2eb26a55/networkx-3.6-py3-none-any.whl", hash = "sha256:cdb395b105806062473d3be36458d8f1459a4e4b98e236a66c3a48996e07684f", size = 2063713 },
-]
-
-[[package]]
-name = "neural-controller"
-version = "0.1.0"
-source = { editable = "ad_components/control/neural_controller" }
-dependencies = [
-    { name = "ad-component-core" },
-    { name = "core" },
-    { name = "numpy" },
-    { name = "torch" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "ad-component-core", editable = "ad_components/core" },
-    { name = "core", editable = "core" },
-    { name = "numpy", specifier = ">=1.26.0" },
-    { name = "torch", specifier = ">=2.2.0" },
 ]
 
 [[package]]

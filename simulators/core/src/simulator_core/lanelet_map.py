@@ -105,3 +105,17 @@ class LaneletMap:
 
         point = Point(x, y)
         return self.drivable_area.contains(point)
+
+    def is_drivable_polygon(self, polygon: Polygon) -> bool:
+        """Check if the polygon is within the drivable area.
+
+        Args:
+            polygon: Shapely Polygon to check
+
+        Returns:
+            True if fully within drivable area, False otherwise
+        """
+        if self.drivable_area is None:
+            return True
+
+        return self.drivable_area.contains(polygon)

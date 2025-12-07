@@ -4,14 +4,12 @@ experiment:
   description: "Evaluate Pure Pursuit planner with PID controller using new config format"
 
 components:
-  perception: null
-  planning:
-    type: "pure_pursuit.PurePursuitPlanner"
+  ad_component:
+    type: "ad_component_core.GenericADComponent"
     params:
+      planner_package: "pure-pursuit"
+      controller_package: "pid-controller"
       lookahead_distance: 5.0
-  control:
-    type: "pid_controller.PIDController"
-    params:
       kp: 1.0
       ki: 0.1
       kd: 0.05

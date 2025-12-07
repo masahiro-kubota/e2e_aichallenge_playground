@@ -1,10 +1,15 @@
 """Kinematic bicycle model simulator implementation."""
 
+from typing import TYPE_CHECKING
+
 from simulator_core.data import SimulationVehicleState
 from simulator_core.simulator import BaseSimulator
 
 from core.data import Action, VehicleParameters, VehicleState
 from simulator_kinematic.vehicle import KinematicVehicleModel
+
+if TYPE_CHECKING:
+    from shapely.geometry import Polygon
 
 
 class KinematicSimulator(BaseSimulator):
@@ -50,3 +55,24 @@ class KinematicSimulator(BaseSimulator):
         )
 
         return next_state
+
+    def _get_vehicle_polygon(self, state: VehicleState) -> "Polygon":
+        """車両のポリゴンを取得 (Kinematic: 後輪中心基準)."""
+
+        p = self.vehicle_params
+
+        # キネマティクスモデルは後輪中心が基準 (x, y)
+        # 前端: wheelbase + front_overhang
+        # 後端: -rear_overhang
+
+        front_edge = p.wheelbase + p.front_overhang
+        rear_edge = -p.rear_overhang
+
+        return self._create_vehicle_polygon(
+            x=state.x,
+            y=state.y,
+            yaw=state.yaw,
+            front_edge_dist=front_edge,
+            rear_edge_dist=rear_edge,
+            half_width=p.width / 2.0,
+        )

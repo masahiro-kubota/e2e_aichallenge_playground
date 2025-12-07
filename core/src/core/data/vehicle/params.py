@@ -48,6 +48,10 @@ class VehicleParameters:
     max_drive_force: float = 5000.0  # 最大駆動力 [N]
     max_brake_force: float = 8000.0  # 最大制動力 [N]
 
+    # 寸法詳細パラメータ (オプション、未指定時は length, wheelbase から推定)
+    front_overhang: float = 1.0  # フロントオーバーハング [m]
+    rear_overhang: float = 1.0  # リアオーバーハング [m]
+
     tire_params: dict[str, Any] = field(default_factory=dict)  # タイヤパラメータ(将来の拡張用)
 
     @classmethod
@@ -87,5 +91,7 @@ class VehicleParameters:
             "c_roll": self.c_roll,
             "max_drive_force": self.max_drive_force,
             "max_brake_force": self.max_brake_force,
+            "front_overhang": self.front_overhang,
+            "rear_overhang": self.rear_overhang,
             "tire_params": self.tire_params,
         }

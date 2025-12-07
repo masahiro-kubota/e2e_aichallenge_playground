@@ -2,7 +2,7 @@
 
 from ad_component_core.data import Observation
 
-from core.data import VehicleState
+from core.data import VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory, TrajectoryPoint
 from core.interfaces import Planner
 from core.utils.geometry import distance
@@ -11,13 +11,17 @@ from core.utils.geometry import distance
 class PurePursuitPlanner(Planner):
     """Pure Pursuit path tracking algorithm."""
 
-    def __init__(self, lookahead_distance: float = 5.0) -> None:
+    def __init__(
+        self, lookahead_distance: float = 5.0, vehicle_params: VehicleParameters | None = None
+    ) -> None:
         """Initialize Pure Pursuit planner.
 
         Args:
             lookahead_distance: Distance to look ahead for target point [m]
+            vehicle_params: Vehicle parameters (optional)
         """
         self.lookahead_distance = lookahead_distance
+        self.vehicle_params = vehicle_params or VehicleParameters()
         self.reference_trajectory: Trajectory | None = None
 
     def set_reference_trajectory(self, trajectory: Trajectory) -> None:

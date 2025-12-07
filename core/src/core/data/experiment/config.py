@@ -1,4 +1,4 @@
-"""Experiment configuration data structure."""
+"""Experiment configuration data structures."""
 
 from dataclasses import dataclass
 from enum import Enum

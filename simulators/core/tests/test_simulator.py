@@ -1,11 +1,15 @@
 """Tests for BaseSimulator."""
 
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 from simulator_core.data import SimulationVehicleState
 from simulator_core.simulator import BaseSimulator
 
 from core.data import Action, SimulationResult, VehicleParameters, VehicleState
+
+if TYPE_CHECKING:
+    from shapely.geometry import Polygon
 
 
 class MockSimulator(BaseSimulator):
@@ -38,6 +42,20 @@ class MockSimulator(BaseSimulator):
             steering=action.steering,
             throttle=current.throttle,
             timestamp=(current.timestamp or 0.0) + self.dt,
+        )
+
+    def _get_vehicle_polygon(self, state: VehicleState) -> "Polygon":
+        """Get vehicle polygon for testing."""
+        from shapely.geometry import Polygon
+
+        # Return a simple mock polygon centered at state
+        return Polygon(
+            [
+                (state.x - 1, state.y - 1),
+                (state.x + 1, state.y - 1),
+                (state.x + 1, state.y + 1),
+                (state.x - 1, state.y + 1),
+            ]
         )
 
 
