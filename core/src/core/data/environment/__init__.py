@@ -1,6 +1,6 @@
 """Environment data structures."""
 
 from core.data.environment.obstacle import Obstacle, ObstacleType
-from core.data.environment.scene import Scene, TrackBoundary
+from core.data.environment.scene import Scene
 
-__all__ = ["Obstacle", "ObstacleType", "Scene", "TrackBoundary"]
+__all__ = ["Obstacle", "ObstacleType", "Scene"]

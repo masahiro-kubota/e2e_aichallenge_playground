@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from core.data.simulation.log import SimulationLog
+from core.data.simulator.log import SimulationLog
 
 
 class SimulationLogRepository(ABC):

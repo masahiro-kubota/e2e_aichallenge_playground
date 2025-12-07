@@ -9,7 +9,7 @@ from typing import Any
 import mlflow
 from core.data import VehicleParameters, VehicleState
 from core.data.experiment import Artifact, ExperimentResult
-from core.data.simulation import SimulationLog
+from core.data.simulator import SimulationLog
 from core.interfaces import ADComponent, Simulator
 from core.utils import get_project_root
 from experiment_runner.config import ExperimentConfig, ExperimentType
@@ -91,13 +91,16 @@ class ExperimentRunner:
 
         # 1. Load Vehicle Parameters
         if "vehicle_config" in sim_params:
+            from experiment_runner.yaml_vehicle_repository import YamlVehicleParametersRepository
+
             config_path = sim_params.pop("vehicle_config")
             full_path = workspace_root / config_path
 
             if not full_path.exists():
                 raise FileNotFoundError(f"Vehicle config not found: {full_path}")
 
-            self.vehicle_params = VehicleParameters.from_yaml(full_path)
+            repository = YamlVehicleParametersRepository()
+            self.vehicle_params = repository.load(full_path)
             sim_params["vehicle_params"] = self.vehicle_params
         else:
             self.vehicle_params = VehicleParameters()

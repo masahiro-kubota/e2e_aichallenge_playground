@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from core.data.experiment.config import ExperimentConfig
-from core.data.simulation.result import SimulationResult
+from core.data.simulator.result import SimulationResult
 
 
 @dataclass

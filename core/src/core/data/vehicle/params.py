@@ -5,10 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-import yaml
-
 if TYPE_CHECKING:
-    from pathlib import Path
+    pass
 
 
 @dataclass
@@ -53,20 +51,6 @@ class VehicleParameters:
     rear_overhang: float = 1.0  # リアオーバーハング [m]
 
     tire_params: dict[str, Any] = field(default_factory=dict)  # タイヤパラメータ(将来の拡張用)
-
-    @classmethod
-    def from_yaml(cls, path: Path) -> VehicleParameters:
-        """YAMLファイルから車両パラメータを読み込む.
-
-        Args:
-            path: YAMLファイルのパス
-
-        Returns:
-            VehicleParameters: 車両パラメータ
-        """
-        with path.open() as f:
-            data = yaml.safe_load(f)
-        return cls(**data)
 
     def to_dict(self) -> dict[str, Any]:
         """辞書形式に変換.

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from core.data.ad_components.state import VehicleState
-from core.data.simulation.log import SimulationLog
+from core.data.simulator.log import SimulationLog
 
 
 @dataclass

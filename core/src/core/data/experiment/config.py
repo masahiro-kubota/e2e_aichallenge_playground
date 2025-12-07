@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from core.data.simulation.config import SimulationConfig
+from core.data.simulator.config import SimulationConfig
 
 
 class ExperimentType(Enum):

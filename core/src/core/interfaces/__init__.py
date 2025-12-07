@@ -10,6 +10,7 @@ from core.interfaces.dashboard import DashboardGenerator
 from core.interfaces.experiment import ExperimentRunner
 from core.interfaces.simulation import SimulationLogRepository
 from core.interfaces.simulator import Simulator
+from core.interfaces.vehicle import VehicleParametersRepository
 
 __all__ = [
     "ADComponent",
@@ -20,4 +21,5 @@ __all__ = [
     "Planner",
     "SimulationLogRepository",
     "Simulator",
+    "VehicleParametersRepository",
 ]
