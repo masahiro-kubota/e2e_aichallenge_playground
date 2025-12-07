@@ -172,6 +172,136 @@ graph TD
 
 ---
 
+## 🏗️ アーキテクチャ詳細
+
+### SingleProcessExecutor
+
+このプロジェクトでは、**SingleProcessExecutor**を使用してシミュレーションを実行します。これは、複数のノード（Physics、Sensor、Planning、Control）を単一プロセス内で協調動作させる実行エンジンです。
+
+#### Node Provider パターン
+
+ADComponent（自動運転コンポーネント）は**Node Provider**として機能し、実行可能なノードのリストを提供します：
+
+```python
+class ADComponent(ABC):
+    """自動運転コンポーネントの抽象基底クラス"""
+
+    @abstractmethod
+    def get_schedulable_nodes(self) -> list[Node]:
+        """実行可能なノードのリストを返す"""
+        pass
+```
+
+#### ノードの種類
+
+各ノードは特定の周波数で実行され、`SimulationContext`を通じてデータを共有します：
+
+| ノード | 役割 | 典型的な周波数 |
+|--------|------|----------------|
+| **PhysicsNode** | シミュレータの物理演算を実行 | 10-100 Hz |
+| **SensorNode** | センサーデータの取得・処理 | 10-50 Hz |
+| **PlanningNode** | 経路計画・軌道生成 | 5-10 Hz |
+| **ControlNode** | 車両制御コマンド生成 | 10-50 Hz |
+
+#### 実行フロー
+
+```mermaid
+sequenceDiagram
+    participant E as SingleProcessExecutor
+    participant P as PhysicsNode
+    participant S as SensorNode
+    participant PL as PlanningNode
+    participant C as ControlNode
+    participant Ctx as SimulationContext
+
+    loop Every dt (e.g., 0.01s)
+        E->>E: Check node schedules
+
+        alt Physics node ready
+            E->>P: on_run(context)
+            P->>Ctx: Update sim_state
+            P->>Ctx: Check termination
+        end
+
+        alt Sensor node ready
+            E->>S: on_run(context)
+            S->>Ctx: Update vehicle_state
+            S->>Ctx: Update observation
+        end
+
+        alt Planning node ready
+            E->>PL: on_run(context)
+            PL->>Ctx: Update trajectory
+        end
+
+        alt Control node ready
+            E->>C: on_run(context)
+            C->>Ctx: Update action
+        end
+    end
+```
+
+#### StandardADComponent
+
+`StandardADComponent`は、Planner、Controller、Sensorを組み合わせてノードを提供する標準実装です：
+
+```python
+class StandardADComponent(ADComponent):
+    def __init__(self, vehicle_params, **kwargs):
+        # 設定からplanner/controllerをインスタンス化
+        self.planner = self._create_planner(**kwargs)
+        self.controller = self._create_controller(**kwargs)
+
+        # ノードを作成
+        self.nodes = [
+            SensorNode(rate_hz=50.0),
+            PlanningNode(self.planner, rate_hz=10.0),
+            ControlNode(self.controller, rate_hz=30.0),
+        ]
+
+    def get_schedulable_nodes(self) -> list[Node]:
+        return self.nodes
+```
+
+#### 設定例
+
+```yaml
+# experiment/configs/modules/pure_pursuit_pid.yaml
+module:
+  name: "pure_pursuit_pid"
+  components:
+    ad_component:
+      type: "experiment_runner.ad_components.StandardADComponent"
+      params:
+        updates:
+          planning_hz: 10.0
+          control_hz: 30.0
+        planning:
+          type: "PurePursuitPlanner"
+          params:
+            lookahead_distance: 5.0
+        control:
+          type: "PIDController"
+          params:
+            kp: 1.0
+            ki: 0.1
+            kd: 0.05
+
+    simulator:
+      type: "KinematicSimulator"
+      params:
+        dt: 0.1
+```
+
+#### 利点
+
+1. **柔軟性**: 各ノードの実行周波数を独立して設定可能
+2. **モジュール性**: ノードの追加・削除が容易
+3. **デバッグ性**: 各ノードの動作を個別に検証可能
+4. **拡張性**: 新しいノードタイプ（例: Perception）を簡単に追加可能
+
+---
+
 ## 📖 開発フロー
 
 ### 基本的な実験実行
@@ -223,13 +353,14 @@ system: "experiment/configs/systems/kart_default_track.yaml"
 # 実験ごとの上書き設定
 overrides:
   components:
-    planning:
+    ad_component:
       params:
-        lookahead_distance: 7.5  # デフォルト値を上書き
-
-    control:
-      params:
-        kp: 1.2
+        planning:
+          params:
+            lookahead_distance: 7.5  # デフォルト値を上書き
+        control:
+          params:
+            kp: 1.2
 
   execution:
     num_episodes: 5

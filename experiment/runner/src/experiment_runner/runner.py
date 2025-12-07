@@ -201,9 +201,18 @@ class ExperimentRunner:
                 )
             else:
                 raise ValueError("ADComponent or its planner does not have reference_trajectory")
-            # Also set goal to the end of the track
-            sim_params["goal_x"] = track[-1].x
-            sim_params["goal_y"] = track[-1].y
+
+            # Only set goal if track is not a closed loop
+            first_point = track[0]
+            last_point = track[-1]
+            distance = (
+                (last_point.x - first_point.x) ** 2 + (last_point.y - first_point.y) ** 2
+            ) ** 0.5
+
+            if distance > 5.0:  # Not a closed loop (threshold: 5 meters)
+                sim_params["goal_x"] = last_point.x
+                sim_params["goal_y"] = last_point.y
+            # else: Don't set goal for closed loop tracks (will run until max_steps)
 
         if "scene_config" in sim_params:
             sim_params.pop("scene_config")
