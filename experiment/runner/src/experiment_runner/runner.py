@@ -3,6 +3,7 @@
 import importlib
 import os
 import time
+from importlib import metadata
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +13,7 @@ from core.data.experiment import Artifact, ExperimentResult
 from core.data.simulator import SimulationLog
 from core.interfaces import ADComponent, Simulator
 from core.utils import get_project_root
-from experiment_runner.config import ExperimentConfig, ExperimentType
+from experiment_runner.config import ExperimentType, ResolvedExperimentConfig
 from experiment_runner.mcap_logger import MCAPLogger
 from experiment_runner.metrics import EvaluationMetrics, MetricsCalculator
 from experiment_runner.mlflow_logger import MLflowExperimentLogger
@@ -21,7 +22,9 @@ from experiment_runner.mlflow_logger import MLflowExperimentLogger
 class ExperimentRunner:
     """Unified experiment runner."""
 
-    def __init__(self, config: ExperimentConfig, config_path: str | Path | None = None) -> None:
+    def __init__(
+        self, config: ResolvedExperimentConfig, config_path: str | Path | None = None
+    ) -> None:
         """Initialize experiment runner.
 
         Args:
@@ -54,6 +57,8 @@ class ExperimentRunner:
         Returns:
             Instantiated component
         """
+        import inspect
+
         # Resolve special parameters
         resolved_params = {}
         path_keys = {"track_path", "model_path", "scaler_path"}
@@ -62,25 +67,71 @@ class ExperimentRunner:
             if key in path_keys and isinstance(value, str):
                 # User specified custom path
                 resolved_params[key] = get_project_root() / value
+
+            # Recursive instantiation for sub-components (e.g. planner/controller in stack)
+            elif isinstance(value, dict) and "type" in value and "params" in value:
+                sub_type = value["type"]
+                sub_params = value["params"]
+                # Recursively instantiate, propagating vehicle_params
+                resolved_params[key] = self._instantiate_component(
+                    sub_type, sub_params, vehicle_params
+                )
             else:
                 resolved_params[key] = value
 
-        # Inject vehicle_params if provided
+        # Inject vehicle_params if provided -> logic moved to filtering below
+        # We hold it in a separate logical scope, but add to resolved_params for filtering check
         if vehicle_params is not None:
+            # Only add if not already present (avoid overwrite if recursion passed it?)
+            # Actually recursion handles it in the call.
             resolved_params["vehicle_params"] = vehicle_params
 
-        try:
-            module_name, class_name = component_type.rsplit(".", 1)
-        except ValueError:
-            raise ValueError(
-                f"Invalid component type: {component_type}. "
-                "Must be in 'module.ClassName' format."
-            ) from None
+        cls = None
+        # 1. Try resolving via Entry Points
+        if "." not in component_type:
+            for group in ["ad_components", "simulators"]:
+                # Python 3.10+ usage
+                eps = metadata.entry_points(group=group)
+                # Filter by name
+                matches = [ep for ep in eps if ep.name == component_type]
+                if matches:
+                    cls = matches[0].load()
+                    break
 
-        module = importlib.import_module(module_name)
-        cls = getattr(module, class_name)
+        # 2. Fallback to module path
+        if cls is None:
+            try:
+                module_name, class_name = component_type.rsplit(".", 1)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid component type: {component_type}. "
+                    "Must be in 'Entry Point' or 'module.ClassName' format."
+                ) from None
 
-        return cls(**resolved_params)
+            module = importlib.import_module(module_name)
+            cls = getattr(module, class_name)
+
+        # Filter arguments based on __init__ signature
+        sig = inspect.signature(cls.__init__)
+        valid_params = {}
+
+        for param_name in sig.parameters:
+            if param_name == "self":
+                continue
+            if param_name in resolved_params:
+                valid_params[param_name] = resolved_params[param_name]
+
+            # Special case: var_keyword (**kwargs)
+            if sig.parameters[param_name].kind == inspect.Parameter.VAR_KEYWORD:
+                # Pass all remaining params?
+                # For safety, let's just pass what we resolved that matches known needs?
+                # Or pass everything remaining?
+                # To be safe against "unexpected argument", we usually strictly filter unless **kwargs is there.
+                # If **kwargs is there, we can pass everything.
+                valid_params.update(resolved_params)
+                break
+
+        return cls(**valid_params)
 
     def _setup_components(self) -> None:
         """Set up all components based on configuration."""
@@ -129,6 +180,9 @@ class ExperimentRunner:
                     velocity=0.0,
                     timestamp=0.0,
                 )
+                # Also set goal to the end of the track
+                sim_params["goal_x"] = track[-1].x
+                sim_params["goal_y"] = track[-1].y
             else:
                 raise ValueError("Planner does not have reference_trajectory")
 
@@ -206,8 +260,15 @@ class ExperimentRunner:
             max_steps = (
                 self.config.execution.max_steps_per_episode if self.config.execution else 2000
             )
+            # Prepare stack
+            ad_stack = (
+                self.ad_component.to_stack()
+                if hasattr(self.ad_component, "to_stack")
+                else self.ad_component
+            )
+
             sim_result = self.simulator.run(
-                ad_component=self.ad_component.to_stack(),
+                ad_component=ad_stack,
                 max_steps=max_steps,
             )
 
@@ -390,9 +451,16 @@ class ExperimentRunner:
             for episode in range(self.config.execution.num_episodes):
                 print(f"\nEpisode {episode + 1}/{self.config.execution.num_episodes}")
 
+                # Prepare stack
+                ad_stack = (
+                    self.ad_component.to_stack()
+                    if hasattr(self.ad_component, "to_stack")
+                    else self.ad_component
+                )
+
                 # Run episode using simulator.run()
                 result = self.simulator.run(
-                    ad_component=self.ad_component.to_stack(),
+                    ad_component=ad_stack,
                     max_steps=self.config.execution.max_steps_per_episode,
                 )
 

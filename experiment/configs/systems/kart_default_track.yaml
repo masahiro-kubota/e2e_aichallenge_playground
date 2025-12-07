@@ -1,0 +1,22 @@
+system:
+  name: "kart_default_track"
+
+  # どの module を使うか
+  module: "experiment/configs/modules/pure_pursuit_pid.yaml"
+
+  # 車両 / シーン / ユースケース固有の設定
+  vehicle:
+    config_path: "experiment/configs/vehicles/default_vehicle.yaml"
+
+  scene:
+    config_path: "experiment/configs/scenes/default_scene.yaml"
+    use_case: "time_attack"
+
+  simulator_overrides:
+    params:
+      dt: 0.1
+      initial_state:
+        from_track: true
+
+  runtime:
+    mode: "singleprocess"

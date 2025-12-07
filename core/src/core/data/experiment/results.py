@@ -42,8 +42,6 @@ class EvaluationMetrics:
     success: int
 
     # Additional metrics
-    avg_lateral_error: float
-    max_lateral_error: float
     avg_velocity: float
 
     def to_dict(self) -> dict[str, float | int]:

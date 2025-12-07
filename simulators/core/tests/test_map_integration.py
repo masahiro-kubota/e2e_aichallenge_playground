@@ -37,12 +37,12 @@ def simple_map_file():
 
 def test_kinematic_simulator_with_map(simple_map_file):
     """Test KinematicSimulator with map validation."""
-    sim = KinematicSimulator(map_path=str(simple_map_file))
+    sim = KinematicSimulator(dt=0.1, map_path=str(simple_map_file))
     assert sim.map is not None
 
     # Start inside map
     initial_state = VehicleState(x=5.0, y=5.0, yaw=0.0, velocity=1.0)
-    sim = KinematicSimulator(initial_state=initial_state, map_path=str(simple_map_file))
+    sim = KinematicSimulator(dt=0.1, initial_state=initial_state, map_path=str(simple_map_file))
     sim.reset()
 
     action = Action(steering=0.0, acceleration=0.0)
@@ -71,7 +71,7 @@ def test_dynamic_simulator_with_map(simple_map_file):
 
 def test_both_simulators_without_map():
     """Test that both simulators work without map."""
-    kinematic_sim = KinematicSimulator()
+    kinematic_sim = KinematicSimulator(dt=0.1)
     assert kinematic_sim.map is None
 
     dynamic_sim = DynamicSimulator()

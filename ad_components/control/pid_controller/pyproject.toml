@@ -8,6 +8,10 @@ dependencies = [
     "ad-component-core",
 ]
 
+
+[project.entry-points."ad_components"]
+"PIDController" = "pid_controller:PIDController"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

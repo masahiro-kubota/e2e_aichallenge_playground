@@ -215,22 +215,22 @@ uv run pre-commit run --all-files
 experiment:
   name: "custom_experiment"
   type: "evaluation"
-  description: "Custom experiment example"
+  description: "Custom experiment example with layered config"
 
-simulator:
-  type: "simulator_kinematic.KinematicSimulator"
-  params:
-    dt: 0.1
-    track_file: "data/tracks/raceline_awsim_1500.csv"
+# システム構成（車両、シーン、モジュール指定）
+system: "experiment/configs/systems/kart_default_track.yaml"
 
-components:
-  planning:
-    type: "pure_pursuit.PurePursuitPlanner"
-    params:
-      lookahead_distance: 5.0
+# 実験ごとの上書き設定
+overrides:
+  components:
+    planning:
+      params:
+        lookahead_distance: 7.5  # デフォルト値を上書き
 
-  control:
-    type: "pid_controller.PIDController"
-    params:
-      kp: 1.0
+    control:
+      params:
+        kp: 1.2
+
+  execution:
+    num_episodes: 5
 ```

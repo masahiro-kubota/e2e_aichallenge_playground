@@ -1,7 +1,6 @@
 """Configuration models for experiment runner."""
 
 from enum import Enum
-from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -169,8 +168,38 @@ class ModelCheckpointConfig(BaseModel):
     output_dir: str = Field("data/models", description="Output directory for models")
 
 
-class ExperimentConfig(BaseModel):
-    """Complete experiment configuration."""
+class ModuleConfig(BaseModel):
+    """Module configuration (Pipeline definition)."""
+
+    name: str = Field(..., description="Module name")
+    components: dict[str, Any] = Field(..., description="Component definitions")
+
+
+class SystemConfig(BaseModel):
+    """System configuration (Environment settings)."""
+
+    name: str = Field(..., description="System name")
+    module: str = Field(..., description="Path to module configuration")
+    vehicle: dict[str, Any] = Field(default_factory=dict, description="Vehicle configuration")
+    scene: dict[str, Any] = Field(default_factory=dict, description="Scene configuration")
+    simulator_overrides: dict[str, Any] = Field(
+        default_factory=dict, description="Simulator parameter overrides"
+    )
+    runtime: dict[str, Any] = Field(default_factory=dict, description="Runtime configuration")
+
+
+class ExperimentLayerConfig(BaseModel):
+    """Experiment layer configuration (Metadata & Overrides)."""
+
+    name: str = Field(..., description="Experiment name")
+    type: ExperimentType = Field(..., description="Experiment type")
+    description: str = Field("", description="Experiment description")
+    system: str = Field(..., description="Path to system configuration")
+    overrides: dict[str, Any] = Field(default_factory=dict, description="Configuration overrides")
+
+
+class ResolvedExperimentConfig(BaseModel):
+    """Complete, resolved experiment configuration (formerly ExperimentConfig)."""
 
     experiment: ExperimentMetadata = Field(..., description="Experiment metadata")
     components: ComponentsConfig | None = Field(None, description="Components configuration")
@@ -183,9 +212,10 @@ class ExperimentConfig(BaseModel):
     )
     evaluation: EvaluationConfig | None = Field(None, description="Evaluation configuration")
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    runtime: dict[str, Any] = Field(default_factory=dict, description="Runtime configuration")
 
     @model_validator(mode="after")
-    def validate_experiment_type(self) -> "ExperimentConfig":
+    def validate_experiment_type(self) -> "ResolvedExperimentConfig":
         """Validate required fields based on experiment type."""
         exp_type = self.experiment.type
 
@@ -210,19 +240,3 @@ class ExperimentConfig(BaseModel):
                 raise ValueError("simulator is required for evaluation experiments")
 
         return self
-
-    @classmethod
-    def from_yaml(cls, path: str | Path) -> "ExperimentConfig":
-        """Load configuration from YAML file.
-
-        Args:
-            path: Path to YAML file
-
-        Returns:
-            ExperimentConfig instance
-        """
-        import yaml
-
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        return cls(**data)

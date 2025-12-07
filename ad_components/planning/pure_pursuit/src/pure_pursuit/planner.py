@@ -12,17 +12,26 @@ class PurePursuitPlanner(Planner):
     """Pure Pursuit path tracking algorithm."""
 
     def __init__(
-        self, lookahead_distance: float = 5.0, vehicle_params: VehicleParameters | None = None
+        self,
+        lookahead_distance: float,
+        vehicle_params: VehicleParameters | None = None,
+        track_path: str | None = None,
     ) -> None:
         """Initialize Pure Pursuit planner.
 
         Args:
             lookahead_distance: Distance to look ahead for target point [m]
             vehicle_params: Vehicle parameters (optional)
+            track_path: Path to reference trajectory CSV (optional)
         """
         self.lookahead_distance = lookahead_distance
         self.vehicle_params = vehicle_params or VehicleParameters()
         self.reference_trajectory: Trajectory | None = None
+
+        if track_path:
+            from planning_utils import load_track_csv
+
+            self.reference_trajectory = load_track_csv(track_path)
 
     def set_reference_trajectory(self, trajectory: Trajectory) -> None:
         """Set the reference trajectory to track.

@@ -15,9 +15,9 @@ class PIDController(Controller):
 
     def __init__(
         self,
-        kp: float = 1.0,
-        ki: float = 0.0,
-        kd: float = 0.0,
+        kp: float,
+        ki: float,
+        kd: float,
         vehicle_params: VehicleParameters | None = None,
     ) -> None:
         """Initialize PID controller.

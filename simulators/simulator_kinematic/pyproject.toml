@@ -15,6 +15,10 @@ dependencies = [
 core = { workspace = true }
 simulator_core = { workspace = true }
 
+
+[project.entry-points."simulators"]
+"KinematicSimulator" = "simulator_kinematic:KinematicSimulator"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

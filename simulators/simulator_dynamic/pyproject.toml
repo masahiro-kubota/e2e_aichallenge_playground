@@ -16,6 +16,10 @@ dependencies = [
 core = { workspace = true }
 simulator_core = { workspace = true }
 
+
+[project.entry-points."simulators"]
+"DynamicSimulator" = "simulator_dynamic:DynamicSimulator"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

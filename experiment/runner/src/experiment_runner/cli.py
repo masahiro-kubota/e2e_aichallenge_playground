@@ -4,7 +4,7 @@
 import argparse
 from pathlib import Path
 
-from .config import ExperimentConfig
+from .loader import load_experiment_config
 from .runner import ExperimentRunner
 
 
@@ -14,7 +14,7 @@ def main() -> None:
     parser.add_argument(
         "--config",
         type=str,
-        default="experiment/configs/current_experiment.yaml",
+        default="experiment/configs/experiments/pure_pursuit_lookahead_sweep.yaml",
         help="Path to the experiment configuration file",
     )
     parser.add_argument(
@@ -36,14 +36,14 @@ def main() -> None:
                 print(f"  - {template.name}")
         print("\nTo start a new experiment:")
         print(
-            f"  1. Copy a template: cp experiment/configs/experiments/pure_pursuit.yaml {args.config}"
+            f"  1. Copy a template: cp experiment/configs/experiments/pure_pursuit_lookahead_sweep.yaml {args.config}"
         )
         print("  2. Edit the configuration file")
         print(f"  3. Run: uv run experiment-runner --config {args.config}")
         return
 
     print(f"Loading configuration from {config_path}...")
-    config = ExperimentConfig.from_yaml(config_path)
+    config = load_experiment_config(config_path)
 
     print(f"Running experiment: {config.experiment.name}")
     if config.experiment.description:

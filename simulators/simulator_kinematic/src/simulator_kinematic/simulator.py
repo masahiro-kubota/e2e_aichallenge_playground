@@ -17,9 +17,9 @@ class KinematicSimulator(BaseSimulator):
 
     def __init__(
         self,
+        dt: float,
         vehicle_params: "VehicleParameters | None" = None,
         initial_state: VehicleState | None = None,
-        dt: float = 0.1,
         map_path: str | None = None,
         goal_x: float | None = None,
         goal_y: float | None = None,

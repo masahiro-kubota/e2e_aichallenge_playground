@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from experiment_runner.config import ExperimentConfig, ExperimentType
+from experiment_runner.config import ExperimentType, ResolvedExperimentConfig
 
 from core.data import Action, SimulationLog, SimulationStep, VehicleState
 
@@ -67,7 +67,7 @@ class TestTrainingIntegration:
             }
 
             # Verify config validation passes
-            config = ExperimentConfig(**config_dict)
+            config = ResolvedExperimentConfig(**config_dict)
 
             # Verify config structure
             assert config.experiment.type == ExperimentType.TRAINING

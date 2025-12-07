@@ -4,9 +4,7 @@ import os
 from pathlib import Path
 
 import pytest
-from experiment_runner import ExperimentConfig, ExperimentRunner
-
-import mlflow
+from experiment_runner import ExperimentRunner, load_experiment_config
 
 
 @pytest.fixture(autouse=True)
@@ -25,75 +23,21 @@ def test_pure_pursuit_experiment() -> None:
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent.parent
     config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
-    config = ExperimentConfig.from_yaml(config_path)
+    config = load_experiment_config(config_path)
 
     # Verify configuration
-    assert config.experiment.name == "pure_pursuit_tracking"
-    assert config.components.ad_component.type == "ad_component_core.GenericADComponent"
-    assert config.components.ad_component.params["planner_package"] == "pure-pursuit"
+    assert config.experiment.name == "pure_pursuit"
+    assert config.components.ad_component.type == "core.data.ad_components.stack.ADComponentStack"
+    # The ADComponentStack params are deeply nested: { planner: { type: ..., params: ... }, controller: ... }
+    planner_config = config.components.ad_component.params["planner"]
+    assert "PurePursuitPlanner" in planner_config["type"]
+    assert planner_config["params"]["lookahead_distance"] == 5.0
+
     assert config.execution.max_steps_per_episode == 2000
 
     # Run experiment
     runner = ExperimentRunner(config)
     runner.run()
-
-
-@pytest.mark.integration
-def test_pure_pursuit_experiment_new_config() -> None:
-    """Test Pure Pursuit experiment execution with new config format (vehicle/scene)."""
-    # Load config
-    workspace_root = Path(__file__).parent.parent.parent.parent
-    config_path = workspace_root / "experiment/configs/experiments/pure_pursuit_new_config.yaml"
-    config = ExperimentConfig.from_yaml(config_path)
-
-    # Verify configuration
-    assert config.experiment.name == "pure_pursuit_tracking_new_config"
-    assert (
-        config.simulator.params["vehicle_config"]
-        == "experiment/configs/vehicles/default_vehicle.yaml"
-    )
-    assert config.simulator.params["scene_config"] == "experiment/configs/scenes/default_scene.yaml"
-
-    # Run experiment
-    runner = ExperimentRunner(config)
-    runner.run()
-
-    # Verify MLflow run was created
-    if not os.getenv("CI"):
-        mlflow.set_tracking_uri(config.logging.mlflow.tracking_uri)
-        experiment = mlflow.get_experiment_by_name(config.experiment.name)
-        assert experiment is not None, "MLflow experiment should be created"
-
-        # Get the latest run
-        runs = mlflow.search_runs(
-            experiment_ids=[experiment.experiment_id],
-            order_by=["start_time DESC"],
-            max_results=1,
-        )
-        assert len(runs) > 0, "At least one run should exist"
-
-        latest_run = runs.iloc[0]
-
-        # Verify metrics were logged
-        assert "metrics.success" in latest_run, "Success metric should be logged"
-        assert (
-            latest_run["metrics.success"] == 1.0
-        ), "Simulation should complete full lap successfully"
-        assert "metrics.lap_time_sec" in latest_run, "Lap time should be logged"
-        assert latest_run["metrics.lap_time_sec"] > 0, "Lap time should be positive"
-
-        # Verify parameters were logged
-        assert "params.ad_component" in latest_run, "ADComponent parameter should be logged"
-        assert latest_run["params.ad_component"] == "ad_component_core.GenericADComponent"
-
-        # Verify artifacts were uploaded
-        run_id = latest_run["run_id"]
-        client = mlflow.tracking.MlflowClient()
-        artifacts = client.list_artifacts(run_id)
-        artifact_names = [artifact.path for artifact in artifacts]
-
-        assert "simulation.mcap" in artifact_names, "MCAP file should be uploaded"
-        assert "dashboard.html" in artifact_names, "Dashboard should be uploaded"
 
 
 @pytest.mark.integration
@@ -103,16 +47,21 @@ def test_config_loading() -> None:
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent.parent
     config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
-    config = ExperimentConfig.from_yaml(config_path)
+    config = load_experiment_config(config_path)
 
     # Verify structure
-    assert config.experiment.name == "pure_pursuit_tracking"
-    assert config.components.ad_component.type == "ad_component_core.GenericADComponent"
-    assert config.components.ad_component.params["planner_package"] == "pure-pursuit"
-    assert config.components.ad_component.params["lookahead_distance"] == 5.0
-    assert config.components.ad_component.params["kp"] == 1.0
-    assert config.simulator.type == "simulator_kinematic.KinematicSimulator"
+    assert config.experiment.name == "pure_pursuit"
+    assert config.components.ad_component.type == "core.data.ad_components.stack.ADComponentStack"
 
+    planner_config = config.components.ad_component.params["planner"]
+    assert "PurePursuitPlanner" in planner_config["type"]
+    assert planner_config["params"]["lookahead_distance"] == 5.0
+
+    controller_config = config.components.ad_component.params["controller"]
+    assert "PIDController" in controller_config["type"]
+    assert controller_config["params"]["kp"] == 1.0
+
+    assert config.simulator.type == "KinematicSimulator"
     assert config.logging.mlflow.enabled is True
 
 
@@ -124,7 +73,7 @@ def test_custom_track_loading(_setup_mlflow_env: None) -> None:
     # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent.parent
     config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
-    config = ExperimentConfig.from_yaml(config_path)
+    config = load_experiment_config(config_path)
 
     # Create a dummy custom track file
     # __file__ is in experiment_runner/tests/test_integration.py
@@ -147,7 +96,8 @@ def test_custom_track_loading(_setup_mlflow_env: None) -> None:
 
     try:
         # Modify to use custom track
-        config.components.ad_component.params["track_path"] = custom_track_path
+        # Since we use ADComponentStack, we need to inject into planner params
+        config.components.ad_component.params["planner"]["params"]["track_path"] = custom_track_path
 
         # Run experiment setup
         runner = ExperimentRunner(config)

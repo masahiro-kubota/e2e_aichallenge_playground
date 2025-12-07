@@ -138,7 +138,7 @@ class TestKinematicSimulator:
 
     def test_initialization(self) -> None:
         """Test initialization."""
-        sim = KinematicSimulator()
+        sim = KinematicSimulator(dt=0.1)
         state = sim.reset()
         assert state.x == 0.0
         assert state.y == 0.0
@@ -160,7 +160,7 @@ class TestKinematicSimulator:
     def test_custom_initial_state(self) -> None:
         """Test with custom initial state."""
         initial_state = VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=5.0)
-        sim = KinematicSimulator(initial_state=initial_state)
+        sim = KinematicSimulator(dt=0.1, initial_state=initial_state)
         state = sim.reset()
 
         assert state.x == 10.0

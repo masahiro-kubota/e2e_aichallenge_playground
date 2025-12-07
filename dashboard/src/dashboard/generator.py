@@ -44,13 +44,32 @@ class HTMLDashboardGenerator(DashboardGenerator):
         log = result.simulation_results[0].log
 
         # Prepare data in the format expected by the dashboard
+        # Sanitize metadata to avoid React rendering errors with nested objects
+        metadata = log.metadata.copy()
+
+        # Special handling for controller if it is a config dict
+        if (
+            "controller" in metadata
+            and isinstance(metadata["controller"], dict)
+            and "type" in metadata["controller"]
+        ):
+            metadata["controller"] = metadata["controller"]["type"]
+
+        # Generic sanitization: convert dicts/lists to strings
+        sanitized_metadata = {}
+        for k, v in metadata.items():
+            if isinstance(v, dict | list):
+                sanitized_metadata[k] = str(v)
+            else:
+                sanitized_metadata[k] = v
+
         data: dict[str, Any] = {
             "metadata": {
                 "experiment_name": result.experiment_name,
                 "experiment_type": result.experiment_type,
                 "execution_time": result.execution_time.isoformat(),
-                "controller": log.metadata.get("controller", "Unknown Controller"),
-                **log.metadata,
+                "controller": sanitized_metadata.get("controller", "Unknown Controller"),
+                **sanitized_metadata,
             },
             "steps": [],
         }

@@ -36,10 +36,6 @@ class MetricsCalculator:
             float(np.max(np.abs(lateral_accels))) if len(lateral_accels) > 0 else 0.0
         )
 
-        # Lateral error (Removed)
-        avg_lateral_error = 0.0
-        max_lateral_error = 0.0
-
         # Comfort score (inverse of jerk)
         comfort_score = self._calculate_comfort_score(log)
 
@@ -62,8 +58,6 @@ class MetricsCalculator:
             max_lateral_accel=max_lateral_accel,
             comfort_score=comfort_score,
             success=success,
-            avg_lateral_error=avg_lateral_error,
-            max_lateral_error=max_lateral_error,
             avg_velocity=avg_velocity,
         )
 

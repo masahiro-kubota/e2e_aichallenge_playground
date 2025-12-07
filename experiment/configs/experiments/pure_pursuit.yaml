@@ -1,47 +1,31 @@
 experiment:
-  name: "pure_pursuit_tracking"
+  name: "pure_pursuit"
   type: "evaluation"
-  description: "Evaluate Pure Pursuit planner with PID controller"
+  description: "Pure Pursuit tracking evaluation (Layered Config)"
 
-components:
-  ad_component:
-    type: "ad_component_core.GenericADComponent"
-    params:
-      planner_package: "pure-pursuit"
-      controller_package: "pid-controller"
-      lookahead_distance: 5.0
-      kp: 1.0
-      ki: 0.1
-      kd: 0.05
+system: "experiment/configs/systems/kart_default_track.yaml"
 
-simulator:
-  type: "simulator_kinematic.KinematicSimulator"
-  params:
-    dt: 0.1
-    initial_state:
-      from_track: true
-    map_path: "simulators/core/assets/lanelet2_map.osm"
+overrides:
+  components:
+    planning:
+      params:
+        lookahead_distance: 5.0
+    control:
+      params:
+        kp: 1.0
+        ki: 0.1
+        kd: 0.05
 
-execution:
-  num_episodes: 1
-  max_steps_per_episode: 2000
-  parallel: false
+  execution:
+    num_episodes: 1
+    max_steps_per_episode: 2000
 
-evaluation:
-  metrics:
-    - "lap_time"
-    - "lateral_error"
-    - "comfort"
-  generate_dashboard: true
-
-logging:
-  mlflow:
-    enabled: true
-    tracking_uri: "http://localhost:5000"
-  mcap:
-    enabled: true
-    output_dir: "/tmp"
-  dashboard:
-    enabled: true
-  inputs:
-    - "ad_components/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
+  logging:
+    mlflow:
+      enabled: true
+      tracking_uri: "http://localhost:5000"
+    mcap:
+      enabled: true
+      output_dir: "/tmp"
+    dashboard:
+      enabled: true
