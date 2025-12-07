@@ -722,6 +722,7 @@ dependencies = [
     { name = "core" },
     { name = "mlflow" },
     { name = "numpy" },
+    { name = "simulator-core" },
     { name = "torch" },
 ]
 
@@ -730,6 +731,7 @@ requires-dist = [
     { name = "core", editable = "core" },
     { name = "mlflow", specifier = ">=2.0.0" },
     { name = "numpy", specifier = ">=1.20.0" },
+    { name = "simulator-core", editable = "simulators/core" },
     { name = "torch", specifier = ">=2.0.0" },
 ]
 

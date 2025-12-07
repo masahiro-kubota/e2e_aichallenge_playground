@@ -9,6 +9,7 @@ dependencies = [
     "numpy>=1.20.0",
     "mlflow>=2.0.0",
     "core",
+    "simulator-core",
 ]
 
 [build-system]
@@ -20,6 +21,7 @@ packages = ["src/experiment_training"]
 
 [tool.uv.sources]
 core = { workspace = true }
+simulator-core = { workspace = true }
 
 [tool.deptry]
 ignore_notebooks = true

@@ -60,7 +60,7 @@ class BaseSimulator(Simulator, ABC):
 
         # 内部状態はSimulationVehicleStateで管理
         self._current_state = SimulationVehicleState.from_vehicle_state(self.initial_state)
-        self.log = SimulationLog()
+        self.log = SimulationLog(steps=[], metadata={})
 
         # マップの読み込み
         self.map: Any = None  # LaneletMap | None (runtime import)
@@ -78,7 +78,7 @@ class BaseSimulator(Simulator, ABC):
             初期車両状態
         """
         self._current_state = SimulationVehicleState.from_vehicle_state(self.initial_state)
-        self.log = SimulationLog()
+        self.log = SimulationLog(steps=[], metadata={})
         return self.initial_state
 
     def step(self, action: Action) -> tuple[VehicleState, bool, dict[str, Any]]:
@@ -124,7 +124,7 @@ class BaseSimulator(Simulator, ABC):
             ad_component_log=self._create_ad_component_log(vehicle_state),
             info=self._create_info(),
         )
-        self.log.add_step(step_log)
+        self.log.steps.append(step_log)
 
         # 5. Check done
         done = self._is_done()

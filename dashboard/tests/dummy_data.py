@@ -24,12 +24,13 @@ def generate_circular_trajectory(
         SimulationLog with circular trajectory
     """
     log = SimulationLog(
+        steps=[],
         metadata={
             "controller": "Test Controller (Circular Trajectory)",
             "track": "Test Track",
             "num_steps": num_steps,
             "radius": radius,
-        }
+        },
     )
 
     for i in range(num_steps):
@@ -53,7 +54,7 @@ def generate_circular_trajectory(
             vehicle_state=vehicle_state,
             action=action,
         )
-        log.add_step(step)
+        log.steps.append(step)
 
     return log
 
@@ -74,12 +75,13 @@ def generate_figure_eight_trajectory(
         SimulationLog with figure-eight trajectory
     """
     log = SimulationLog(
+        steps=[],
         metadata={
             "controller": "Test Controller (Figure-Eight Trajectory)",
             "track": "Test Track",
             "num_steps": num_steps,
             "radius": radius,
-        }
+        },
     )
 
     for i in range(num_steps):
@@ -111,7 +113,7 @@ def generate_figure_eight_trajectory(
             vehicle_state=vehicle_state,
             action=action,
         )
-        log.add_step(step)
+        log.steps.append(step)
 
     return log
 

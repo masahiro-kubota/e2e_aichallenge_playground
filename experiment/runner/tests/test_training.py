@@ -36,7 +36,11 @@ class TestTrainingIntegration:
             data_dir = tmp_path / "s3_data"
             data_dir.mkdir()
             log_path = data_dir / "log_0.json"
-            dummy_log_data.save(log_path)
+
+            from simulator_core import JsonSimulationLogRepository
+
+            repository = JsonSimulationLogRepository()
+            repository.save(dummy_log_data, log_path)
 
             # 2. Setup config use S3 dataset params
             config_dict = {

@@ -54,8 +54,11 @@ class TrajectoryDataset(Dataset):
 
     def _load_json(self, path: Path) -> None:
         """Load data from JSON log file."""
+        from simulator_core import JsonSimulationLogRepository
+
         try:
-            log = SimulationLog.load(path)
+            repository = JsonSimulationLogRepository()
+            log = repository.load(path)
             self._process_log(log)
         except Exception as e:
             print(f"Error loading {path}: {e}")
