@@ -164,9 +164,6 @@ class EvaluationPostprocessor(
         print("Generating interactive dashboard...")
         dashboard_path = Path("/tmp/dashboard.html")
 
-        # Use dashboard package
-        from dashboard import HTMLDashboardGenerator
-
         # Find OSM file from simulator config
         osm_path = None
         sim_params = config.simulator.params
@@ -182,8 +179,24 @@ class EvaluationPostprocessor(
                 else:
                     print(f"Warning: Configured map path not found: {potential_path}")
 
-        generator = HTMLDashboardGenerator()
-        generator.generate(result, dashboard_path, osm_path)
+        # Use dashboard package implementation via interface
+        # Dynamic loading to avoid static dependency
+        import importlib
+
+        from core.interfaces import DashboardGenerator
+
+        try:
+            # Dynamically import the dashboard module
+            dashboard_module = importlib.import_module("dashboard")
+            # Get the generator class
+            generator_class = getattr(dashboard_module, "HTMLDashboardGenerator")
+            # Instantiate
+            generator: DashboardGenerator = generator_class()
+            generator.generate(result, dashboard_path, osm_path)
+        except (ImportError, AttributeError) as e:
+            print(f"Warning: Could not load dashboard generator: {e}")
+            # Dashboard generation failed, but we continue experiment execution
+            return None
 
         artifact = None
         if dashboard_path.exists():
