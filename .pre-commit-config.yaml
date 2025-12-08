@@ -39,12 +39,6 @@ repos:
         language: system
         pass_filenames: false
         files: ^experiment/runner/
-      - id: deptry-training
-        name: deptry (experiment/training)
-        entry: uv run --directory experiment/training deptry .
-        language: system
-        pass_filenames: false
-        files: ^experiment/training/
       - id: deptry-ad-components-core
         name: deptry (ad_components/core)
         entry: uv run --directory ad_components/core deptry .
