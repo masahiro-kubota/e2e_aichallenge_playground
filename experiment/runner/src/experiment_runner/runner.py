@@ -145,7 +145,7 @@ class ExperimentRunner:
 
         # 1. Load Vehicle Parameters
         if "vehicle_config" in sim_params:
-            from experiment_runner.yaml_vehicle_repository import YamlVehicleParametersRepository
+            from core.utils.config import load_yaml
 
             config_path = sim_params.pop("vehicle_config")
             full_path = workspace_root / config_path
@@ -153,8 +153,7 @@ class ExperimentRunner:
             if not full_path.exists():
                 raise FileNotFoundError(f"Vehicle config not found: {full_path}")
 
-            repository = YamlVehicleParametersRepository()
-            self.vehicle_params = repository.load(full_path)
+            self.vehicle_params = VehicleParameters(**load_yaml(full_path))
             sim_params["vehicle_params"] = self.vehicle_params
         else:
             self.vehicle_params = VehicleParameters()

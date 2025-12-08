@@ -7,7 +7,6 @@ from core.interfaces.node import Node, SimulationContext
 from core.interfaces.node_io import NodeIO
 from core.interfaces.processor import ProcessorProtocol
 from core.interfaces.simulator import SimulationLogRepository, Simulator
-from core.interfaces.vehicle import VehicleParametersRepository
 
 __all__ = [
     "ADComponent",
@@ -19,5 +18,4 @@ __all__ = [
     "SimulationContext",
     "SimulationLogRepository",
     "Simulator",
-    "VehicleParametersRepository",
 ]

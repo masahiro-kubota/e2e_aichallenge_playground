@@ -5,6 +5,7 @@ from typing import Any, TypeVar
 
 import yaml
 
+from core.data import VehicleParameters
 from core.utils import get_project_root
 from experiment_runner.config import (
     ExperimentLayerConfig,
@@ -318,10 +319,7 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     if system_layer.vehicle and "config_path" in system_layer.vehicle:
         # Load from file
         v_path = get_project_root() / system_layer.vehicle["config_path"]
-        from experiment_runner.yaml_vehicle_repository import YamlVehicleParametersRepository
-
-        repo = YamlVehicleParametersRepository()
-        v_params = repo.load(v_path)
+        v_params = VehicleParameters(**load_yaml(v_path))
 
         # Inject into simulator params
         sim_params["vehicle_params"] = v_params
