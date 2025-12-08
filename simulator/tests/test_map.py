@@ -77,3 +77,92 @@ class TestLaneletMap:
 
             # Should return True (drivable) when map is not loaded/empty
             assert lanelet_map.is_drivable(0.0, 0.0) is True
+
+
+class TestLaneletMapPolygon:
+    """Tests for polygon drivability checking."""
+
+    @pytest.fixture
+    def map_path(self) -> Path:
+        """Get path to the lanelet2 map."""
+        return Path(__file__).parent / "assets/lanelet2_map.osm"
+
+    @pytest.fixture
+    def lanelet_map(self, map_path: Path) -> LaneletMap:
+        """Create LaneletMap instance."""
+        return LaneletMap(map_path)
+
+    def test_is_drivable_polygon_inside(self, lanelet_map: LaneletMap) -> None:
+        """Test polygon completely inside drivable area."""
+        from shapely.geometry import Polygon
+
+        # Create small polygon inside the map
+        mid_x = (89653.9564 + 89660.3701) / 2
+        mid_y = (43131.2322 + 43128.8083) / 2
+
+        # Small polygon around the midpoint
+        polygon = Polygon(
+            [
+                (mid_x - 0.5, mid_y - 0.5),
+                (mid_x + 0.5, mid_y - 0.5),
+                (mid_x + 0.5, mid_y + 0.5),
+                (mid_x - 0.5, mid_y + 0.5),
+            ]
+        )
+
+        assert lanelet_map.is_drivable_polygon(polygon) is True
+
+    def test_is_drivable_polygon_outside(self, lanelet_map: LaneletMap) -> None:
+        """Test polygon completely outside drivable area."""
+        from shapely.geometry import Polygon
+
+        # Polygon far from the map
+        polygon = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
+
+        assert lanelet_map.is_drivable_polygon(polygon) is False
+
+    def test_is_drivable_polygon_empty_map(self) -> None:
+        """Test polygon checking with empty map."""
+        from unittest.mock import patch
+
+        from shapely.geometry import Polygon
+
+        with patch("simulator.map.LaneletMap._load_map"):
+            lanelet_map = LaneletMap(Path("dummy.osm"))
+            lanelet_map.drivable_area = None
+
+            polygon = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
+
+            # Should return True when map is not loaded
+            assert lanelet_map.is_drivable_polygon(polygon) is True
+
+
+class TestLaneletMapErrorHandling:
+    """Tests for error handling in LaneletMap."""
+
+    def test_nonexistent_file(self) -> None:
+        """Test loading nonexistent OSM file."""
+        with pytest.raises(FileNotFoundError):
+            LaneletMap(Path("/nonexistent/file.osm"))
+
+    def test_invalid_osm_format(self, tmp_path: Path) -> None:
+        """Test loading invalid OSM file."""
+        # Create invalid XML file
+        invalid_file = tmp_path / "invalid.osm"
+        invalid_file.write_text("This is not valid XML")
+
+        with pytest.raises(Exception):  # Will raise XML parsing error
+            LaneletMap(invalid_file)
+
+    def test_empty_osm_file(self, tmp_path: Path) -> None:
+        """Test loading empty OSM file."""
+        # Create valid but empty OSM file
+        empty_file = tmp_path / "empty.osm"
+        empty_file.write_text('<?xml version="1.0" encoding="UTF-8"?>\n<osm></osm>')
+
+        # Should not raise, but drivable_area will be None
+        lanelet_map = LaneletMap(empty_file)
+        assert lanelet_map.drivable_area is None
+
+        # Everything should be drivable when map is empty
+        assert lanelet_map.is_drivable(0.0, 0.0) is True

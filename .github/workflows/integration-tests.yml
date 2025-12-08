@@ -63,6 +63,11 @@ jobs:
               <h1>Integration Test Results</h1>
 
               <div class="result-card">
+                  <a href="dashboard.html">Simulation Dashboard</a>
+                  <p>Interactive visualization of simulation results.</p>
+              </div>
+
+              <div class="result-card">
                   <a href="docs/index.html">Documentation</a>
                   <p>Project documentation.</p>
               </div>
@@ -81,5 +86,6 @@ jobs:
           name: github-pages-content
           path: |
             index.html
+            dashboard.html
             docs/build/html/
           retention-days: 7
