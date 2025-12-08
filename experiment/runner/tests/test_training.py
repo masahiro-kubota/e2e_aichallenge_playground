@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from experiment_runner.config import ExperimentType, ResolvedExperimentConfig
+from experiment_runner.schemas import ExperimentType, ResolvedExperimentConfig
 
 from core.data import Action, SimulationLog, SimulationStep, VehicleState
 

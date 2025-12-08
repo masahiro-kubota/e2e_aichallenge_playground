@@ -14,7 +14,6 @@ from core.data.simulator import SimulationLog
 from core.interfaces import ADComponent, Simulator
 from core.nodes import PhysicsNode
 from core.utils import get_project_root
-from experiment_runner.config import ExperimentConfig
 from experiment_runner.executor import (
     SimulationContext,
     SingleProcessExecutor,
@@ -22,6 +21,7 @@ from experiment_runner.executor import (
 from experiment_runner.mcap_logger import MCAPLogger
 from experiment_runner.metrics import EvaluationMetrics, MetricsCalculator
 from experiment_runner.mlflow_logger import MLflowExperimentLogger
+from experiment_runner.schemas import ExperimentConfig
 
 
 class ExperimentRunner:

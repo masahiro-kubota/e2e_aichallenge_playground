@@ -3,11 +3,11 @@
 from pathlib import Path
 from typing import Any, TypeVar
 
-import yaml
-
 from core.data import VehicleParameters
 from core.utils import get_project_root
-from experiment_runner.config import (
+from core.utils.config import load_yaml as core_load_yaml
+from core.utils.config import merge_configs
+from experiment_runner.schemas import (
     ExperimentLayerConfig,
     ModuleConfig,
     ResolvedExperimentConfig,
@@ -26,28 +26,27 @@ def _recursive_merge(base: dict[str, Any], overrides: dict[str, Any]) -> dict[st
 
     Returns:
         Merged dictionary.
+
+    Note:
+        This is a wrapper around core.utils.config.merge_configs for backward compatibility.
     """
-    merged = base.copy()
-    for key, value in overrides.items():
-        if isinstance(value, dict) and key in merged and isinstance(merged[key], dict):
-            merged[key] = _recursive_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
+    return merge_configs(base, overrides)
 
 
 def load_yaml(path: Path | str) -> dict[str, Any]:
-    """Load YAML file.
+    """Load YAML file relative to project root.
 
     Args:
-        path: Path to YAML file.
+        path: Path to YAML file (relative to project root).
 
     Returns:
         Loaded dictionary.
+
+    Note:
+        This is a convenience wrapper that automatically prepends the project root path.
     """
-    path = get_project_root() / path
-    with open(path) as f:
-        return yaml.safe_load(f)
+    full_path = get_project_root() / path
+    return core_load_yaml(full_path)
 
 
 def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:

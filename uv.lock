@@ -689,7 +689,6 @@ dependencies = [
     { name = "mlflow" },
     { name = "numpy" },
     { name = "pydantic" },
-    { name = "pyyaml" },
 ]
 
 [package.metadata]
@@ -702,7 +701,6 @@ requires-dist = [
     { name = "mlflow", specifier = ">=2.0.0" },
     { name = "numpy", specifier = ">=1.20.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
 ]
 
 [[package]]

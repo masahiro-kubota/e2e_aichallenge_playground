@@ -2,8 +2,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from experiment_runner.config import ResolvedExperimentConfig
 from experiment_runner.loader import _recursive_merge, load_experiment_config
+from experiment_runner.schemas import ResolvedExperimentConfig
 
 
 @pytest.fixture
