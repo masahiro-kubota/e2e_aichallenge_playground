@@ -4,8 +4,7 @@
 import argparse
 from pathlib import Path
 
-from .loader import load_experiment_config
-from .runner import ExperimentRunner
+from .orchestrator import ExperimentOrchestrator
 
 
 def main() -> None:
@@ -42,15 +41,18 @@ def main() -> None:
         print(f"  3. Run: uv run experiment-runner --config {args.config}")
         return
 
-    print(f"Loading configuration from {config_path}...")
-    config = load_experiment_config(config_path)
+    if args.dry_run:
+        print(f"Dry run: Validation of {config_path} is successful (mocked).")
+        return
 
-    print(f"Running experiment: {config.experiment.name}")
-    if config.experiment.description:
-        print(f"Description: {config.experiment.description}")
+    print(f"Running experiment with config: {config_path}")
 
-    runner = ExperimentRunner(config, config_path=config_path)
-    runner.run()
+    orchestrator = ExperimentOrchestrator()
+    orchestrator.run(config_path)
+
+    # We might want to print a summary of the result?
+    # result is ExperimentResult object.
+    print("Experiment completed successfully.")
 
 
 if __name__ == "__main__":

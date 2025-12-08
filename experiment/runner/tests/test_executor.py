@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from experiment_runner.executor import SingleProcessExecutor
+from experiment_runner.running.evaluation import SingleProcessExecutor
 
 from core.data import Action, Observation, SimulationLog, Trajectory, TrajectoryPoint, VehicleState
 from core.interfaces import Simulator

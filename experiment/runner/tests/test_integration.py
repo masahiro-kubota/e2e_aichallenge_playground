@@ -1,10 +1,9 @@
-"""Integration tests for experiment runner."""
-
 import os
 from pathlib import Path
 
 import pytest
-from experiment_runner import ExperimentRunner, load_experiment_config
+from experiment_runner.orchestrator import ExperimentOrchestrator
+from experiment_runner.preprocessing.loader import DefaultPreprocessor, load_experiment_config
 
 
 @pytest.fixture(autouse=True)
@@ -19,8 +18,6 @@ def _setup_mlflow_env() -> None:
 def test_pure_pursuit_experiment() -> None:
     """Test Pure Pursuit experiment execution end-to-end."""
     # Load config
-    # __file__ is in experiment_runner/tests/test_integration.py
-    # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent.parent
     config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
     config = load_experiment_config(config_path)
@@ -44,16 +41,18 @@ def test_pure_pursuit_experiment() -> None:
 
     assert config.execution.max_steps_per_episode == 2000
 
-    # Run experiment
-    runner = ExperimentRunner(config)
-    runner.run()
+    # Run experiment via Orchestrator
+    orchestrator = ExperimentOrchestrator()
+    # Note: orchestrator.run returns the result
+    result = orchestrator.run(config_path)
+    assert result is not None
+    # We can inspect the result if needed
+    assert len(result.simulation_results) > 0
 
 
 @pytest.mark.integration
 def test_config_loading() -> None:
     """Test loading configuration."""
-    # __file__ is in experiment_runner/tests/test_integration.py
-    # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent.parent
     config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
     config = load_experiment_config(config_path)
@@ -89,16 +88,11 @@ def test_config_loading() -> None:
 def test_custom_track_loading(_setup_mlflow_env: None) -> None:
     """Test loading a custom track from the data directory."""
     # Load base config
-    # __file__ is in experiment_runner/tests/test_integration.py
-    # Go up 2 levels to get to workspace root
     workspace_root = Path(__file__).parent.parent.parent.parent
     config_path = workspace_root / "experiment/configs/experiments/pure_pursuit.yaml"
     config = load_experiment_config(config_path)
 
     # Create a dummy custom track file
-    # __file__ is in experiment_runner/tests/test_integration.py
-    # Go up 2 levels to get to workspace root
-    workspace_root = Path(__file__).parent.parent.parent.parent
     custom_track_path = "data/planning/pure_pursuit/test_custom_track.csv"
     full_path = workspace_root / custom_track_path
 
@@ -122,21 +116,17 @@ def test_custom_track_loading(_setup_mlflow_env: None) -> None:
         # Adapter removal: set track_path directly in params
         planning_node["processor"]["params"]["track_path"] = custom_track_path
 
-        # Run experiment setup
-        runner = ExperimentRunner(config)
+        # Run experiment setup using Preprocessor directly
+        preprocessor = DefaultPreprocessor()
+        components = preprocessor.setup_components(config)
 
-        # Verify setup runs without error (loading the track)
-        runner._setup_components()
-
-        # We can't easily access the internal planner object in FlexibleADComponent
-        # because it's buried in GenericProcessingNode -> Processor
-        # But if _setup_components succeeded, it means the track was loaded.
+        ad_component = components["ad_component"]
 
         # Additional verification: Check if nodes are created
-        assert len(runner.ad_component.get_schedulable_nodes()) > 0
+        assert len(ad_component.get_schedulable_nodes()) > 0
 
         # Check if Planning node exists
-        nodes = runner.ad_component.get_schedulable_nodes()
+        nodes = ad_component.get_schedulable_nodes()
         planning_node_instance = next(n for n in nodes if n.name == "Planning")
         assert planning_node_instance is not None
 

@@ -2,20 +2,20 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from experiment_runner.loader import _recursive_merge, load_experiment_config
-from experiment_runner.schemas import ResolvedExperimentConfig
+from experiment_runner.preprocessing.loader import _recursive_merge, load_experiment_config
+from experiment_runner.preprocessing.schemas import ResolvedExperimentConfig
 
 
 @pytest.fixture
 def mock_project_root():
-    with patch("experiment_runner.loader.get_project_root") as mock_root:
+    with patch("experiment_runner.preprocessing.loader.get_project_root") as mock_root:
         mock_root.return_value = Path("/tmp/mock_root")
         yield mock_root
 
 
 @pytest.fixture
 def mock_load_yaml():
-    with patch("experiment_runner.loader.load_yaml") as mock_load:
+    with patch("experiment_runner.preprocessing.loader.load_yaml") as mock_load:
         yield mock_load
 
 

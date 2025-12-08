@@ -7,7 +7,7 @@ from core.data import VehicleParameters
 from core.utils import get_project_root
 from core.utils.config import load_yaml as core_load_yaml
 from core.utils.config import merge_configs
-from experiment_runner.schemas import (
+from experiment_runner.preprocessing.schemas import (
     ExperimentLayerConfig,
     ModuleConfig,
     ResolvedExperimentConfig,
@@ -356,4 +356,105 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     final_dict["simulator"]["params"] = sim_params
 
     # 7. Build Object
+
     return ResolvedExperimentConfig(**final_dict)
+
+
+class DefaultPreprocessor:
+    """前処理の具体的な実装
+
+    インターフェースではなく、具体的なクラスとして実装。
+    全実験タイプで共通の処理を行う。
+    """
+
+    def __init__(self) -> None:
+        from experiment_runner.preprocessing.factory import ComponentFactory
+
+        self.component_factory = ComponentFactory()
+
+    def load_config(self, config_path: Path) -> ResolvedExperimentConfig:
+        """YAML設定を読み込み、階層マージしてスキーマに変換"""
+        return load_experiment_config(config_path)
+
+    def setup_components(self, config: ResolvedExperimentConfig) -> dict[str, Any]:
+        """コンポーネントをセットアップ"""
+        workspace_root = get_project_root()
+        sim_params = config.simulator.params.copy()
+
+        # 1. Load Vehicle Parameters
+        vehicle_params = None
+        if "vehicle_config" in sim_params:
+            config_path = sim_params.pop("vehicle_config")
+            full_path = workspace_root / config_path
+
+            if not full_path.exists():
+                # Try relative to project if not found? Or assume relative?
+                # Usually relative to project root.
+                pass
+
+            if not full_path.exists():
+                raise FileNotFoundError(f"Vehicle config not found: {full_path}")
+
+            from core.utils.config import load_yaml as load_yaml_file
+
+            vehicle_params = VehicleParameters(**load_yaml_file(full_path))
+            sim_params["vehicle_params"] = vehicle_params
+        else:
+            vehicle_params = VehicleParameters()
+            if "vehicle_params" not in sim_params:
+                sim_params["vehicle_params"] = vehicle_params
+
+        # 2. Setup ADComponent
+        comp_config = config.components
+        ad_component_type = comp_config.ad_component.type
+        ad_component_params = comp_config.ad_component.params.copy()
+
+        # Instantiate ADComponent with vehicle_params
+        ad_component_params["vehicle_params"] = vehicle_params
+        ad_component = self.component_factory.create(ad_component_type, ad_component_params)
+
+        # 3. Setup Simulator
+        sim_type = config.simulator.type
+
+        # FIXME: Temporary fix/override to ensure correct initial state for Pure Pursuit
+        # This logic was in runner.py, mimicking it here for compatibility
+        initial_state_fix = {
+            "x": 89630.067,
+            "y": 43130.695,
+            "yaw": 2.2,
+            "velocity": 0.0,
+        }
+        map_path_fix = "dashboard/assets/lanelet2_map.osm"
+
+        # Check if we should apply fixes (heuristically, ideally this should be in config)
+        # For now, just apply as in runner.py to maintain behavior
+        # But wait, runner.py applied it blindly?
+        # Yes: "We need to update self.config as well so that _generate_dashboard can see the map path"
+        # Since config is passed by reference/value?
+        # Here config is an object.
+
+        sim_params["initial_state"] = initial_state_fix
+        sim_params["map_path"] = map_path_fix
+
+        if hasattr(config.simulator, "params"):
+            config.simulator.params["map_path"] = map_path_fix
+            config.simulator.params["initial_state"] = initial_state_fix
+
+        # Remove scene_config if present
+        if "scene_config" in sim_params:
+            sim_params.pop("scene_config")
+
+        # Pass map_path if available
+        if "map_path" in sim_params:
+            config_path = sim_params.pop("map_path")
+            sim_params["map_path"] = str(workspace_root / config_path)
+
+        simulator = self.component_factory.create(
+            sim_type, sim_params, vehicle_params=vehicle_params
+        )
+
+        return {
+            "simulator": simulator,
+            "ad_component": ad_component,
+            "vehicle_params": vehicle_params,
+        }
