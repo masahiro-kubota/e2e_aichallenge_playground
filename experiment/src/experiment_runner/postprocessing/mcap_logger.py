@@ -56,11 +56,14 @@ class MCAPLogger:
 
         return self
 
-    def log_step(self, step: SimulationStep) -> None:
+    def log_step(self, step: SimulationStep) -> bool:
         """Log a simulation step.
 
         Args:
             step: Simulation step to log
+
+        Returns:
+            bool: True if logging was successful
         """
         if self.writer is None or self.channel_id is None:
             msg = "Logger not initialized. Use 'with MCAPLogger(...) as logger:'"
@@ -78,6 +81,7 @@ class MCAPLogger:
             data=json.dumps(data).encode(),
             publish_time=int(step.timestamp * 1e9),
         )
+        return True
 
     def __exit__(self, *args: object) -> None:
         """Close MCAP file."""

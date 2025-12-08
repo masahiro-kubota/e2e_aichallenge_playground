@@ -41,24 +41,39 @@ class MLflowExperimentLogger:
             return nullcontext()
         return mlflow.start_run()  # type: ignore
 
-    def log_params(self, params: dict[str, Any]) -> None:
-        """Log parameters to MLflow."""
+    def log_params(self, params: dict[str, Any]) -> bool:
+        """Log parameters to MLflow.
+
+        Returns:
+            bool: True if logging was successful
+        """
         if not self._is_ci:
             mlflow.log_params(params)
+        return True
 
-    def log_metrics(self, metrics: dict[str, float]) -> None:
-        """Log metrics to MLflow."""
+    def log_metrics(self, metrics: dict[str, float]) -> bool:
+        """Log metrics to MLflow.
+
+        Returns:
+            bool: True if logging was successful
+        """
         if not self._is_ci:
             mlflow.log_metrics(metrics)
+        return True
 
-    def log_artifact(self, artifact: Artifact) -> None:
-        """Log artifact to MLflow."""
+    def log_artifact(self, artifact: Artifact) -> bool:
+        """Log artifact to MLflow.
+
+        Returns:
+            bool: True if logging was successful, False if artifact not found
+        """
         if not self._is_ci:
             if not os.path.exists(artifact.local_path):
                 print(f"Warning: Artifact not found: {artifact.local_path}")
-                return
+                return False
 
             mlflow.log_artifact(str(artifact.local_path), artifact_path=artifact.remote_path)
+        return True
 
     def log_result(self, result: ExperimentResult) -> bool:
         """Log entire experiment result to MLflow.

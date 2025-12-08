@@ -93,6 +93,10 @@ class PurePursuitPlanner:
         # Return a trajectory containing the target point
         return Trajectory(points=[target_point])
 
-    def reset(self) -> None:
-        """Reset planner state."""
-        pass
+    def reset(self) -> bool:
+        """Reset planner state.
+
+        Returns:
+            bool: True if reset was successful
+        """
+        return True

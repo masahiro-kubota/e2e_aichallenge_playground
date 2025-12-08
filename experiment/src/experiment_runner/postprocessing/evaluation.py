@@ -121,14 +121,19 @@ class EvaluationPostprocessor(
                 print(f"Warning: Input file not found: {full_path}")
         return artifacts
 
-    def _save_mcap(self, log: SimulationLog, output_path: Path) -> None:
-        """Save simulation log to MCAP."""
+    def _save_mcap(self, log: SimulationLog, output_path: Path) -> bool:
+        """Save simulation log to MCAP.
+
+        Returns:
+            bool: True if save was successful
+        """
         # Ensure directory exists
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with MCAPLogger(output_path) as mcap_logger:
             for step in log.steps:
                 mcap_logger.log_step(step)
+        return True
 
     def _calculate_metrics(
         self, log: SimulationLog, success: bool

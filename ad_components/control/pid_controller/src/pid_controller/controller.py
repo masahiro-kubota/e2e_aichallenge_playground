@@ -83,7 +83,12 @@ class PIDController:
 
         return Action(steering=steering, acceleration=acceleration)
 
-    def reset(self) -> None:
-        """Reset controller state."""
+    def reset(self) -> bool:
+        """Reset controller state.
+
+        Returns:
+            bool: True if reset was successful
+        """
         self.integral_error = 0.0
         self.prev_error = 0.0
+        return True
