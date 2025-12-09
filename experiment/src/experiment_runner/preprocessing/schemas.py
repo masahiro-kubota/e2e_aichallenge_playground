@@ -43,6 +43,7 @@ class ExecutionConfig(BaseModel):
     clock_type: Literal["stepped", "realtime", "external"] = Field(
         "stepped", description="Clock type for simulation timing"
     )
+    goal_radius: float = Field(5.0, description="Goal radius for physics node")
 
 
 class TrainingConfig(BaseModel):

@@ -1,12 +1,11 @@
-"""Experiment executor implementation."""
+"""実験実行の実装モジュール。"""
 
 from typing import TYPE_CHECKING, Any
 
-from core.data import (
-    SimulationResult,
-)
+from core.clock import create_clock
+from core.data import SimulationResult
+from core.data.frame_data import collect_node_output_fields, create_frame_data_type
 from core.executor import SingleProcessExecutor
-from core.interfaces.node import SimulationContext
 from core.nodes import PhysicsNode
 from experiment_runner.interfaces import ExperimentRunner
 from experiment_runner.preprocessing.schemas import ResolvedExperimentConfig
@@ -16,14 +15,14 @@ if TYPE_CHECKING:
 
 
 class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResult]):
-    """Runner for evaluation experiments."""
+    """評価実験用のランナー。"""
 
     def run(self, config: ResolvedExperimentConfig, components: dict[str, Any]) -> SimulationResult:
-        """Run evaluation experiment.
+        """評価実験を実行します。
 
         Args:
-            config: Experiment configuration
-            components: Instantiated components (simulator, ad_component, etc.)
+            config: 実験設定
+            components: インスタンス化されたコンポーネント (simulator, ad_componentなど)
 
         Returns:
             Simulation result
@@ -31,55 +30,51 @@ class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResu
         simulator = components["simulator"]
         ad_component = components["ad_component"]
 
-        # Run simulation
+        # 実験パラメータの取得
         max_steps = config.execution.max_steps_per_episode if config.execution else 2000
         sim_rate = config.simulator.rate_hz
 
-        # Create Context & Reset simulator
-        initial_state = simulator.reset()
-        context = SimulationContext(
-            sim_state=initial_state,
-            vehicle_state=initial_state,  # Initialize perceived state
-        )
+        # シミュレータのリセットと初期状態の取得
+        _ = simulator.reset()
 
-        # Collect Nodes
+        # ノードの収集
         nodes = []
-        # 1. Physics
-        goal_radius = (
-            config.execution.goal_radius
-            if config.execution and hasattr(config.execution, "goal_radius")
-            else 5.0
-        )
-        nodes.append(PhysicsNode(simulator, rate_hz=sim_rate, goal_radius=goal_radius))
+        # 1. 物理ノード (PhysicsNode)
+        nodes.append(PhysicsNode(simulator, config))
 
-        # 2. ADComponent Nodes
+        # 2. ADコンポーネントノード  # noqa: RUF003
         nodes.extend(ad_component.get_schedulable_nodes())
 
-        # Inject context into nodes
+        # FrameDataの構築
+        # 1. 全ノードのIO要件を収集  # noqa: RUF003
+        fields = collect_node_output_fields(nodes)
+
+        # 2. 動的なFrameDataクラスを作成
+        DynamicFrameData = create_frame_data_type(fields)  # noqa: N806
+
+        # 3. Context(FrameData)のインスタンス化
+        # 初期値はNoneで初期化され、最初のステップで各ノードがデータを埋めることを想定
+        frame_data = DynamicFrameData()
+
+        # コンテキストを各ノードに注入
         for node in nodes:
-            node.set_context(context)
+            node.set_frame_data(frame_data)
 
-        # Determine Clock Type
+        # クロックの作成
         clock_type = config.execution.clock_type if config.execution else "stepped"
+        clock = create_clock(start_time=0.0, rate_hz=sim_rate, clock_type=clock_type)
 
-        if clock_type == "stepped":
-            from core.clock import SteppedClock
-
-            # SteppedClock manages time advancement
-            clock = SteppedClock(start_time=0.0, dt=1.0 / sim_rate)
-        else:
-            raise ValueError(f"Unsupported clock type: {clock_type}")
-
+        # Executorの作成
         executor = SingleProcessExecutor(nodes, clock)
 
-        # Run
+        # 実験の実行
         duration = max_steps * (1.0 / sim_rate)
-        executor.run(duration=duration, stop_condition=lambda: context.done)
+        executor.run(duration=duration, stop_condition=lambda: frame_data.done)
 
         return SimulationResult(
-            success=context.success,
-            reason=context.done_reason,
-            final_state=context.sim_state,
+            success=frame_data.success,
+            reason=frame_data.done_reason,
+            final_state=frame_data.sim_state,
             log=simulator.get_log(),
         )
 

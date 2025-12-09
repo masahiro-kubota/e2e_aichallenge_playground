@@ -1,7 +1,7 @@
 """Core interfaces for the simulation framework."""
 
+from core.data.frame_data import FrameData
 from core.data.node_io import NodeIO
-from core.data.simulation_context import SimulationContext
 from core.interfaces.ad_components import ADComponent
 from core.interfaces.clock import Clock
 from core.interfaces.dashboard import DashboardGenerator
@@ -15,10 +15,10 @@ __all__ = [
     "Clock",
     "DashboardGenerator",
     "ExperimentLogger",
+    "FrameData",
     "Node",
     "NodeIO",
     "ProcessorProtocol",
-    "SimulationContext",
     "SimulationLogRepository",
     "Simulator",
 ]

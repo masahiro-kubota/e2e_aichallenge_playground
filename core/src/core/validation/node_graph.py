@@ -33,7 +33,7 @@ def validate_node_graph(nodes: list[GenericProcessingNode]) -> None:
                 )
 
         # このノードの出力を追加
-        available_outputs.add(node.io_spec.output)
+        available_outputs.update(node.io_spec.outputs.keys())
 
     # actionが最終的に生成されるかチェック
     if "action" not in available_outputs:
@@ -60,6 +60,7 @@ def visualize_node_graph(nodes: list[GenericProcessingNode]) -> str:
             lines.append(f"    {input_field} --> {node.name}")
 
         # 出力エッジ
-        lines.append(f"    {node.name} --> {node.io_spec.output}")
+        for output_name in node.io_spec.outputs:
+            lines.append(f"    {node.name} --> {output_name}")
 
     return "\n".join(lines)

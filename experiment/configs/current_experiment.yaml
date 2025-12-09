@@ -40,6 +40,7 @@ execution:
   max_steps: 2000
   num_runs: 1
   parallel: false
+  goal_radius: 5.0
 
 logging:
   mlflow:

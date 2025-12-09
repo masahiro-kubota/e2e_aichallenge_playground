@@ -32,6 +32,10 @@ class GenericProcessingNode(Node):
         self.processor = processor
         self.io_spec = io_spec
 
+    def get_node_io(self) -> NodeIO:
+        """Get node I/O specification."""
+        return self.io_spec
+
     def on_run(self, _current_time: float) -> bool:
         """Execute node logic.
 
@@ -41,14 +45,14 @@ class GenericProcessingNode(Node):
         Returns:
             bool: True if execution was successful
         """
-        if self.context is None:
-            # Context not ready
+        if self.frame_data is None:
+            # FrameData not ready
             return False
 
         # 入力を収集
         inputs: dict[str, Any] = {}
         for field_name in self.io_spec.inputs:
-            value = getattr(self.context, field_name, None)
+            value = getattr(self.frame_data, field_name, None)
             if value is None:
                 # 必要なデータがまだない場合はスキップ
                 return False
@@ -58,5 +62,13 @@ class GenericProcessingNode(Node):
         output = self.processor.process(**inputs)
 
         # 出力を書き込み
-        setattr(self.context, self.io_spec.output, output)
+        # 1. 単一出力の場合
+        if len(self.io_spec.outputs) == 1:
+            output_name = next(iter(self.io_spec.outputs))
+            setattr(self.frame_data, output_name, output)
+        # 2. 複数出力の場合 (Processorが辞書を返すと仮定)
+        elif isinstance(output, dict):
+            for key, val in output.items():
+                if key in self.io_spec.outputs:
+                    setattr(self.frame_data, key, val)
         return True

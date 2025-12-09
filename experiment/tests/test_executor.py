@@ -1,18 +1,19 @@
 """Tests for SingleProcessExecutor."""
 
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from experiment_runner.processors.perception import BasicPerceptionProcessor
+from experiment_runner.processors.sensor import IdealSensorProcessor
 
 from core.clock import SteppedClock
 from core.data import Action, Observation, SimulationLog, Trajectory, TrajectoryPoint, VehicleState
+from core.data.frame_data import create_frame_data_type
 from core.data.node_io import NodeIO
-from core.data.simulation_context import SimulationContext
 from core.executor import SingleProcessExecutor
 from core.interfaces import Simulator
 from core.nodes import GenericProcessingNode, PhysicsNode
-from core.processors.perception import BasicPerceptionProcessor
-from core.processors.sensor import IdealSensorProcessor
 
 
 @pytest.fixture
@@ -54,14 +55,30 @@ def stepped_clock():
     return SteppedClock(start_time=0.0, dt=0.01)
 
 
-def test_executor_timing(mock_simulator, mock_planner, mock_controller):
+@pytest.fixture
+def mock_config():
+    config = MagicMock()
+    config.simulator.rate_hz = 10.0
+    config.execution.goal_radius = 5.0
+    return config
+
+
+def _create_context_for_nodes(nodes) -> Any:
+    from core.data.frame_data import collect_node_output_fields
+
+    fields = collect_node_output_fields(nodes)
+
+    DynamicFrameData = create_frame_data_type(fields)  # noqa: N806
+    return DynamicFrameData()
+
+
+def test_executor_timing(mock_simulator, mock_planner, mock_controller, mock_config):
     """Test that nodes run at expected rates."""
 
-    context = SimulationContext()
     clock = SteppedClock(start_time=0.0, dt=0.01)
 
     # Physics Node
-    physics_node = PhysicsNode(mock_simulator, rate_hz=10.0)
+    physics_node = PhysicsNode(mock_simulator, mock_config)
     physics_node.on_run = MagicMock(wraps=physics_node.on_run)
 
     # Sensor Node (Generic)
@@ -81,12 +98,15 @@ def test_executor_timing(mock_simulator, mock_planner, mock_controller):
     control_node.on_run = MagicMock(wraps=control_node.on_run)
 
     nodes = [physics_node, sensor_node, planning_node, control_node]
+
+    frame_data = _create_context_for_nodes(nodes)
+
     for node in nodes:
-        node.set_context(context)
+        node.set_frame_data(frame_data)
     executor = SingleProcessExecutor(nodes, clock)
 
     # Run for 0.42 seconds
-    executor.run(duration=0.42, stop_condition=lambda: context.done)
+    executor.run(duration=0.42, stop_condition=lambda: frame_data.done)
 
     assert physics_node.on_run.call_count == 5
     assert planning_node.on_run.call_count == 3
@@ -94,13 +114,12 @@ def test_executor_timing(mock_simulator, mock_planner, mock_controller):
     assert sensor_node.on_run.call_count == 5
 
 
-def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
-    """Test data flow between nodes via Context."""
-    context = SimulationContext()
+def test_executor_data_flow(mock_simulator, mock_planner, mock_controller, mock_config):
+    """Test data flow between nodes via FrameData."""
     clock = SteppedClock(start_time=0.0, dt=0.01)
 
     # Physics
-    physics_node = PhysicsNode(mock_simulator, rate_hz=10.0)
+    physics_node = PhysicsNode(mock_simulator, mock_config)
 
     # Sensor
     sensor_node = GenericProcessingNode(
@@ -136,8 +155,11 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     )
 
     nodes = [physics_node, sensor_node, perception_node, planning_node, control_node]
+
+    frame_data = _create_context_for_nodes(nodes)
+
     for node in nodes:
-        node.set_context(context)
+        node.set_frame_data(frame_data)
     executor = SingleProcessExecutor(nodes, clock)
 
     # Run one step
@@ -145,19 +167,19 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
 
     # Physics should have updated sim_state
     mock_simulator.step.assert_called()
-    assert context.sim_state is not None
+    assert frame_data.sim_state is not None
 
     # Sensor should have updated vehicle_state
-    assert context.vehicle_state is not None
+    assert frame_data.vehicle_state is not None
 
     # Perception should have updated observation
-    assert context.observation is not None
-    assert isinstance(context.observation, Observation)
+    assert frame_data.observation is not None
+    assert isinstance(frame_data.observation, Observation)
 
     # Planning should have produced trajectory
     mock_planner.process.assert_called()
-    assert context.trajectory is not None
+    assert frame_data.trajectory is not None
 
     # Control should have produced action
     mock_controller.process.assert_called()
-    assert context.action is not None
+    assert frame_data.action is not None
