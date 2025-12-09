@@ -68,8 +68,6 @@ docker compose down -v  # データも削除
 
 ## 📁 ディレクトリ構成
 
-### アーキテクチャ
-
 ```
 e2e_aichallenge_playground/
 ├── core/                           # プロジェクト基盤（データ構造・インターフェース）
@@ -82,13 +80,18 @@ e2e_aichallenge_playground/
 │       ├── pid_controller/
 │       └── neural_controller/
 ├── simulator/                     # シミュレータ実装
-├── experiment/
-│   ├── runner/                   # 統一実験実行フレームワーク
-│   ├── training/                 # 学習機能（Dataset, Trainer）
-│   └── configs/                  # 実験設定ファイル
-│       ├── experiments/          # 実験設定
-│       ├── vehicles/             # 車両パラメータ
-│       └── scenes/               # シーン設定
+├── experiment/                    # 実験フレームワーク
+│   ├── configs/                  # 実験設定ファイル
+│   │   ├── experiments/          # 実験設定
+│   │   ├── modules/              # モジュール設定（ADコンポーネント構成）
+│   │   ├── scenes/               # シーン設定
+│   │   ├── systems/              # システム設定（車両・シーン・モジュールの組み合わせ）
+│   │   └── vehicles/             # 車両パラメータ
+│   └── src/
+│       └── experiment_runner/    # 実験実行メインロジック
+│           ├── runner/           # 実行エンジン
+│           ├── postprocessing/   # 後処理 (評価・可視化)
+│           └── preprocessing/    # 前処理 (Config解析)
 ├── dashboard/                    # 可視化ダッシュボード
 ├── data/                         # 一時データ（Git対象外）
 └── mlflow/                       # MLflow + MinIO サーバー
@@ -169,55 +172,6 @@ class ADComponent(ABC):
     def get_schedulable_nodes(self) -> list[Node]:
         """実行可能なノードのリストを返す"""
         pass
-```
-
-#### ノードの種類
-
-各ノードは特定の周波数で実行され、`SimulationContext`を通じてデータを共有します：
-
-| ノード | 役割 | 典型的な周波数 |
-|--------|------|----------------|
-| **PhysicsNode** | シミュレータの物理演算を実行 | 10-100 Hz |
-| **SensorNode** | センサーデータの取得・処理 | 10-50 Hz |
-| **PlanningNode** | 経路計画・軌道生成 | 5-10 Hz |
-| **ControlNode** | 車両制御コマンド生成 | 10-50 Hz |
-
-#### 実行フロー
-
-```mermaid
-sequenceDiagram
-    participant E as SingleProcessExecutor
-    participant P as PhysicsNode
-    participant S as SensorNode
-    participant PL as PlanningNode
-    participant C as ControlNode
-    participant Ctx as SimulationContext
-
-    loop Every dt (e.g., 0.01s)
-        E->>E: Check node schedules
-
-        alt Physics node ready
-            E->>P: on_run(context)
-            P->>Ctx: Update sim_state
-            P->>Ctx: Check termination
-        end
-
-        alt Sensor node ready
-            E->>S: on_run(context)
-            S->>Ctx: Update vehicle_state
-            S->>Ctx: Update observation
-        end
-
-        alt Planning node ready
-            E->>PL: on_run(context)
-            PL->>Ctx: Update trajectory
-        end
-
-        alt Control node ready
-            E->>C: on_run(context)
-            C->>Ctx: Update action
-        end
-    end
 ```
 
 #### FlexibleADComponent
