@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from core.clock import SteppedClock
 from core.data import Action, Observation, SimulationLog, Trajectory, TrajectoryPoint, VehicleState
 from core.data.node_io import NodeIO
 from core.data.simulation_context import SimulationContext
@@ -46,10 +47,18 @@ def mock_controller():
     return controller
 
 
+@pytest.fixture
+def stepped_clock():
+    from core.clock import SteppedClock
+
+    return SteppedClock(start_time=0.0, dt=0.01)
+
+
 def test_executor_timing(mock_simulator, mock_planner, mock_controller):
     """Test that nodes run at expected rates."""
 
     context = SimulationContext()
+    clock = SteppedClock(start_time=0.0, dt=0.01)
 
     # Physics Node
     physics_node = PhysicsNode(mock_simulator, rate_hz=10.0)
@@ -72,10 +81,10 @@ def test_executor_timing(mock_simulator, mock_planner, mock_controller):
     control_node.on_run = MagicMock(wraps=control_node.on_run)
 
     nodes = [physics_node, sensor_node, planning_node, control_node]
-    executor = SingleProcessExecutor(nodes, context)
+    executor = SingleProcessExecutor(nodes, context, clock)
 
     # Run for 0.42 seconds
-    executor.run(duration=0.42, dt=0.01)
+    executor.run(duration=0.42)
 
     assert physics_node.on_run.call_count == 5
     assert planning_node.on_run.call_count == 3
@@ -86,6 +95,7 @@ def test_executor_timing(mock_simulator, mock_planner, mock_controller):
 def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     """Test data flow between nodes via Context."""
     context = SimulationContext()
+    clock = SteppedClock(start_time=0.0, dt=0.01)
 
     # Physics
     physics_node = PhysicsNode(mock_simulator, rate_hz=10.0)
@@ -124,10 +134,10 @@ def test_executor_data_flow(mock_simulator, mock_planner, mock_controller):
     )
 
     nodes = [physics_node, sensor_node, perception_node, planning_node, control_node]
-    executor = SingleProcessExecutor(nodes, context)
+    executor = SingleProcessExecutor(nodes, context, clock)
 
     # Run one step
-    executor.run(duration=0.05, dt=0.01)
+    executor.run(duration=0.05)
 
     # Physics should have updated sim_state
     mock_simulator.step.assert_called()

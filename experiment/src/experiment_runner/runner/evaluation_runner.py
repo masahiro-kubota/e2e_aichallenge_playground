@@ -56,11 +56,22 @@ class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResu
         # 2. ADComponent Nodes
         nodes.extend(ad_component.get_schedulable_nodes())
 
-        executor = SingleProcessExecutor(nodes, context)
+        # Determine Clock Type
+        clock_type = config.execution.clock_type if config.execution else "stepped"
+
+        if clock_type == "stepped":
+            from core.clock import SteppedClock
+
+            # SteppedClock manages time advancement
+            clock = SteppedClock(start_time=0.0, dt=1.0 / sim_rate)
+        else:
+            raise ValueError(f"Unsupported clock type: {clock_type}")
+
+        executor = SingleProcessExecutor(nodes, context, clock)
 
         # Run
         duration = max_steps * (1.0 / sim_rate)
-        sim_result = executor.run(duration=duration, dt=1.0 / sim_rate)
+        sim_result = executor.run(duration=duration)
 
         return sim_result
 

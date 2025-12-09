@@ -38,6 +38,12 @@ class ExecutionConfig(BaseModel):
     parallel: bool = Field(False, description="Run in parallel")
     num_workers: int = Field(1, description="Number of parallel workers")
 
+    # Future support for executor/clock switching
+    executor_type: Literal["single_process"] = Field("single_process", description="Executor type")
+    clock_type: Literal["stepped", "realtime", "external"] = Field(
+        "stepped", description="Clock type for simulation timing"
+    )
+
 
 class TrainingConfig(BaseModel):
     """Configuration for training."""
