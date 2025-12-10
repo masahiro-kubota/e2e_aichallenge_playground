@@ -52,7 +52,7 @@ class EvaluationPostprocessor(
             # Or Postprocessor starts it just for logging?
             # Since Runner.py wrapped both execution and logging, splitting them is tricky for MLflow context.
             # However, if we just want to log metrics and params, we can start a run, log, and end it.
-            mlflow.set_tracking_uri(config.logging.mlflow.tracking_uri)
+            mlflow.set_tracking_uri(config.postprocess.mlflow.tracking_uri)
             mlflow.set_experiment(config.experiment.name)
             mlflow_context = mlflow.start_run()
 
@@ -68,9 +68,9 @@ class EvaluationPostprocessor(
 
         with mlflow_context:
             # 1. Save MCAP
-            mcap_path = Path(config.logging.mcap.output_dir) / "simulation.mcap"
+            mcap_path = Path(config.postprocess.mcap.output_dir) / "simulation.mcap"
             self._save_mcap(sim_result.log, mcap_path)
-            if config.logging.mcap.enabled and mcap_path.exists():
+            if config.postprocess.mcap.enabled and mcap_path.exists():
                 result_artifacts.append(Artifact(local_path=mcap_path))
 
             # 2. Add metadata to log
@@ -99,7 +99,7 @@ class EvaluationPostprocessor(
 
             # 6. Log to MLflow
             logger = MLflowExperimentLogger(
-                tracking_uri=config.logging.mlflow.tracking_uri,
+                tracking_uri=config.postprocess.mlflow.tracking_uri,
                 experiment_name=config.experiment.name,
             )
             logger.log_result(experiment_result)
@@ -113,7 +113,7 @@ class EvaluationPostprocessor(
     def _collect_input_artifacts(self, config: ResolvedExperimentConfig) -> list[Artifact]:
         """Collect input artifacts from configuration."""
         artifacts: list[Artifact] = []
-        for input_path in config.logging.inputs:
+        for input_path in config.postprocess.inputs:
             full_path = get_project_root() / input_path
             if full_path.exists():
                 artifacts.append(Artifact(local_path=full_path, remote_path="input_data"))
@@ -158,7 +158,7 @@ class EvaluationPostprocessor(
         self, result: ExperimentResult, config: ResolvedExperimentConfig, is_ci: bool
     ) -> Artifact | None:
         """Generate interactive dashboard."""
-        if not config.logging.dashboard.enabled:
+        if not config.postprocess.dashboard.enabled:
             return None
 
         print("Generating interactive dashboard...")

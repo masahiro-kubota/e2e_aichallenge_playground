@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from core.interfaces.node import StrictConfig
+
 
 class ExperimentType(str, Enum):
     """Experiment type enumeration."""
@@ -35,11 +37,13 @@ class ExecutionConfig(BaseModel):
 
     num_episodes: int = Field(1, description="Number of episodes to run")
     max_steps_per_episode: int = Field(2000, description="Maximum steps per episode")
-    parallel: bool = Field(False, description="Run in parallel")
+    duration_sec: float | None = Field(
+        None, description="Simulation duration in seconds (overrides max_steps_per_episode if set)"
+    )
+    parallel: bool = Field(False, description="Run episodes in parallel")
     num_workers: int = Field(1, description="Number of parallel workers")
 
     # Future support for executor/clock switching
-    executor_type: Literal["single_process"] = Field("single_process", description="Executor type")
     clock_type: Literal["stepped", "realtime", "external"] = Field(
         "stepped", description="Clock type for simulation timing"
     )
@@ -124,28 +128,28 @@ class ModelConfig(BaseModel):
     )
 
 
-class MLflowConfig(BaseModel):
+class MLflowConfig(StrictConfig):
     """Configuration for MLflow logging."""
 
     enabled: bool = Field(True, description="Enable MLflow logging")
     tracking_uri: str = Field("http://localhost:5000", description="MLflow tracking URI")
 
 
-class MCAPConfig(BaseModel):
+class MCAPConfig(StrictConfig):
     """Configuration for MCAP logging."""
 
     enabled: bool = Field(True, description="Enable MCAP logging")
     output_dir: str = Field("/tmp", description="Output directory for MCAP files")
 
 
-class DashboardConfig(BaseModel):
+class DashboardConfig(StrictConfig):
     """Configuration for dashboard generation."""
 
     enabled: bool = Field(True, description="Enable dashboard generation")
 
 
-class LoggingConfig(BaseModel):
-    """Configuration for logging."""
+class PostprocessConfig(StrictConfig):
+    """Configuration for postprocessing (logging, metrics, dashboard)."""
 
     inputs: list[str] = Field(
         default_factory=list, description="List of input files to log as artifacts"
@@ -200,13 +204,18 @@ class SystemConfig(BaseModel):
 
 
 class ExperimentLayerConfig(BaseModel):
-    """Experiment layer configuration (Metadata & Overrides)."""
+    """Experiment layer configuration."""
 
+    # Experiment metadata (can be at root or nested under 'experiment' key)
     name: str = Field(..., description="Experiment name")
     type: ExperimentType = Field(..., description="Experiment type")
     description: str = Field("", description="Experiment description")
+
+    # Configuration fields
     system: str = Field(..., description="Path to system configuration")
-    overrides: dict[str, Any] = Field(default_factory=dict, description="Configuration overrides")
+    execution: ExecutionConfig | None = Field(None, description="Execution configuration")
+    postprocess: PostprocessConfig | None = Field(None, description="Postprocessing configuration")
+    supervisor: dict[str, Any] | None = Field(None, description="Supervisor parameter overrides")
 
 
 class SupervisorConfig(BaseModel):
@@ -231,7 +240,7 @@ class ResolvedExperimentConfig(BaseModel):
         None, description="Data collection configuration"
     )
     evaluation: EvaluationConfig | None = Field(None, description="Evaluation configuration")
-    logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    postprocess: PostprocessConfig = Field(default_factory=PostprocessConfig)
     runtime: dict[str, Any] = Field(default_factory=dict, description="Runtime configuration")
 
     @model_validator(mode="after")

@@ -39,16 +39,16 @@ class Simulator(Node[SimulatorConfig]):
 
     def __init__(
         self,
-        config: dict[str, Any],
+        config: SimulatorConfig,
         rate_hz: float,
     ) -> None:
         """Initialize Simulator.
 
         Args:
-            config: Configuration dictionary
+            config: Validated configuration
             rate_hz: Physics update rate [Hz]
         """
-        super().__init__("Simulator", rate_hz, config, config_model=SimulatorConfig)
+        super().__init__("Simulator", rate_hz, config)
 
         self.dt = 1.0 / rate_hz
         self._current_state: SimulationVehicleState | None = None

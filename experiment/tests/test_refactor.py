@@ -7,6 +7,7 @@ from pure_pursuit.pure_pursuit_node import PurePursuitConfig, PurePursuitNode
 from core.data import VehicleParameters
 from experiment.orchestrator import ExperimentOrchestrator
 from experiment.preprocessing.loader import load_experiment_config
+from experiment.processors.sensor import IdealSensorNode
 
 
 @pytest.mark.integration
@@ -51,18 +52,29 @@ def test_node_instantiation(tmp_path) -> None:
     )
 
     # Pure Pursuit
-    pp_config = {
+
+    pp_config_dict = {
         "track_path": str(dummy_track),
         "min_lookahead_distance": 2.0,
         "max_lookahead_distance": 10.0,
         "lookahead_speed_ratio": 1.0,
     }
+    pp_config = PurePursuitConfig(**pp_config_dict)
     pp_node = PurePursuitNode(config=pp_config, rate_hz=10.0, vehicle_params=vp)
-    assert isinstance(pp_node.config, PurePursuitConfig)
-    assert pp_node.config.min_lookahead_distance == 2.0
+    assert pp_node.name == "PurePursuit"
+    assert pp_node.config.track_path == str(dummy_track)
 
-    # PID
-    pid_config = {"kp": 1.0, "ki": 0.0, "kd": 0.0, "u_min": -5.0, "u_max": 5.0}
-    pid_node = PIDControllerNode(config=pid_config, rate_hz=30.0, vehicle_params=vp)
-    assert isinstance(pid_node.config, PIDConfig)
-    assert pid_node.config.u_max == 5.0
+    # PID Controller
+
+    pid_config_dict = {"kp": 1.0, "ki": 0.1, "kd": 0.01}
+    pid_config = PIDConfig(**pid_config_dict)
+    pid_node = PIDControllerNode(config=pid_config, rate_hz=10.0, vehicle_params=vp)
+    assert pid_node.name == "PIDController"
+    assert pid_node.config.kp == 1.0
+
+    # Sensor
+    from experiment.processors.sensor import IdealSensorConfig
+
+    sensor_config = IdealSensorConfig()
+    sensor_node = IdealSensorNode(config=sensor_config, rate_hz=50.0)
+    assert sensor_node.name == "Sensor"

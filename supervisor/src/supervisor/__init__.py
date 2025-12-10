@@ -1,5 +1,5 @@
-"""Supervisor package for simulation judgment and monitoring."""
+"""Supervisor package."""
 
-from supervisor.supervisor_node import SupervisorNode
+from supervisor.supervisor_node import SupervisorConfig, SupervisorNode
 
-__all__ = ["SupervisorNode"]
+__all__ = ["SupervisorConfig", "SupervisorNode"]

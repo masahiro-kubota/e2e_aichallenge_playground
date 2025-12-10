@@ -9,7 +9,6 @@ from core.utils.paths import get_project_root
 
 def create_node(
     node_type: str,
-    name: str,
     rate_hz: float,
     params: dict[str, Any],
     vehicle_params: VehicleParameters,
@@ -18,7 +17,6 @@ def create_node(
 
     Args:
         node_type: Class path (e.g., "package.module.ClassName")
-        name: Node instance name
         rate_hz: Execution frequency in Hz
         params: Node configuration parameters
         vehicle_params: Vehicle parameters to inject if required by Node
@@ -36,7 +34,6 @@ def create_node(
     for key, value in node_params.items():
         if key in path_keys and isinstance(value, str):
             # Resolve relative paths against workspace root
-            # Only if it looks like a relative path? get_project_root / value handles both.
             node_params[key] = str(workspace_root / value)
 
     # Import class
@@ -53,35 +50,35 @@ def create_node(
     if not issubclass(cls, Node):
         raise TypeError(f"Class {cls} is not a subclass of Node")
 
-    # Inject vehicle_params if needed
+    # Get the config model from the class
+    # The Node class is Generic[T], we need to extract T
+    # We can look at __orig_bases__ to find the config type
+    config_class = None
+    if hasattr(cls, "__orig_bases__"):
+        for base in cls.__orig_bases__:
+            if (
+                hasattr(base, "__origin__")
+                and base.__origin__ is Node
+                and hasattr(base, "__args__")
+                and base.__args__
+            ):
+                config_class = base.__args__[0]
+                break
+
+    if config_class is None:
+        raise ValueError(f"Could not determine config class for {cls}")
+
+    # Check if the class accepts vehicle_params
     sig = inspect.signature(cls.__init__)
+    kwargs = {}
 
-    # Check signature for vehicle_params
     if "vehicle_params" in sig.parameters:
-        return cls(config=node_params, rate_hz=rate_hz, vehicle_params=vehicle_params)
-    else:
-        # Standard Node signature (name, rate_hz, config) ??
-        # Or (config, rate_hz) depending on implementation conventions.
-        # Based on refactor work, most new nodes follow (config, rate_hz, [vehicle_params]).
-        # But base Node is (name, rate_hz, config).
-        # We assume the Node implementation handles its own naming or construction details.
+        kwargs["vehicle_params"] = vehicle_params
 
-        # If the Node does NOT take vehicle_params, we try standard instantiation.
-        # Checking against PurePursuitNode/PIDNode signatures we made:
-        # def __init__(self, config: dict, rate_hz: float, vehicle_params: ...)
-
-        # If we encounter a Node that follows the BASE Node signature:
-        # def __init__(self, name: str, rate_hz: float, config: Any = None)
-
-        # Let's check parameters names to be safe.
-        kwargs = {}
-        if "config" in sig.parameters:
-            kwargs["config"] = node_params
-
-        if "name" in sig.parameters:
-            kwargs["name"] = name
-
-        if "rate_hz" in sig.parameters:
-            kwargs["rate_hz"] = rate_hz
-
-        return cls(**kwargs)
+    # Use from_dict to create the node
+    return cls.from_dict(
+        rate_hz=rate_hz,
+        config_class=config_class,
+        config_dict=node_params,
+        **kwargs,
+    )

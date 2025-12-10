@@ -17,13 +17,14 @@ class LoggerConfig(NodeConfig):
 class LoggerNode(Node[LoggerConfig]):
     """Node responsible for recording FrameData to simulation log."""
 
-    def __init__(self, rate_hz: float = 10.0):
+    def __init__(self, config: LoggerConfig = LoggerConfig(), rate_hz: float = 10.0):
         """Initialize LoggerNode.
 
         Args:
+            config: Validated configuration
             rate_hz: Logging rate [Hz]
         """
-        super().__init__("Logger", rate_hz, config={}, config_model=LoggerConfig)
+        super().__init__("Logger", rate_hz, config)
         self.log = SimulationLog(steps=[], metadata={})
         self.current_time = 0.0
 

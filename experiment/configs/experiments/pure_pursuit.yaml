@@ -1,28 +1,15 @@
 experiment:
   name: "pure_pursuit"
   type: "evaluation"
-  description: "Pure Pursuit tracking evaluation (Layered Config)"
+  description: "Pure Pursuit tracking evaluation"
 
-system: "experiment/configs/systems/kart_default_track.yaml"
-
-overrides:
-  # FlexibleADComponentのノード構成に対するオーバーライド
-  # 必要に応じてノードごとのパラメータを上書き可能
-  # 現在はデフォルト値を使用するため、オーバーライドなし
+  system: "experiment/configs/systems/kart_default_track.yaml"
 
   execution:
     num_episodes: 1
     max_steps_per_episode: 2000
 
-  simulator:
-    params:
-      map_path: "dashboard/assets/lanelet2_map.osm"
-      initial_state:
-        x: 89630.067
-        y: 43130.695
-        yaw: 2.2
-
-  logging:
+  postprocess:
     mlflow:
       enabled: true
       tracking_uri: "http://localhost:5000"

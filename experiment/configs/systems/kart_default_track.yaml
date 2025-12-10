@@ -13,8 +13,8 @@ system:
 
   simulator:
     type: "KinematicSimulator"
+    rate_hz: 100.0  # Physics update rate [Hz]
     params:
-      dt: 0.1
       initial_state:
         x: 89630.067
         y: 43130.695

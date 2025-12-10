@@ -12,8 +12,10 @@ class IdealSensorConfig(NodeConfig):
 class IdealSensorNode(Node[IdealSensorConfig]):
     """理想的なセンサーノード (ノイズなし、遅延なし)."""
 
-    def __init__(self, config: dict, rate_hz: float, vehicle_params: Any | None = None):
-        super().__init__("Sensor", rate_hz, config, config_model=IdealSensorConfig)
+    def __init__(
+        self, config: IdealSensorConfig, rate_hz: float, vehicle_params: Any | None = None
+    ):
+        super().__init__("Sensor", rate_hz, config)
         _ = vehicle_params
 
     def get_node_io(self) -> NodeIO:

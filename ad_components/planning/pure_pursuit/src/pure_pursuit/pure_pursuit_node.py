@@ -25,9 +25,12 @@ class PurePursuitNode(Node[PurePursuitConfig]):
     """Pure Pursuit path tracking node."""
 
     def __init__(
-        self, config: dict, rate_hz: float, vehicle_params: VehicleParameters | None = None
+        self,
+        config: PurePursuitConfig,
+        rate_hz: float,
+        vehicle_params: VehicleParameters | None = None,
     ):
-        super().__init__("PurePursuit", rate_hz, config, config_model=PurePursuitConfig)
+        super().__init__("PurePursuit", rate_hz, config)
         self.vehicle_params = vehicle_params or VehicleParameters()
         self.reference_trajectory: Trajectory | None = None
         # self.config is set by base class

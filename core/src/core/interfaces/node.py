@@ -24,13 +24,20 @@ class FrameDataProtocol(Protocol):
     pass
 
 
-class NodeConfig(BaseModel):
-    """Base configuration for nodes with strict validation."""
+class StrictConfig(BaseModel):
+    """Base configuration with strict validation.
+
+    All configuration classes should inherit from this to automatically
+    enforce strict validation (extra fields are forbidden).
+    """
 
     model_config = ConfigDict(extra="forbid")
 
 
-T = TypeVar("T", bound=NodeConfig)
+# Alias for backward compatibility
+NodeConfig = StrictConfig
+
+T = TypeVar("T", bound=StrictConfig)
 
 
 class Node(ABC, Generic[T]):
@@ -40,23 +47,45 @@ class Node(ABC, Generic[T]):
         self,
         name: str,
         rate_hz: float,
-        config: dict[str, Any],
-        config_model: type[T],
+        config: T,
     ):
         """Initialize node.
 
         Args:
             name: Node name
             rate_hz: Execution frequency in Hz
-            config: Configuration dictionary
-            config_model: Pydantic model class for configuration validation
+            config: Validated configuration (Pydantic model instance)
         """
         self.name = name
         self.rate_hz = rate_hz
         self.period = 1.0 / rate_hz
         self.next_time = 0.0
         self.frame_data: FrameDataProtocol | None = None
-        self.config: T = config_model(**config)
+        self.config: T = config
+
+    @classmethod
+    def from_dict(
+        cls,
+        rate_hz: float,
+        config_class: type[T],
+        config_dict: dict[str, Any],
+        **kwargs: Any,
+    ) -> "Node[T]":
+        """Create node from configuration dictionary.
+
+        This is a helper method for creating nodes from YAML/dict configs.
+
+        Args:
+            rate_hz: Execution frequency in Hz
+            config_class: Pydantic model class for configuration validation
+            config_dict: Configuration dictionary
+            **kwargs: Additional arguments to pass to __init__
+
+        Returns:
+            Instantiated Node with validated configuration
+        """
+        config = config_class(**config_dict)
+        return cls(rate_hz=rate_hz, config=config, **kwargs)
 
     @abstractmethod
     def get_node_io(self) -> NodeIO:

@@ -23,9 +23,9 @@ class PIDControllerNode(Node[PIDConfig]):
     """PID Controller node for combined steering (Pure Pursuit logic legacy) and velocity control."""
 
     def __init__(
-        self, config: dict, rate_hz: float, vehicle_params: VehicleParameters | None = None
+        self, config: PIDConfig, rate_hz: float, vehicle_params: VehicleParameters | None = None
     ):
-        super().__init__("PIDController", rate_hz, config, config_model=PIDConfig)
+        super().__init__("PIDController", rate_hz, config)
         self.vehicle_params = vehicle_params or VehicleParameters()
         self.wheelbase = self.vehicle_params.wheelbase
         # self.config is set by base class

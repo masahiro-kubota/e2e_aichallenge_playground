@@ -27,15 +27,6 @@ docker compose up -d
 cd ..
 
 # 4. 実験を実行
-
-# データ収集（Pure Pursuit）
-# データは自動的にMinIO (s3://datasets/...) にアップロードされます
-uv run experiment-runner --config experiment/configs/experiments/data_collection_pure_pursuit.yaml
-
-# 学習（Imitation Learning）
-# MinIOからデータを自動ダウンロードして学習します
-uv run experiment-runner --config experiment/configs/experiments/imitation_learning_s3.yaml
-
 # 評価（Pure Pursuit）
 uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
 

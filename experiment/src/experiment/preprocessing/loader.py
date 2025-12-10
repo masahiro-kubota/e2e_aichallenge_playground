@@ -65,20 +65,30 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     """
     # 1. Load Experiment Layer
     exp_data = load_yaml(path)
-    # Handle the case where the wrapper key "experiment" is used or not
-    # The existing files usually have root keys like experiment, components, etc.
-    # But new structure expects root keys: experiment, system, overrides.
-    # Let's assume the passed YAML follows the new ExperimentLayerConfig structure schema directly
-    # or wrapped in an "experiment" key. Pydantic can handle direct mapping.
-    # To be safe and flexible, let's look for known fields.
 
     # Normalize structure:
-    # If "experiment" key exists and contains metadata (name, type, etc.), flatten it into root
-    # so ExperimentLayerConfig can validate it.
+    # Support both flat and nested structures
+    # Nested: experiment: {name, type, system, execution, postprocess}
+    # Flat: name, type, system, execution, postprocess (at root level)
     config_data = exp_data.copy()
+
     if "experiment" in config_data and isinstance(config_data["experiment"], dict):
-        exp_meta = config_data.pop("experiment")
-        config_data.update(exp_meta)
+        # Nested structure: flatten it
+        exp_content = config_data.pop("experiment")
+
+        # Merge experiment content into root, but preserve root-level overrides
+        # Priority: root level > experiment nested level
+        for key in [
+            "name",
+            "type",
+            "description",
+            "system",
+            "execution",
+            "postprocess",
+            "supervisor",
+        ]:
+            if key not in config_data and key in exp_content:
+                config_data[key] = exp_content[key]
 
     experiment_layer = ExperimentLayerConfig(**config_data)
 
@@ -237,37 +247,25 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
         },
         "components": resolved_components,
         "simulator": resolved_simulator,
-        "logging": {},  # Defaults
+        "postprocess": {},  # Defaults (will be overridden if experiment_layer.postprocess exists)
     }
 
     # Apply System Runtime
     if system_layer.runtime:
         base_config["runtime"] = system_layer.runtime
 
-    # --- MERGING OVERRIDES ---
+    # --- APPLYING EXPERIMENT LAYER CONFIG ---
 
-    overrides = experiment_layer.overrides
-
-    # Start merging
+    # Start with base config
     final_dict = base_config
 
-    # 6.1 Handle Component Overrides
-    if "components" in overrides:
-        comp_ops = overrides.pop("components")
+    # Apply postprocess config if specified
+    if experiment_layer.postprocess:
+        final_dict["postprocess"] = experiment_layer.postprocess.model_dump()
 
-        # Merge ad_component overrides directly
-        if "ad_component" in comp_ops:
-            final_dict["components"]["ad_component"] = _recursive_merge(
-                final_dict["components"]["ad_component"], comp_ops["ad_component"]
-            )
-        else:
-            raise ValueError(
-                "Component overrides must be nested under 'ad_component' key. "
-                "Legacy top-level component keys are no longer supported."
-            )
-
-    # 6.2 Handle other overrides
-    final_dict = _recursive_merge(final_dict, overrides)
+    # Apply execution config if specified
+    if experiment_layer.execution:
+        final_dict["execution"] = experiment_layer.execution.model_dump()
 
     # --- RESOLVE PATHS (Vehicle) ---
 
@@ -297,11 +295,14 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
 
     supervisor_params = supervisor_defaults.copy()
 
+    # Sync max_steps with execution config
+    # This ensures Supervisor doesn't terminate before the configured simulation duration
+    if experiment_layer.execution and experiment_layer.execution.max_steps_per_episode:
+        supervisor_params["max_steps"] = experiment_layer.execution.max_steps_per_episode
+
     # Also check if user provided supervisor overrides directly
-    if experiment_layer.overrides and "supervisor" in experiment_layer.overrides:
-        supervisor_params = _recursive_merge(
-            supervisor_params, experiment_layer.overrides["supervisor"]
-        )
+    if experiment_layer.supervisor:
+        supervisor_params = _recursive_merge(supervisor_params, experiment_layer.supervisor)
 
     final_dict["supervisor"] = {"params": supervisor_params}
 
@@ -415,9 +416,18 @@ class DefaultPreprocessor:
         from simulator.simulator import Simulator
 
         # Prepare simulator config
+        # Get initial_state from sim_params if available
+        initial_state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0)
+        if "initial_state" in sim_params:
+            initial_state_dict = sim_params.pop("initial_state")
+            if isinstance(initial_state_dict, dict):
+                initial_state = VehicleState(**initial_state_dict, timestamp=0.0)
+            elif isinstance(initial_state_dict, VehicleState):
+                initial_state = initial_state_dict
+
         simulator_config = {
             "vehicle_params": vehicle_params,
-            "initial_state": VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
+            "initial_state": initial_state,
         }
 
         # Add map_path if available
@@ -428,7 +438,10 @@ class DefaultPreprocessor:
                 map_path_str = str(workspace_root / map_path_str)
             simulator_config["map_path"] = map_path_str
 
-        simulator = Simulator(config=simulator_config, rate_hz=sim_rate)
+        from simulator.simulator import SimulatorConfig
+
+        simulator_config_model = SimulatorConfig(**simulator_config)
+        simulator = Simulator(config=simulator_config_model, rate_hz=sim_rate)
 
         nodes = []
 
@@ -440,10 +453,12 @@ class DefaultPreprocessor:
 
         # 6. Supervisor Node
         if config.supervisor:
-            supervisor_params = config.supervisor.params
+            from supervisor import SupervisorConfig
 
+            supervisor_params = config.supervisor.params
+            supervisor_config_model = SupervisorConfig(**supervisor_params)
             supervisor = SupervisorNode(
-                config=supervisor_params,
+                config=supervisor_config_model,
                 rate_hz=sim_rate,
             )
             nodes.append(supervisor)

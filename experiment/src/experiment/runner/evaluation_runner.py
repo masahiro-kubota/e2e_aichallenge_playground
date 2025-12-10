@@ -34,6 +34,13 @@ class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResu
         sim_rate = config.simulator.rate_hz
         max_steps = config.execution.max_steps_per_episode if config.execution else 2000
 
+        # シミュレーション時間の計算
+        # duration_secが指定されている場合はそれを優先、なければmax_stepsから計算
+        if config.execution and config.execution.duration_sec is not None:
+            duration = config.execution.duration_sec
+        else:
+            duration = max_steps * (1.0 / sim_rate)
+
         # FrameDataの構築
         # 1. 全nodeのIO要件を収集
         fields = collect_node_output_fields(nodes)
@@ -44,6 +51,12 @@ class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResu
         # 3. FrameDataのインスタンス化
         # 初期値はNoneで初期化され、最初のステップで各ノードがデータを埋めることを想定
         frame_data = DynamicFrameData()
+
+        # bool型フィールドの初期値をFalseに設定
+        # (Noneのままだと、Executorのterminationシグナルチェックで問題が発生する可能性がある)
+        for field_name, field_type in fields.items():
+            if field_type is bool:
+                setattr(frame_data, field_name, False)
 
         # コンテキストを各ノードに注入
         for node in nodes:
@@ -57,7 +70,6 @@ class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResu
         executor = SingleProcessExecutor(nodes, clock)
 
         # 実験の実行
-        duration = max_steps * (1.0 / sim_rate)
         executor.run(duration=duration)
 
         # 結果の取得

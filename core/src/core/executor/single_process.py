@@ -45,6 +45,7 @@ class SingleProcessExecutor:
                     break
 
                 # Check termination signal from any node via FrameData
+                termination_detected = False
                 for node in self.nodes:
                     if (
                         hasattr(node, "frame_data")
@@ -53,32 +54,32 @@ class SingleProcessExecutor:
                         and node.frame_data.termination_signal
                     ):
                         # Termination requested by a node
+                        termination_detected = True
                         break
-                else:
-                    # No termination signal, continue execution
-                    for node in self.nodes:
-                        # 各ノードに対して、現在の時刻で実行すべきか(周期が来ているか)を確認
-                        if node.should_run(self.clock.now):
-                            result = node.on_run(self.clock.now)
 
-                            # Handle execution result
-                            if result == NodeExecutionResult.FAILED:
-                                # Log or handle failure
-                                pass
-                            elif result == NodeExecutionResult.SKIPPED:
-                                # Node skipped execution (e.g., missing inputs)
-                                pass
-                            # SUCCESS case needs no special handling
+                if termination_detected:
+                    break
 
-                            # Update next execution time
-                            node.update_next_time(self.clock.now)
+                # No termination signal, continue execution
+                for node in self.nodes:
+                    # 各ノードに対して、現在の時刻で実行すべきか(周期が来ているか)を確認
+                    if node.should_run(self.clock.now):
+                        result = node.on_run(self.clock.now)
 
-                    self.clock.tick()
-                    step_count += 1
-                    continue
+                        # Handle execution result
+                        if result == NodeExecutionResult.FAILED:
+                            # Log or handle failure
+                            pass
+                        elif result == NodeExecutionResult.SKIPPED:
+                            # Node skipped execution (e.g., missing inputs)
+                            pass
+                        # SUCCESS case needs no special handling
 
-                # Termination signal detected, break outer loop
-                break
+                        # Update next execution time
+                        node.update_next_time(self.clock.now)
+
+                self.clock.tick()
+                step_count += 1
         finally:
             # Shutdown all nodes
             for node in self.nodes:

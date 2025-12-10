@@ -11,10 +11,12 @@ class TestSimulatorNode:
 
     def test_initialization(self) -> None:
         """Test Simulator initialization with config."""
-        config = {
-            "vehicle_params": VehicleParameters(),
-            "initial_state": VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=2.0, timestamp=0.0),
-        }
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(
+            vehicle_params=VehicleParameters(),
+            initial_state=VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=2.0, timestamp=0.0),
+        )
 
         sim = Simulator(config=config, rate_hz=10.0)
 
@@ -26,7 +28,9 @@ class TestSimulatorNode:
 
     def test_node_io(self) -> None:
         """Test that Simulator defines correct node IO."""
-        config = {"vehicle_params": VehicleParameters()}
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(vehicle_params=VehicleParameters())
         sim = Simulator(config=config, rate_hz=10.0)
 
         node_io = sim.get_node_io()
@@ -37,10 +41,12 @@ class TestSimulatorNode:
 
     def test_on_init(self) -> None:
         """Test on_init initializes state correctly."""
-        config = {
-            "vehicle_params": VehicleParameters(),
-            "initial_state": VehicleState(x=5.0, y=3.0, yaw=0.5, velocity=1.0, timestamp=0.0),
-        }
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(
+            vehicle_params=VehicleParameters(),
+            initial_state=VehicleState(x=5.0, y=3.0, yaw=0.5, velocity=1.0, timestamp=0.0),
+        )
 
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
@@ -56,7 +62,9 @@ class TestSimulatorNode:
         """Test on_run executes physics step."""
         from types import SimpleNamespace
 
-        config = {"vehicle_params": VehicleParameters()}
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(vehicle_params=VehicleParameters())
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
@@ -78,10 +86,12 @@ class TestSimulatorNode:
         """Test that on_run updates vehicle state."""
         from types import SimpleNamespace
 
-        config = {
-            "vehicle_params": VehicleParameters(),
-            "initial_state": VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
-        }
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(
+            vehicle_params=VehicleParameters(),
+            initial_state=VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
+        )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
@@ -103,7 +113,9 @@ class TestSimulatorNode:
         """Test on_run with no action (should use default)."""
         from types import SimpleNamespace
 
-        config = {"vehicle_params": VehicleParameters()}
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(vehicle_params=VehicleParameters())
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
@@ -122,7 +134,9 @@ class TestSimulatorNode:
         """Test that on_run skips when termination signal is set."""
         from types import SimpleNamespace
 
-        config = {"vehicle_params": VehicleParameters()}
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(vehicle_params=VehicleParameters())
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
@@ -139,7 +153,9 @@ class TestSimulatorNode:
         """Test that simulation steps are logged."""
         from types import SimpleNamespace
 
-        config = {"vehicle_params": VehicleParameters()}
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(vehicle_params=VehicleParameters())
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
@@ -165,7 +181,9 @@ class TestSimulatorNode:
         """Test that on_init resets state."""
         from types import SimpleNamespace
 
-        config = {"vehicle_params": VehicleParameters()}
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(vehicle_params=VehicleParameters())
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
@@ -214,10 +232,12 @@ class TestSimulatorWithMap:
         map_file = tmp_path / "test_map.osm"
         map_file.write_text(osm_content)
 
-        config = {
-            "vehicle_params": VehicleParameters(),
-            "map_path": str(map_file),
-        }
+        from simulator.simulator import SimulatorConfig
+
+        config = SimulatorConfig(
+            vehicle_params=VehicleParameters(),
+            map_path=str(map_file),
+        )
 
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
