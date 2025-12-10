@@ -6,7 +6,7 @@ from pathlib import Path
 from core.data.ad_components.action import Action
 from core.data.ad_components.state import VehicleState
 from core.data.simulator.log import SimulationLog, SimulationStep
-from core.interfaces.simulator import SimulationLogRepository
+from core.interfaces.log import SimulationLogRepository
 
 
 class JsonSimulationLogRepository(SimulationLogRepository):
@@ -16,7 +16,7 @@ class JsonSimulationLogRepository(SimulationLogRepository):
     providing human-readable storage for debugging and analysis.
     """
 
-    def save(self, log: SimulationLog, file_path: Path) -> bool:
+    def save(self, log: SimulationLog, file_path: Path) -> Path:
         """Save simulation log to JSON file.
 
         Args:
@@ -24,7 +24,7 @@ class JsonSimulationLogRepository(SimulationLogRepository):
             file_path: Output file path
 
         Returns:
-            bool: 保存が成功した場合True
+            Path to the saved log file
         """
         from dataclasses import asdict
 
@@ -44,7 +44,7 @@ class JsonSimulationLogRepository(SimulationLogRepository):
         with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
 
-        return True
+        return file_path
 
     def load(self, file_path: Path) -> SimulationLog:
         """Load simulation log from JSON file.

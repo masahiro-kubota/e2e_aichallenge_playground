@@ -23,7 +23,6 @@ from core.executor import SingleProcessExecutor
 from core.interfaces import (
     DashboardGenerator,
     ExperimentLogger,
-    Simulator,
 )
 
 __all__ = [
@@ -41,15 +40,9 @@ __all__ = [
     "ObstacleType",
     "Scene",
     "SimulationConfig",
-    "SimulationConfig",
-    "SimulationLog",
     "SimulationLog",
     "SimulationResult",
-    "SimulationResult",
     "SimulationStep",
-    "SimulationStep",
-    "Simulator",
-    "Simulator",
     "SingleProcessExecutor",
     "VehicleParameters",
     "VehicleState",

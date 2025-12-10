@@ -3,8 +3,7 @@
 from pathlib import Path
 from typing import Any, TypeVar
 
-from core.data import VehicleParameters
-from core.nodes import PhysicsNode
+from core.data import VehicleParameters, VehicleState
 from core.utils import get_project_root
 from core.utils.config import load_yaml as core_load_yaml
 from core.utils.config import merge_configs
@@ -410,29 +409,31 @@ class DefaultPreprocessor:
             validate_node_graph(ad_nodes)
 
         # 3. Setup Simulator
-        sim_type = config.simulator.type
+        sim_rate = config.simulator.rate_hz
 
-        # Remove scene_config if present
-        if "scene_config" in sim_params:
-            sim_params.pop("scene_config")
+        # Simulator is now a Node, so we instantiate it directly
+        from simulator.simulator import Simulator
 
-        # Pass map_path if available
+        # Prepare simulator config
+        simulator_config = {
+            "vehicle_params": vehicle_params,
+            "initial_state": VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
+        }
+
+        # Add map_path if available
         if "map_path" in sim_params:
-            config_path = sim_params.pop("map_path")
-            sim_params["map_path"] = str(workspace_root / config_path)
+            map_path_str = sim_params["map_path"]
+            # Resolve relative to workspace root
+            if not map_path_str.startswith("/"):
+                map_path_str = str(workspace_root / map_path_str)
+            simulator_config["map_path"] = map_path_str
 
-        simulator = self.component_factory.create(
-            sim_type, sim_params, vehicle_params=vehicle_params
-        )
+        simulator = Simulator(config=simulator_config, rate_hz=sim_rate)
 
         nodes = []
 
-        # 4. Wrap Simulator in PhysicsNode
-        sim_rate = config.simulator.rate_hz
-        if hasattr(simulator, "reset"):
-            simulator.reset()
-
-        nodes.append(PhysicsNode(simulator, sim_rate))
+        # 4. Add Simulator as first node
+        nodes.append(simulator)
 
         # 5. AD Component Nodes
         nodes.extend(ad_nodes)

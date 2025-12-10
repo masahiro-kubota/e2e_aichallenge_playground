@@ -1,10 +1,8 @@
-"""Tests for Kinematic Simulator."""
+"""Tests for bicycle model dynamics functions."""
 
 import math
 
-from core.data import Action, VehicleState
 from simulator.dynamics import update_bicycle_model
-from simulator.simulator import KinematicSimulator
 from simulator.state import SimulationVehicleState
 
 
@@ -133,39 +131,3 @@ class TestDynamicsFunctions:
 
         expected_yaw_rate = -5.0 * math.tan(0.5) / 2.5
         assert abs(new_state.yaw_rate - expected_yaw_rate) < 1e-10
-
-
-class TestKinematicSimulator:
-    """Tests for KinematicSimulator."""
-
-    def test_initialization(self) -> None:
-        """Test initialization."""
-        sim = KinematicSimulator(dt=0.1)
-        state = sim.reset()
-        assert state.x == 0.0
-        assert state.y == 0.0
-        assert state.velocity == 0.0
-
-    def test_step(self) -> None:
-        """Test step execution."""
-        sim = KinematicSimulator(dt=0.1)
-        sim.reset()
-
-        action = Action(steering=0.0, acceleration=1.0)
-        state, done, info = sim.step(action)
-
-        assert isinstance(state, VehicleState)
-        assert state.velocity > 0.0
-        assert not done
-        assert isinstance(info, dict)
-
-    def test_custom_initial_state(self) -> None:
-        """Test with custom initial state."""
-        initial_state = VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=5.0)
-        sim = KinematicSimulator(dt=0.1, initial_state=initial_state)
-        state = sim.reset()
-
-        assert state.x == 10.0
-        assert state.y == 5.0
-        assert state.yaw == 1.0
-        assert state.velocity == 5.0

@@ -5,7 +5,7 @@ from pydantic import Field
 from core.data import Action, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig
+from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
 from core.utils.geometry import distance, normalize_angle
 
 
@@ -39,20 +39,19 @@ class PIDControllerNode(Node[PIDConfig]):
             outputs={"action": Action},
         )
 
-    def on_run(self, _current_time: float) -> bool:
+    def on_run(self, _current_time: float) -> NodeExecutionResult:
         if self.frame_data is None:
-            return False
+            return NodeExecutionResult.FAILED
 
         trajectory = getattr(self.frame_data, "trajectory", None)
         vehicle_state = getattr(self.frame_data, "vehicle_state", None)
 
         if trajectory is None or vehicle_state is None:
-            # Maybe output safe action? Or nothing?
-            return True
+            return NodeExecutionResult.SKIPPED
 
         action = self._process(trajectory, vehicle_state)
         self.frame_data.action = action
-        return True
+        return NodeExecutionResult.SUCCESS
 
     def _process(self, trajectory: Trajectory, vehicle_state: VehicleState) -> Action:
         if not trajectory:

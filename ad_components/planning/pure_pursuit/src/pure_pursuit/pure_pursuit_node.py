@@ -3,7 +3,7 @@ from pydantic import Field
 from core.data import VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory, TrajectoryPoint
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig
+from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
 from core.utils.geometry import distance
 
 
@@ -46,21 +46,21 @@ class PurePursuitNode(Node[PurePursuitConfig]):
     def get_node_io(self) -> NodeIO:
         return NodeIO(inputs={"vehicle_state": VehicleState}, outputs={"trajectory": Trajectory})
 
-    def on_run(self, _current_time: float) -> bool:
+    def on_run(self, _current_time: float) -> NodeExecutionResult:
         if self.frame_data is None:
-            return False
+            return NodeExecutionResult.FAILED
 
         # Get Input
         vehicle_state = getattr(self.frame_data, "vehicle_state", None)
         if vehicle_state is None:
-            return True  # Output nothing if input missing
+            return NodeExecutionResult.SKIPPED
 
         # Process
         trajectory = self._plan(vehicle_state)
 
         # Set Output
         self.frame_data.trajectory = trajectory
-        return True
+        return NodeExecutionResult.SUCCESS
 
     def _plan(self, vehicle_state: VehicleState) -> Trajectory:
         if self.reference_trajectory is None or len(self.reference_trajectory) < 2:

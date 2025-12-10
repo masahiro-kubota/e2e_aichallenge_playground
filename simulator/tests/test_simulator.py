@@ -1,312 +1,226 @@
-"""Tests for Simulator."""
+"""Tests for Simulator Node."""
 
-from dataclasses import asdict
-from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
-
-from core.data import Action, SimulationResult, VehicleParameters, VehicleState
+from core.data import Action, VehicleParameters, VehicleState
+from core.data.node_io import NodeIO
+from core.interfaces.node import NodeExecutionResult
 from simulator.simulator import Simulator
-from simulator.state import SimulationVehicleState
-
-if TYPE_CHECKING:
-    from shapely.geometry import Polygon
 
 
-def mock_update_state(
-    state: SimulationVehicleState, action: Action, dt: float
-) -> SimulationVehicleState:
-    """Mock update function."""
-    d = asdict(state)
-    d["x"] += 1.0
-    d["timestamp"] = (d["timestamp"] or 0.0) + dt
-    d["ax"] = action.acceleration
-    d["steering"] = action.steering
-    return SimulationVehicleState(**d)
-
-
-def mock_get_polygon(state: VehicleState) -> "Polygon":
-    """Mock polygon function."""
-    from shapely.geometry import Polygon
-
-    return Polygon(
-        [
-            (state.x - 1, state.y - 1),
-            (state.x + 1, state.y - 1),
-            (state.x + 1, state.y + 1),
-            (state.x - 1, state.y + 1),
-        ]
-    )
-
-
-class TestSimulator:
-    """Tests for Simulator class."""
+class TestSimulatorNode:
+    """Tests for Simulator as a Node."""
 
     def test_initialization(self) -> None:
-        """Test initialization with various parameters."""
-        mock_update = MagicMock(side_effect=mock_update_state)
+        """Test Simulator initialization with config."""
+        config = {
+            "vehicle_params": VehicleParameters(),
+            "initial_state": VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=2.0, timestamp=0.0),
+        }
 
-        # Default initialization
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-        assert isinstance(sim.initial_state, VehicleState)
-        assert sim.dt == 0.1
-        assert isinstance(sim.vehicle_params, VehicleParameters)
+        sim = Simulator(config=config, rate_hz=10.0)
 
-        # Custom initialization
-        custom_state = VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=2.0)
-        sim = Simulator(
-            step_update_func=mock_update,
-            get_vehicle_polygon_func=mock_get_polygon,
-            initial_state=custom_state,
-            dt=0.05,
-        )
+        assert sim.name == "Simulator"
+        assert sim.rate_hz == 10.0
+        assert sim.config.initial_state.x == 10.0
+        assert sim.config.initial_state.y == 5.0
+        assert isinstance(sim.config.vehicle_params, VehicleParameters)
 
-        assert sim.initial_state.x == 10.0
-        assert sim.dt == 0.05
-        # Internal state should be converted correctly
-        assert sim._current_state.x == 10.0
-        assert sim._current_state.y == 5.0
+    def test_node_io(self) -> None:
+        """Test that Simulator defines correct node IO."""
+        config = {"vehicle_params": VehicleParameters()}
+        sim = Simulator(config=config, rate_hz=10.0)
 
-    def test_step_logic(self) -> None:
-        """Test step method logic."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-        sim.reset()
+        node_io = sim.get_node_io()
 
-        action = Action(steering=0.1, acceleration=0.5)
+        assert isinstance(node_io, NodeIO)
+        assert "action" in node_io.inputs
+        assert "sim_state" in node_io.outputs
 
-        # Step execution
-        next_state, done, info = sim.step(action)
+    def test_on_init(self) -> None:
+        """Test on_init initializes state correctly."""
+        config = {
+            "vehicle_params": VehicleParameters(),
+            "initial_state": VehicleState(x=5.0, y=3.0, yaw=0.5, velocity=1.0, timestamp=0.0),
+        }
 
-        # Check if update_state was called with correct action
-        # mock_update calls: (state, action, dt)
-        assert mock_update.call_count == 1
-        call_args = mock_update.call_args
-        assert call_args[0][1] == action
-        assert call_args[0][2] == 0.1
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
 
-        # Check conversion back to VehicleState
-        assert isinstance(next_state, VehicleState)
-        assert next_state.x == 1.0  # Mock update moves +1.0 in x
-        assert next_state.acceleration == 0.5  # From action
+        # Check internal state is initialized
+        assert sim._current_state is not None
+        assert sim._current_state.x == 5.0
+        assert sim._current_state.y == 3.0
+        assert sim.current_time == 0.0
+        assert len(sim.log.steps) == 0
 
-        # Check logging
+    def test_on_run_basic(self) -> None:
+        """Test on_run executes physics step."""
+        from types import SimpleNamespace
+
+        config = {"vehicle_params": VehicleParameters()}
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
+
+        # Create frame data manually
+        frame_data = SimpleNamespace()
+        frame_data.action = Action(steering=0.1, acceleration=1.0)
+        frame_data.termination_signal = False
+        sim.set_frame_data(frame_data)
+
+        # Execute
+        result = sim.on_run(0.0)
+
+        assert result == NodeExecutionResult.SUCCESS
+        assert hasattr(frame_data, "sim_state")
+        assert frame_data.sim_state is not None
+        assert isinstance(frame_data.sim_state, VehicleState)
+
+    def test_on_run_updates_state(self) -> None:
+        """Test that on_run updates vehicle state."""
+        from types import SimpleNamespace
+
+        config = {
+            "vehicle_params": VehicleParameters(),
+            "initial_state": VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
+        }
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
+
+        frame_data = SimpleNamespace()
+        frame_data.action = Action(steering=0.0, acceleration=1.0)
+        frame_data.termination_signal = False
+        sim.set_frame_data(frame_data)
+
+        # Run multiple steps
+        for i in range(5):
+            result = sim.on_run(i * 0.1)
+            assert result == NodeExecutionResult.SUCCESS
+
+        # State should have changed
+        final_state = frame_data.sim_state
+        assert final_state.velocity > 0.0  # Should have accelerated
+
+    def test_on_run_without_action(self) -> None:
+        """Test on_run with no action (should use default)."""
+        from types import SimpleNamespace
+
+        config = {"vehicle_params": VehicleParameters()}
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
+
+        frame_data = SimpleNamespace()
+        frame_data.termination_signal = False
+        # Don't set action
+        sim.set_frame_data(frame_data)
+
+        result = sim.on_run(0.0)
+
+        # Should still succeed with default action
+        assert result == NodeExecutionResult.SUCCESS
+        assert frame_data.sim_state is not None
+
+    def test_on_run_with_termination_signal(self) -> None:
+        """Test that on_run skips when termination signal is set."""
+        from types import SimpleNamespace
+
+        config = {"vehicle_params": VehicleParameters()}
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
+
+        frame_data = SimpleNamespace()
+        frame_data.termination_signal = True
+        sim.set_frame_data(frame_data)
+
+        result = sim.on_run(0.0)
+
+        # Should succeed but not update
+        assert result == NodeExecutionResult.SUCCESS
+
+    def test_logging(self) -> None:
+        """Test that simulation steps are logged."""
+        from types import SimpleNamespace
+
+        config = {"vehicle_params": VehicleParameters()}
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
+
+        frame_data = SimpleNamespace()
+        frame_data.action = Action(steering=0.1, acceleration=0.5)
+        frame_data.termination_signal = False
+        sim.set_frame_data(frame_data)
+
+        # Run 3 steps
+        for i in range(3):
+            sim.on_run(i * 0.1)
+
         log = sim.get_log()
-        assert len(log.steps) == 1
-        assert log.steps[0].action == action
-        assert log.steps[0].vehicle_state == next_state
-        assert not done
+        assert len(log.steps) == 3
 
-    def test_run_loop(self) -> None:
-        """Test run method loop."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-
-        # Mock ADComponent
-        # Mock ADComponent
-        ad_component = MagicMock()
-        ad_component.planner = MagicMock()
-        ad_component.planner.plan.return_value = []
-        ad_component.controller = MagicMock()
-        ad_component.controller.control.return_value = Action(steering=0.0, acceleration=0.0)
-
-        # Run for 5 steps
-        result = sim.run(ad_component, max_steps=5)
-
-        assert isinstance(result, SimulationResult)
-        assert not result.success  # Not reached goal
-        assert result.reason == "max_steps"
-        assert len(result.log.steps) == 5
-
-        # Check interaction counts
-        assert ad_component.planner.plan.call_count == 5
-        assert ad_component.controller.control.call_count == 5
-
-    def test_goal_check(self) -> None:
-        """Test goal checking logic in run method."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-
-        # Mock ADComponent
-        # Mock ADComponent
-        ad_component = MagicMock()
-        ad_component.planner = MagicMock()
-        ad_component.controller = MagicMock()
-        ad_component.controller.control.return_value = Action(steering=0.0, acceleration=0.0)
-
-        # Set goal in simulator
-        sim.goal_x = 3.0
-        sim.goal_y = 0.0
-
-        result = sim.run(
-            ad_component,
-            max_steps=10,
-            goal_threshold=0.1,
-            min_elapsed_time=0.0,  # Immediate check
-        )
-
-        assert result.success
-        assert result.reason == "goal_reached"
-        # Should finish after step 3 (x=3.0)
-        assert len(result.log.steps) == 3
-
-
-class TestSimulatorEdgeCases:
-    """Tests for Simulator edge cases and error handling."""
-
-    def test_zero_steps(self) -> None:
-        """Test running with zero max_steps."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-
-        ad_component = MagicMock()
-        ad_component.planner = MagicMock()
-        ad_component.planner.plan.return_value = []
-        ad_component.controller = MagicMock()
-        ad_component.controller.control.return_value = Action(steering=0.0, acceleration=0.0)
-
-        result = sim.run(ad_component, max_steps=0)
-
-        # Should return immediately
-        assert not result.success
-        assert result.reason == "max_steps"
-        assert len(result.log.steps) == 0
-
-    def test_very_small_dt(self) -> None:
-        """Test with very small time step."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(
-            step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon, dt=0.001
-        )
-
-        assert sim.dt == 0.001
-
-        # Should still work correctly
-        sim.reset()
-        action = Action(steering=0.0, acceleration=1.0)
-        state, done, info = sim.step(action)
-
-        assert isinstance(state, VehicleState)
-
-    def test_very_large_dt(self) -> None:
-        """Test with very large time step."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(
-            step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon, dt=1.0
-        )
-
-        assert sim.dt == 1.0
-
-        # Should still work
-        sim.reset()
-        action = Action(steering=0.0, acceleration=1.0)
-        state, done, info = sim.step(action)
-
-        assert isinstance(state, VehicleState)
-
-    def test_no_goal_set(self) -> None:
-        """Test running without goal set."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-
-        ad_component = MagicMock()
-        ad_component.planner = MagicMock()
-        ad_component.planner.plan.return_value = []
-        ad_component.controller = MagicMock()
-        ad_component.controller.control.return_value = Action(steering=0.0, acceleration=0.0)
-
-        # No goal set (goal_x and goal_y are None by default)
-        result = sim.run(ad_component, max_steps=5)
-
-        # Should run until max_steps without reaching goal
-        assert not result.success
-        assert result.reason == "max_steps"
-        assert len(result.log.steps) == 5
-
-    def test_multiple_resets(self) -> None:
-        """Test multiple consecutive resets."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-
-        # Reset multiple times
-        state1 = sim.reset()
-        state2 = sim.reset()
-        state3 = sim.reset()
-
-        # All should return initial state
-        assert state1.x == state2.x == state3.x
-        assert state1.y == state2.y == state3.y
-
-
-class TestSimulatorLogging:
-    """Tests for Simulator logging functionality."""
-
-    def test_log_contains_all_steps(self) -> None:
-        """Test that log contains all simulation steps."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-
-        ad_component = MagicMock()
-        ad_component.planner = MagicMock()
-        ad_component.planner.plan.return_value = []
-        ad_component.controller = MagicMock()
-        ad_component.controller.control.return_value = Action(steering=0.1, acceleration=0.5)
-
-        result = sim.run(ad_component, max_steps=10)
-
-        # Log should have 10 steps
-        assert len(result.log.steps) == 10
-
-        # Each step should have required fields
-        for step in result.log.steps:
+        # Check logged data
+        for step in log.steps:
             assert step.timestamp is not None
             assert step.vehicle_state is not None
             assert step.action is not None
 
-    def test_log_action_consistency(self) -> None:
-        """Test that logged actions match controller output."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
+    def test_reset_via_on_init(self) -> None:
+        """Test that on_init resets state."""
+        from types import SimpleNamespace
 
-        ad_component = MagicMock()
-        ad_component.planner = MagicMock()
-        ad_component.planner.plan.return_value = []
+        config = {"vehicle_params": VehicleParameters()}
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
 
-        # Controller returns specific action
-        expected_action = Action(steering=0.3, acceleration=1.2)
-        ad_component.controller = MagicMock()
-        ad_component.controller.control.return_value = expected_action
-
-        result = sim.run(ad_component, max_steps=3)
-
-        # All logged actions should match
-        for step in result.log.steps:
-            assert step.action.steering == expected_action.steering
-            assert step.action.acceleration == expected_action.acceleration
-
-    def test_log_metadata(self) -> None:
-        """Test that log metadata is properly set."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
-        sim.reset()
-
-        log = sim.get_log()
-
-        # Metadata should be a dictionary
-        assert isinstance(log.metadata, dict)
-
-    def test_log_after_reset(self) -> None:
-        """Test that log is cleared after reset."""
-        mock_update = MagicMock(side_effect=mock_update_state)
-        sim = Simulator(step_update_func=mock_update, get_vehicle_polygon_func=mock_get_polygon)
+        frame_data = SimpleNamespace()
+        frame_data.action = Action(steering=0.0, acceleration=1.0)
+        frame_data.termination_signal = False
+        sim.set_frame_data(frame_data)
 
         # Run some steps
-        sim.reset()
-        for _ in range(5):
-            sim.step(Action(steering=0.0, acceleration=0.0))
+        for i in range(5):
+            sim.on_run(i * 0.1)
+
+        assert len(sim.log.steps) == 5
 
         # Reset
-        sim.reset()
+        sim.on_init()
 
-        # Log should be empty
-        log = sim.get_log()
-        assert len(log.steps) == 0
+        # Log should be cleared
+        assert len(sim.log.steps) == 0
+        assert sim.current_time == 0.0
+
+
+class TestSimulatorWithMap:
+    """Tests for Simulator with map integration."""
+
+    def test_map_loading(self, tmp_path) -> None:
+        """Test that map is loaded when map_path is provided."""
+        # Create a minimal OSM file
+        osm_content = """<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6">
+  <node id="1" lat="0.0" lon="0.0"/>
+  <node id="2" lat="0.0" lon="0.001"/>
+  <node id="3" lat="0.001" lon="0.001"/>
+  <node id="4" lat="0.001" lon="0.0"/>
+  <way id="1">
+    <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
+    <nd ref="1"/>
+    <tag k="type" v="lanelet"/>
+    <tag k="subtype" v="road"/>
+  </way>
+</osm>"""
+
+        map_file = tmp_path / "test_map.osm"
+        map_file.write_text(osm_content)
+
+        config = {
+            "vehicle_params": VehicleParameters(),
+            "map_path": str(map_file),
+        }
+
+        sim = Simulator(config=config, rate_hz=10.0)
+        sim.on_init()
+
+        # Map should be loaded
+        assert sim.map is not None

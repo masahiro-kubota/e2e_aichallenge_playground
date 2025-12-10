@@ -5,10 +5,16 @@ from typing import Any
 
 from core.data import SimulationLog, SimulationStep
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node
+from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
 
 
-class LoggerNode(Node):
+class LoggerConfig(NodeConfig):
+    """Configuration for LoggerNode (empty - no parameters needed)."""
+
+    pass
+
+
+class LoggerNode(Node[LoggerConfig]):
     """Node responsible for recording FrameData to simulation log."""
 
     def __init__(self, rate_hz: float = 10.0):
@@ -17,7 +23,7 @@ class LoggerNode(Node):
         Args:
             rate_hz: Logging rate [Hz]
         """
-        super().__init__("Logger", rate_hz)
+        super().__init__("Logger", rate_hz, config={}, config_model=LoggerConfig)
         self.log = SimulationLog(steps=[], metadata={})
         self.current_time = 0.0
 
@@ -31,7 +37,7 @@ class LoggerNode(Node):
             outputs={},  # No outputs
         )
 
-    def on_run(self, current_time: float) -> bool:
+    def on_run(self, current_time: float) -> NodeExecutionResult:
         """Record current FrameData to log.
 
         Args:
@@ -41,7 +47,7 @@ class LoggerNode(Node):
             True if logging completed successfully
         """
         if self.frame_data is None:
-            return False
+            return NodeExecutionResult.FAILED
 
         self.current_time = current_time
 
@@ -78,7 +84,7 @@ class LoggerNode(Node):
         )
 
         self.log.steps.append(step)
-        return True
+        return NodeExecutionResult.SUCCESS
 
     def get_log(self) -> SimulationLog:
         """Get the recorded simulation log.

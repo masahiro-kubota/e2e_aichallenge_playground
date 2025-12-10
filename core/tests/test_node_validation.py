@@ -3,7 +3,8 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from core.interfaces.node import Node, NodeConfig
+from core.data.node_io import NodeIO
+from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
 
 
 class SimpleConfig(NodeConfig):
@@ -14,8 +15,11 @@ class SimpleNode(Node[SimpleConfig]):
     def __init__(self, config: dict[str, Any], rate_hz: float = 10.0):
         super().__init__("Simple", rate_hz, config, config_model=SimpleConfig)
 
-    def on_run(self, _current_time: float) -> bool:
-        return True
+    def get_node_io(self) -> NodeIO:
+        return NodeIO(inputs={}, outputs={})
+
+    def on_run(self, _current_time: float) -> NodeExecutionResult:
+        return NodeExecutionResult.SUCCESS
 
 
 def test_node_strict_validation():

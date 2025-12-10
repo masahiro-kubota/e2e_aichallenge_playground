@@ -1,7 +1,7 @@
 """Supervisor node for simulation judgment and monitoring."""
 
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig
+from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
 
 
 class SupervisorConfig(NodeConfig):
@@ -44,7 +44,7 @@ class SupervisorNode(Node[SupervisorConfig]):
             },
         )
 
-    def on_run(self, _current_time: float) -> bool:
+    def on_run(self, _current_time: float) -> NodeExecutionResult:
         """Evaluate simulation state and set termination flags.
 
         Args:
@@ -54,18 +54,18 @@ class SupervisorNode(Node[SupervisorConfig]):
             True if evaluation completed successfully
         """
         if self.frame_data is None:
-            return False
+            return NodeExecutionResult.FAILED
 
         # Skip if already terminated
         if self.frame_data.termination_signal:
-            return True
+            return NodeExecutionResult.SUCCESS
 
         self.step_count += 1
 
         # Get current state
         sim_state = getattr(self.frame_data, "sim_state", None)
         if sim_state is None:
-            return True
+            return NodeExecutionResult.SKIPPED
 
         # 1. Check off-track (collision with non-drivable area)
         if hasattr(sim_state, "off_track") and sim_state.off_track:
@@ -74,7 +74,7 @@ class SupervisorNode(Node[SupervisorConfig]):
             self.frame_data.success = False
             self.frame_data.termination_signal = True
             self.frame_data.termination_reason = "off_track"
-            return True
+            return NodeExecutionResult.SUCCESS
 
         # 2. Check goal reached
         dist = (
@@ -88,7 +88,7 @@ class SupervisorNode(Node[SupervisorConfig]):
             self.frame_data.success = True
             self.frame_data.termination_signal = True
             self.frame_data.termination_reason = "goal_reached"
-            return True
+            return NodeExecutionResult.SUCCESS
 
         # 3. Check timeout (max steps)
         if self.step_count >= self.config.max_steps:
@@ -97,7 +97,7 @@ class SupervisorNode(Node[SupervisorConfig]):
             self.frame_data.success = False
             self.frame_data.termination_signal = True
             self.frame_data.termination_reason = "timeout"
-            return True
+            return NodeExecutionResult.SUCCESS
 
         # No termination condition met
         self.frame_data.success = False
@@ -106,4 +106,4 @@ class SupervisorNode(Node[SupervisorConfig]):
         self.frame_data.termination_signal = False
         self.frame_data.termination_reason = ""
 
-        return True
+        return NodeExecutionResult.SUCCESS

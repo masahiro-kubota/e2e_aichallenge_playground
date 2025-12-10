@@ -2,7 +2,7 @@ from typing import Any
 
 from core.data import VehicleState
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig
+from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
 
 
 class IdealSensorConfig(NodeConfig):
@@ -19,14 +19,14 @@ class IdealSensorNode(Node[IdealSensorConfig]):
     def get_node_io(self) -> NodeIO:
         return NodeIO(inputs={"sim_state": VehicleState}, outputs={"vehicle_state": VehicleState})
 
-    def on_run(self, _current_time: float) -> bool:
+    def on_run(self, _current_time: float) -> NodeExecutionResult:
         if self.frame_data is None:
-            return False
+            return NodeExecutionResult.FAILED
 
         sim_state = getattr(self.frame_data, "sim_state", None)
         if sim_state is None:
-            return True
+            return NodeExecutionResult.SKIPPED
 
         # Pass through
         self.frame_data.vehicle_state = sim_state
-        return True
+        return NodeExecutionResult.SUCCESS
