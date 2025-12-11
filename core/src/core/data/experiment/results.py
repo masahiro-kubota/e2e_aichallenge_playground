@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from core.data.experiment.config import ExperimentConfig
+from core.data.experiment.config import ResolvedExperimentConfig
 from core.data.simulator.result import SimulationResult
 
 
@@ -66,7 +66,7 @@ class ExperimentResult:
     experiment_type: str
     execution_time: datetime
     simulation_results: list[SimulationResult]
-    config: ExperimentConfig | None = None
+    config: ResolvedExperimentConfig | None = None
     params: dict[str, Any] = field(default_factory=dict)
     artifacts: list[Artifact] = field(default_factory=list)
     metrics: EvaluationMetrics | None = None

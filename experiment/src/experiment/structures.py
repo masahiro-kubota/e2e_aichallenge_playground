@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
+from core.data.experiment.config import ResolvedExperimentConfig
 from core.interfaces import Node
-from experiment.preprocessing.schemas import ResolvedExperimentConfig
 
 
 @dataclass

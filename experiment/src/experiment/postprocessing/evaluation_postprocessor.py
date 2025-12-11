@@ -4,23 +4,98 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-import mlflow
+from core.data import SimulationResult
 from core.data.experiment import Artifact, ExperimentResult
+from core.data.experiment.config import ResolvedExperimentConfig
 from core.data.simulator import SimulationLog
 from core.utils import get_project_root
 from experiment.interfaces import ExperimentPostprocessor
-from experiment.postprocessing.mcap_logger import MCAPLogger
 from experiment.postprocessing.metrics import EvaluationMetrics, MetricsCalculator
 from experiment.postprocessing.mlflow_logger import MLflowExperimentLogger
-from experiment.preprocessing.schemas import ResolvedExperimentConfig
 
 
-class EvaluationPostprocessor(
-    ExperimentPostprocessor[Any, ExperimentResult]
-):  # TResult is Any because SimulationResult is not easily imported here without circular deps? No, we can import it.
+class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, ExperimentResult]):
     """Postprocessor for evaluation experiments."""
 
-    def process(self, result: Any, config: ResolvedExperimentConfig) -> ExperimentResult:
+    def __init__(self, config: ResolvedExperimentConfig) -> None:
+        """Initialize evaluation postprocessor.
+
+        Args:
+            config: Experiment configuration
+        """
+        # 1. Initialize MLflow Logger
+        self.mlflow_logger = MLflowExperimentLogger(
+            tracking_uri=config.postprocess.mlflow.tracking_uri,
+            experiment_name=config.experiment.name,
+        )
+
+        # 2. Initialize Metrics Calculator
+        self.metrics_calculator = MetricsCalculator()
+
+        # 3. Initialize Dashboard Generator (if enabled)
+        self.dashboard_generator: Any | None = None
+        self.dashboard_osm_path: Path | None = None
+        self.dashboard_vehicle_params: dict[str, Any] | None = None
+
+        if config.postprocess.dashboard.enabled:
+            self._initialize_dashboard(config)
+
+    def _initialize_dashboard(self, config: ResolvedExperimentConfig) -> None:
+        """Initialize dashboard generator and resolve paths."""
+        # Resolve Map Path
+        map_path_str = config.postprocess.dashboard.map_path
+        potential_path = Path(map_path_str)
+        if not potential_path.is_absolute():
+            potential_path = get_project_root() / potential_path
+
+        if potential_path.exists():
+            self.dashboard_osm_path = potential_path
+        else:
+            print(f"Warning: Configured dashboard map path not found: {potential_path}")
+
+        # Resolve Vehicle Config
+        self.dashboard_vehicle_params = self._load_vehicle_params(
+            config.postprocess.dashboard.vehicle_config_path
+        )
+
+        # Initialize Generator
+        try:
+            import importlib
+
+            dashboard_module = importlib.import_module("dashboard")
+            generator_class = getattr(dashboard_module, "HTMLDashboardGenerator")
+            self.dashboard_generator = generator_class()
+        except (ImportError, AttributeError) as e:
+            print(f"Warning: Could not load dashboard generator: {e}")
+
+    def _load_vehicle_params(self, config_path_str: str) -> dict[str, Any] | None:
+        """Load vehicle parameters from file."""
+        import yaml
+
+        vehicle_config_path = Path(config_path_str)
+        if not vehicle_config_path.is_absolute():
+            vehicle_config_path = get_project_root() / vehicle_config_path
+
+        if vehicle_config_path.exists():
+            try:
+                with open(vehicle_config_path) as f:
+                    vehicle_config = yaml.safe_load(f)
+
+                return {
+                    "width": vehicle_config.get("width"),
+                    "wheelbase": vehicle_config.get("wheelbase"),
+                    "front_overhang": vehicle_config.get("front_overhang"),
+                    "rear_overhang": vehicle_config.get("rear_overhang"),
+                }
+            except Exception as e:
+                print(f"Warning: Failed to load vehicle config from {vehicle_config_path}: {e}")
+        else:
+            print(f"Warning: Vehicle config path not found: {vehicle_config_path}")
+        return None
+
+    def process(
+        self, result: SimulationResult, config: ResolvedExperimentConfig
+    ) -> ExperimentResult:
         """Process evaluation results.
 
         Args:
@@ -30,98 +105,111 @@ class EvaluationPostprocessor(
         Returns:
             Processed experiment result
         """
-        # Logic from runner.py _run_evaluation (post-execution part)
-        sim_result = result
+        # 1. Setup MLflow context
+        mlflow_context = self._get_mlflow_context()
 
-        # Check if running in CI environment
-        is_ci = bool(os.getenv("CI"))
+        # 2. Collect parameters
+        result_params = self._collect_execution_params(config, result)
 
-        if is_ci:
+        # 3. Collect input artifacts
+        result_artifacts = self._collect_input_artifacts(config)
+
+        with mlflow_context:
+            # 4. Save MCAP artifact if it exists (created by LoggerNode)
+            mcap_path = Path(config.postprocess.mcap.output_dir) / "simulation.mcap"
+            if config.postprocess.mcap.enabled and mcap_path.exists():
+                result_artifacts.append(Artifact(local_path=mcap_path))
+
+            # 5. Merge metadata into log
+            self._update_log_metadata(result.log, result_params)
+
+            # 6. Calculate metrics
+            reason = getattr(result, "reason", "unknown")
+            metrics_dict, metrics_obj = self._calculate_metrics(
+                result.log, config, result.success, reason
+            )
+
+            # 7. Create ExperimentResult
+            experiment_result = self._create_experiment_result(
+                config, result, result_params, metrics_obj, result_artifacts
+            )
+
+            # 8. Generate Dashboard
+            is_ci = bool(os.getenv("CI"))
+            dashboard_artifact = self._generate_dashboard(experiment_result, config, is_ci)
+            if dashboard_artifact:
+                experiment_result.artifacts.append(dashboard_artifact)
+
+            # 9. Log to MLflow
+            self.mlflow_logger.log_result(experiment_result)
+
+            # Clean up
+            # Note: We keep the MCAP file as it is an output artifact.
+            # Only unlink if you want to save space and rely on Artifact storage (if remote).
+            # For now, let's keep it or unlink if verified uploaded.
+            # Given the original code unlinked it, let's restore that behavior if we treat it as temp.
+            # But the user wants proper logging. Let's assume Artifact handles it.
+            if mcap_path.exists():
+                # In original code it was unlinked.
+                # If we want to persist it as a proper log, we might want to keep it or move it.
+                # For now, consistent behavior: upload then delete local temp copy?
+                # Actually, LoggerNode wrote it to a specific path.
+                # If that path is temp, we delete it. If it's persistent, we keep it.
+                pass  # Let's not delete it blindly since LoggerNode owns it now.
+
+        return experiment_result
+
+    def _get_mlflow_context(self) -> Any:
+        """Get MLflow context manager."""
+        if bool(os.getenv("CI")):
             from contextlib import nullcontext
 
-            mlflow_context = nullcontext()
-        else:
-            # We need to setup mlflow logging if not already done?
-            # Runner.py did it inside the run method wrapping execution.
-            # Here we are in postprocessing. Execution is done.
-            # But we want to log the result to mlflow.
-            # If we want to capture execution time etc, we might have lost it if we start run here.
-            # But typically MLflow run context should wrap the whole experiment or at least be active when logging.
-            # If we start it here, it's a new run.
-            # Ideally Orchestrator manages the MLflow run?
-            # Or Postprocessor starts it just for logging?
-            # Since Runner.py wrapped both execution and logging, splitting them is tricky for MLflow context.
-            # However, if we just want to log metrics and params, we can start a run, log, and end it.
-            mlflow.set_tracking_uri(config.postprocess.mlflow.tracking_uri)
-            mlflow.set_experiment(config.experiment.name)
-            mlflow_context = mlflow.start_run()
+            return nullcontext()
+        return self.mlflow_logger.start_run()
 
-        # Prepare params to log - collect from all AD nodes
+    def _collect_execution_params(
+        self, config: ResolvedExperimentConfig, result: SimulationResult
+    ) -> dict[str, Any]:
+        """Collect execution parameters from nodes and result."""
         ad_nodes_params = {}
         for node_config in config.nodes:
             if node_config.name not in ["Simulator", "Supervisor", "Logger"]:
                 ad_nodes_params.update(node_config.params)
 
-        result_params = {
+        return {
             **ad_nodes_params,
             "execution_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "termination_reason": getattr(sim_result, "reason", "unknown"),
+            "termination_reason": getattr(result, "reason", "unknown"),
         }
 
-        # Prepare artifacts container
-        result_artifacts = self._collect_input_artifacts(config)
+    def _update_log_metadata(self, log: SimulationLog, params: dict[str, Any]) -> None:
+        """Update simulation log metadata with execution parameters."""
+        existing_metadata = log.metadata.copy() if log.metadata else {}
+        log.metadata = {**existing_metadata, **params}
 
-        with mlflow_context:
-            # 1. Save MCAP
-            mcap_path = Path(config.postprocess.mcap.output_dir) / "simulation.mcap"
-            self._save_mcap(sim_result.log, mcap_path)
-            if config.postprocess.mcap.enabled and mcap_path.exists():
-                result_artifacts.append(Artifact(local_path=mcap_path))
+        """Update simulation log metadata with execution parameters."""
+        existing_metadata = log.metadata.copy() if log.metadata else {}
+        log.metadata = {**existing_metadata, **params}
 
-            # 2. Add metadata to log (merge with existing metadata to preserve obstacles etc.)
-            # Preserve existing metadata (e.g., obstacles from Simulator.on_init)
-            existing_metadata = sim_result.log.metadata.copy() if sim_result.log.metadata else {}
-            print(f"DEBUG: existing_metadata has obstacles: {'obstacles' in existing_metadata}")
-            print(f"DEBUG: existing_metadata keys: {list(existing_metadata.keys())}")
-            print(f"DEBUG: result_params keys: {list(result_params.keys())}")
-            # Merge with new params (new params take precedence)
-            sim_result.log.metadata = {**existing_metadata, **result_params}
-            print(f"DEBUG: merged metadata has obstacles: {'obstacles' in sim_result.log.metadata}")
-
-            # 3. Calculate metrics
-            reason = getattr(sim_result, "reason", "unknown")
-            _, metrics_obj = self._calculate_metrics(sim_result.log, sim_result.success, reason)
-            result_metrics = metrics_obj
-
-            # 4. Create ExperimentResult
-            experiment_result = ExperimentResult(
-                experiment_name=config.experiment.name,
-                experiment_type=config.experiment.type.value,
-                execution_time=datetime.now(),
-                simulation_results=[sim_result],
-                config=config,
-                params=result_params,
-                metrics=result_metrics,
-                artifacts=result_artifacts,
-            )
-
-            # 5. Generate Dashboard
-            dashboard_artifact = self._generate_dashboard(experiment_result, config, is_ci)
-            if dashboard_artifact:
-                experiment_result.artifacts.append(dashboard_artifact)
-
-            # 6. Log to MLflow
-            logger = MLflowExperimentLogger(
-                tracking_uri=config.postprocess.mlflow.tracking_uri,
-                experiment_name=config.experiment.name,
-            )
-            logger.log_result(experiment_result)
-
-            # Clean up
-            if mcap_path.exists():
-                mcap_path.unlink()
-
-        return experiment_result
+    def _create_experiment_result(
+        self,
+        config: ResolvedExperimentConfig,
+        result: SimulationResult,
+        params: dict[str, Any],
+        metrics: EvaluationMetrics,
+        artifacts: list[Artifact],
+    ) -> ExperimentResult:
+        """Create ExperimentResult object."""
+        return ExperimentResult(
+            experiment_name=config.experiment.name,
+            experiment_type=config.experiment.type.value,
+            execution_time=datetime.now(),
+            simulation_results=[result],
+            config=config,
+            params=params,
+            metrics=metrics,
+            artifacts=artifacts,
+        )
 
     def _collect_input_artifacts(self, config: ResolvedExperimentConfig) -> list[Artifact]:
         """Collect input artifacts from configuration."""
@@ -134,108 +222,98 @@ class EvaluationPostprocessor(
                 print(f"Warning: Input file not found: {full_path}")
         return artifacts
 
-    def _save_mcap(self, log: SimulationLog, output_path: Path) -> bool:
-        """Save simulation log to MCAP.
-
-        Returns:
-            bool: True if save was successful
-        """
-        # Ensure directory exists
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with MCAPLogger(output_path) as mcap_logger:
-            for step in log.steps:
-                mcap_logger.log_step(step)
-        return True
-
     def _calculate_metrics(
-        self, log: SimulationLog, success: bool, reason: str = "unknown"
+        self,
+        log: SimulationLog,
+        config: ResolvedExperimentConfig,
+        success: bool,
+        reason: str = "unknown",
     ) -> tuple[dict[str, float], EvaluationMetrics]:
-        """Calculate simulation metrics."""
-        print("Calculating metrics...")
-        calculator = MetricsCalculator()
-        metrics = calculator.calculate(log, reason=reason)
+        """Calculate experiment metrics."""
+
+        # If log is empty (streaming mode), try to recover last step from MCAP
+        if not log.steps:
+            mcap_path = Path(config.postprocess.mcap.output_dir) / "simulation.mcap"
+            if config.postprocess.mcap.enabled and mcap_path.exists():
+                try:
+                    import json
+
+                    from mcap.reader import make_reader
+
+                    from core.data import Action, ADComponentLog, SimulationStep, VehicleState
+
+                    last_step_dict = None
+                    with open(mcap_path, "rb") as f:
+                        reader = make_reader(f)
+                        # Iterate all to get the last one (inefficient but simple for now)
+                        # TODO: Seek to end if possible or generic optimization
+                        for schema, channel, message in reader.iter_messages(
+                            topics=["/simulation/step"]
+                        ):
+                            last_step_dict = json.loads(message.data)
+
+                    if last_step_dict:
+                        # Reconstruct simulation step from dict
+                        # We only populate what MetricsCalculator needs (timestamp, info)
+                        # MetricsCalculator uses: log.steps[-1].timestamp, log.steps[-1].info.get("goal_count")
+
+                        step = SimulationStep(
+                            timestamp=last_step_dict["timestamp"],
+                            vehicle_state=VehicleState(
+                                x=0.0,
+                                y=0.0,
+                                yaw=0.0,
+                                velocity=0.0,
+                                timestamp=last_step_dict["timestamp"],
+                            ),  # Dummy
+                            action=Action(steering=0.0, acceleration=0.0),  # Dummy
+                            ad_component_log=ADComponentLog(
+                                component_type="dummy", data={}
+                            ),  # Dummy
+                            info=last_step_dict.get("info", {}),
+                        )
+                        log.steps.append(step)
+
+                except Exception as e:
+                    print(f"Warning: Failed to recover metrics from MCAP: {e}")
+
+        metrics = self.metrics_calculator.calculate(log, reason=reason)
 
         # Override success metric with SimulationResult.success
-        metrics.success = 1 if success else 0
+        metrics.success = 1.0 if success else 0.0
 
-        result_metrics = metrics.to_dict()
+        # Convert metrics to flat dict for MLflow
+        metrics_dict = {
+            "lap_time": metrics.lap_time_sec,
+            "collision_count": float(metrics.collision_count),
+            "success": float(metrics.success),
+            "termination_code": float(metrics.termination_code),
+            "goal_count": float(metrics.goal_count),
+        }
 
-        print("\nMetrics:")
-        for key, value in result_metrics.items():
-            print(f"  {key}: {value}")
-
-        return result_metrics, metrics
+        return metrics_dict, metrics
 
     def _generate_dashboard(
         self, result: ExperimentResult, config: ResolvedExperimentConfig, is_ci: bool
     ) -> Artifact | None:
         """Generate interactive dashboard."""
-        if not config.postprocess.dashboard.enabled:
+        if not config.postprocess.dashboard.enabled or not self.dashboard_generator:
             return None
 
         print("Generating interactive dashboard...")
-        dashboard_path = Path("/tmp/dashboard.html")
+        import tempfile
 
-        # Find OSM file from dashboard config (already resolved by loader)
-        osm_path = None
-
-        if config.postprocess.dashboard.map_path:
-            map_path_str = config.postprocess.dashboard.map_path
-            potential_path = Path(map_path_str)
-            if not potential_path.is_absolute():
-                potential_path = get_project_root() / potential_path
-
-            if potential_path.exists():
-                osm_path = potential_path
-            else:
-                print(f"Warning: Configured dashboard map path not found: {potential_path}")
-
-        # Load vehicle parameters from dashboard config
-        vehicle_params = None
-        if config.postprocess.dashboard.vehicle_config_path:
-            import yaml
-
-            vehicle_config_path_str = config.postprocess.dashboard.vehicle_config_path
-            vehicle_config_path = Path(vehicle_config_path_str)
-            if not vehicle_config_path.is_absolute():
-                vehicle_config_path = get_project_root() / vehicle_config_path
-
-            if vehicle_config_path.exists():
-                try:
-                    with open(vehicle_config_path) as f:
-                        vehicle_config = yaml.safe_load(f)
-
-                    # Extract relevant parameters for dashboard
-                    vehicle_params = {
-                        "width": vehicle_config.get("width"),
-                        "wheelbase": vehicle_config.get("wheelbase"),
-                        "front_overhang": vehicle_config.get("front_overhang"),
-                        "rear_overhang": vehicle_config.get("rear_overhang"),
-                    }
-                    print(f"Loaded vehicle parameters from {vehicle_config_path}")
-                except Exception as e:
-                    print(f"Warning: Failed to load vehicle config from {vehicle_config_path}: {e}")
-            else:
-                print(f"Warning: Vehicle config path not found: {vehicle_config_path}")
-
-        # Use dashboard package implementation via interface
-        # Dynamic loading to avoid static dependency
-        import importlib
-
-        from core.interfaces import DashboardGenerator
+        # Create a temporary file path
+        # We close it immediately so the generator can open/write to it
+        with tempfile.NamedTemporaryFile(suffix=".html", delete=False) as f:
+            dashboard_path = Path(f.name)
 
         try:
-            # Dynamically import the dashboard module
-            dashboard_module = importlib.import_module("dashboard")
-            # Get the generator class
-            generator_class = getattr(dashboard_module, "HTMLDashboardGenerator")
-            # Instantiate
-            generator: DashboardGenerator = generator_class()
-            generator.generate(result, dashboard_path, osm_path, vehicle_params)
-        except (ImportError, AttributeError) as e:
-            print(f"Warning: Could not load dashboard generator: {e}")
-            # Dashboard generation failed, but we continue experiment execution
+            self.dashboard_generator.generate(
+                result, dashboard_path, self.dashboard_osm_path, self.dashboard_vehicle_params
+            )
+        except Exception as e:
+            print(f"Warning: Dashboard generation failed: {e}")
             return None
 
         artifact = None

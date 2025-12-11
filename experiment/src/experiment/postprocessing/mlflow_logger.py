@@ -6,7 +6,7 @@ from typing import Any
 
 import mlflow
 from core.data.experiment import Artifact, ExperimentResult
-from experiment.preprocessing.schemas import ResolvedExperimentConfig
+from core.data.experiment.config import ResolvedExperimentConfig
 
 
 class MLflowExperimentLogger:

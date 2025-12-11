@@ -2,8 +2,10 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from core.data.experiment import ExperimentResult
+if TYPE_CHECKING:
+    from core.data.experiment import ExperimentResult
 
 
 class DashboardGenerator(ABC):
@@ -17,7 +19,7 @@ class DashboardGenerator(ABC):
     @abstractmethod
     def generate(
         self,
-        result: ExperimentResult,
+        result: "ExperimentResult",
         output_path: Path,
         osm_path: Path | None = None,
         vehicle_params: dict | None = None,

@@ -5,12 +5,7 @@ from pathlib import Path
 from typing import Any, TypeVar
 
 from core.data import VehicleParameters
-from core.interfaces.node import Node
-from core.utils import get_project_root
-from core.utils.config import load_yaml as core_load_yaml
-from core.utils.node_factory import NodeFactory
-from core.validation.node_graph import validate_node_graph
-from experiment.preprocessing.schemas import (
+from core.data.experiment.config import (
     ExperimentFile,
     ExperimentLayerConfig,
     ExperimentMetadata,
@@ -21,6 +16,11 @@ from experiment.preprocessing.schemas import (
     SystemConfig,
     SystemFile,
 )
+from core.interfaces.node import Node
+from core.utils import get_project_root
+from core.utils.config import load_yaml as core_load_yaml
+from core.utils.node_factory import NodeFactory
+from core.validation.node_graph import validate_node_graph
 from experiment.structures import Experiment
 
 logger = logging.getLogger(__name__)
@@ -278,6 +278,17 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     # 4. Resolve postprocess configuration references
     postprocess_dict = experiment_layer.postprocess.model_dump()
     resolved_postprocess_dict = _resolve_system_references(postprocess_dict, system_context)
+
+    # 5. Inject MCAP path into Logger node
+    # Note: We do this after postprocess resolution to get the correct output path
+    if resolved_postprocess_dict["mcap"]["enabled"]:
+        output_dir = resolved_postprocess_dict["mcap"]["output_dir"]
+        logger_mcap_path = str(Path(output_dir) / "simulation.mcap")
+
+        for node in resolved_nodes:
+            if node.name == "Logger":
+                node.params["output_mcap_path"] = logger_mcap_path
+                break
 
     # 5. Build final config
     return ResolvedExperimentConfig(

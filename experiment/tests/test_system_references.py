@@ -3,12 +3,12 @@
 import pytest
 
 from core.data import VehicleParameters
+from core.data.experiment.config import SystemConfig
 from experiment.preprocessing.loader import (
     _build_system_context,
     _resolve_nested_reference,
     _resolve_system_references,
 )
-from experiment.preprocessing.schemas import SystemConfig
 
 # Dummy vehicle parameters for testing
 DUMMY_VEHICLE_PARAMS = {

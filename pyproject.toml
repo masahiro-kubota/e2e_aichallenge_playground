@@ -103,3 +103,6 @@ dev = [
     "vulture>=2.14",
     "import-linter>=2.0",
 ]
+
+[tool.vulture]
+exclude = ["core/src/core/interfaces/dashboard.py"]

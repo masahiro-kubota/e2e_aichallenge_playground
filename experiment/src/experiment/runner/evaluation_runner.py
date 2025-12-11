@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 from core.clock import create_clock
 from core.data import SimulationResult
+from core.data.experiment.config import ResolvedExperimentConfig
 from core.data.frame_data import collect_node_output_fields, create_frame_data_type
 from core.executor import SingleProcessExecutor
 from experiment.interfaces import ExperimentRunner
-from experiment.preprocessing.schemas import ResolvedExperimentConfig
 from experiment.structures import Experiment
 from logger import LoggerNode
 

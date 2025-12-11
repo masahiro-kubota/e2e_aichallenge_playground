@@ -23,7 +23,7 @@ from core.data.environment import (
 )
 from core.data.experiment import Artifact, EvaluationMetrics, ExperimentResult
 from core.data.observation import Observation
-from core.data.simulator import SimulationConfig, SimulationLog, SimulationResult, SimulationStep
+from core.data.simulator import SimulationLog, SimulationResult, SimulationStep
 from core.data.vehicle import VehicleParameters
 
 __all__ = [
@@ -42,7 +42,6 @@ __all__ = [
     "ObstacleTrajectory",
     "ObstacleType",
     "Scene",
-    "SimulationConfig",
     "SimulationLog",
     "SimulationResult",
     "SimulationStep",

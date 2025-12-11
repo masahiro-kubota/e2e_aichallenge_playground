@@ -1,9 +1,9 @@
 """Experiment runner package."""
 
+from core.data.experiment.config import ResolvedExperimentConfig
 from experiment.interfaces import ExperimentRunner
 from experiment.orchestrator import ExperimentOrchestrator
 from experiment.preprocessing.loader import load_experiment_config
-from experiment.preprocessing.schemas import ResolvedExperimentConfig
 from experiment.structures import Experiment
 
 __all__ = [

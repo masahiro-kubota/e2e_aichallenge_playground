@@ -6,12 +6,13 @@ from typing import Any
 from core.data import SimulationLog, SimulationStep
 from core.data.node_io import NodeIO
 from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from logger.mcap_logger import MCAPLogger
 
 
 class LoggerConfig(NodeConfig):
-    """Configuration for LoggerNode (empty - no parameters needed)."""
+    """Configuration for LoggerNode."""
 
-    pass
+    output_mcap_path: str | None = None
 
 
 class LoggerNode(Node[LoggerConfig]):
@@ -27,6 +28,18 @@ class LoggerNode(Node[LoggerConfig]):
         super().__init__("Logger", rate_hz, config)
         self.log = SimulationLog(steps=[], metadata={})
         self.current_time = 0.0
+        self.mcap_logger: MCAPLogger | None = None
+
+    def on_init(self) -> None:
+        """Initialize resources."""
+        if self.config.output_mcap_path:
+            self.mcap_logger = MCAPLogger(self.config.output_mcap_path)
+            self.mcap_logger.__enter__()
+
+    def on_shutdown(self) -> None:
+        """Cleanup resources."""
+        if self.mcap_logger:
+            self.mcap_logger.__exit__(None, None, None)
 
     def get_node_io(self) -> NodeIO:
         """Define node IO.
@@ -86,7 +99,15 @@ class LoggerNode(Node[LoggerConfig]):
             },
         )
 
-        self.log.steps.append(step)
+        # NOTE: We do NOT append to self.log (memory) anymore to save memory.
+        # Steps are streamed to MCAP file via mcap_logger.
+        # Metadata is still kept in self.log.metadata.
+        # self.log.steps.append(step)
+
+        # Stream to MCAP if enabled
+        if self.mcap_logger:
+            self.mcap_logger.log_step(step)
+
         return NodeExecutionResult.SUCCESS
 
     def get_log(self) -> SimulationLog:

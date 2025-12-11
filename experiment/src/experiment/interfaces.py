@@ -50,12 +50,3 @@ class ExperimentPostprocessor(ABC, Generic[TResult, TProcessed]):
             処理済みの結果
         """
         pass
-
-
-class ExperimentPostprocessorFactory(ABC):
-    """Postprocessor生成ファクトリ（Factory Pattern）"""
-
-    @abstractmethod
-    def create(self, experiment_type: str) -> ExperimentPostprocessor:
-        """実験タイプに応じたPostprocessorを生成"""
-        pass

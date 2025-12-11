@@ -115,19 +115,60 @@ class HTMLDashboardGenerator(DashboardGenerator):
             "steps": [],
         }
 
-        for step in log.steps:
-            data["steps"].append(
-                {
-                    "timestamp": step.timestamp,
-                    "x": step.vehicle_state.x,
-                    "y": step.vehicle_state.y,
-                    "z": getattr(step.vehicle_state, "z", 0.0),
-                    "yaw": step.vehicle_state.yaw,
-                    "velocity": step.vehicle_state.velocity,
-                    "acceleration": step.action.acceleration,
-                    "steering": step.action.steering,
-                }
-            )
+        # Try to read steps from MCAP artifact first
+        mcap_artifact = next(
+            (a for a in result.artifacts if a.local_path and a.local_path.suffix == ".mcap"), None
+        )
+
+        steps_data = []
+        if mcap_artifact and mcap_artifact.local_path and mcap_artifact.local_path.exists():
+            logger.info("Reading steps from MCAP artifact: %s", mcap_artifact.local_path)
+            try:
+                import json
+
+                from mcap.reader import make_reader
+
+                with open(mcap_artifact.local_path, "rb") as f:
+                    reader = make_reader(f)
+                    for schema, channel, message in reader.iter_messages(
+                        topics=["/simulation/step"]
+                    ):
+                        step_dict = json.loads(message.data)
+                        steps_data.append(
+                            {
+                                "timestamp": step_dict["timestamp"],
+                                "x": step_dict["vehicle_state"]["x"],
+                                "y": step_dict["vehicle_state"]["y"],
+                                "z": step_dict["vehicle_state"].get("z", 0.0),
+                                "yaw": step_dict["vehicle_state"]["yaw"],
+                                "velocity": step_dict["vehicle_state"]["velocity"],
+                                "acceleration": step_dict["action"]["acceleration"],
+                                "steering": step_dict["action"]["steering"],
+                            }
+                        )
+                logger.info("Loaded %d steps from MCAP", len(steps_data))
+            except Exception as e:
+                logger.warning("Failed to read MCAP file: %s. Fallback to memory.", e)
+                steps_data = []
+
+        # Fallback to in-memory log if MCAP failed or was not found
+        if not steps_data:
+            logger.info("Using in-memory simulation log for steps")
+            for step in log.steps:
+                steps_data.append(
+                    {
+                        "timestamp": step.timestamp,
+                        "x": step.vehicle_state.x,
+                        "y": step.vehicle_state.y,
+                        "z": getattr(step.vehicle_state, "z", 0.0),
+                        "yaw": step.vehicle_state.yaw,
+                        "velocity": step.vehicle_state.velocity,
+                        "acceleration": step.action.acceleration,
+                        "steering": step.action.steering,
+                    }
+                )
+
+        data["steps"] = steps_data
 
         # Extract obstacles from metadata if available
         if "obstacles" in metadata and isinstance(metadata["obstacles"], list):

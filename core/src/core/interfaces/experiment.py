@@ -1,15 +1,17 @@
 """Experiment interfaces."""
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from core.data.experiment import ExperimentResult
+if TYPE_CHECKING:
+    from core.data.experiment import ExperimentResult
 
 
 class ExperimentLogger(ABC):
     """実験実行のインターフェース."""
 
     @abstractmethod
-    def run(self) -> ExperimentResult:
+    def run(self) -> "ExperimentResult":
         """実験を実行する.
 
         Returns:
@@ -17,7 +19,7 @@ class ExperimentLogger(ABC):
         """
 
     @abstractmethod
-    def log_result(self, result: ExperimentResult) -> bool:
+    def log_result(self, result: "ExperimentResult") -> bool:
         """実験結果をログに記録する.
 
         Args:

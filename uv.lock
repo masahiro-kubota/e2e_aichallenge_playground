@@ -538,6 +538,7 @@ version = "0.1.0"
 source = { editable = "dashboard" }
 dependencies = [
     { name = "core" },
+    { name = "mcap" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "ruff" },
@@ -546,6 +547,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "core", editable = "core" },
+    { name = "mcap", specifier = ">=1.0.0" },
     { name = "pyright", specifier = ">=1.1.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "ruff", specifier = ">=0.8.0" },

@@ -28,7 +28,7 @@ cd ..
 
 # 4. 実験を実行
 # 評価（Pure Pursuit）
-uv run experiment-runner --config experiment/configs/experiments/pure_pursuit.yaml
+uv run experiment-runner --config experiment/configs/experiments/default_experiment.yaml
 
 # 5. 結果を確認
 # MLflow UI: http://localhost:5000

@@ -5,6 +5,7 @@ description = "Interactive HTML dashboard generator for simulation visualization
 requires-python = ">=3.12"
 dependencies = [
     "core",
+    "mcap>=1.0.0",
     "ruff>=0.8.0",
     "pyright>=1.1.0",
     "pytest>=8.0.0",
