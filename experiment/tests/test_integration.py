@@ -32,7 +32,7 @@ def test_pure_pursuit_experiment_nodes() -> None:
     # Check Planning node configuration
     planning_node = next(n for n in config.nodes if n.name == "Planning")
     assert planning_node.type == "pure_pursuit.PurePursuitNode"
-    assert planning_node.params["min_lookahead_distance"] == 3.0
+    assert planning_node.params["min_lookahead_distance"] == 2.0
 
     # Run experiment
     orchestrator = ExperimentOrchestrator()
@@ -50,20 +50,18 @@ def test_pure_pursuit_experiment_nodes() -> None:
     sim_result = result.simulation_results[0]
     metrics = result.metrics
 
-    assert not sim_result.success, "Simulation should have failed (collision expected)"
-    assert (
-        sim_result.reason == "collision"
-    ), f"Expected reason 'collision', got '{sim_result.reason}'"
+    if not sim_result.success:
+        print(f"Simulation failed with reason: {sim_result.reason}")
 
-    # Detailed metric assertions
-    assert metrics.success == 0, f"Metric success should be 0, got {metrics.success}"
-    # assert metrics.lap_time_sec < 90.0  # Lap time might be irrelevant on collision
-    assert metrics.collision_count == 1, f"Collision count {metrics.collision_count} should be 1"
+    # We aim for success now
+    assert sim_result.success, f"Simulation failed: {sim_result.reason}"
+
+    assert metrics.collision_count == 0, f"Collision count {metrics.collision_count} should be 0"
     assert (
-        metrics.termination_code == 5
-    ), f"Termination code {metrics.termination_code} != 5 (Collision)"
-    # Goal count might be 0 if collision happens before goal
-    assert metrics.goal_count == 0, f"Goal count {metrics.goal_count} != 0"
+        metrics.termination_code != 5
+    ), f"Termination code {metrics.termination_code} should not be 5 (Collision)"
+    # Goal reached
+    assert metrics.goal_count == 1, f"Goal count {metrics.goal_count} != 1"
 
 
 def test_node_instantiation(tmp_path) -> None:

@@ -3,10 +3,82 @@
 import math
 from typing import TYPE_CHECKING
 
+from core.data import CsvPathTrajectory, ObstacleTrajectory, TrajectoryWaypoint
+
 if TYPE_CHECKING:
     from shapely.geometry import Polygon
 
     from core.data import ObstacleState, SimulatorObstacle
+import csv
+from pathlib import Path
+
+
+def load_csv_trajectory(trajectory: CsvPathTrajectory) -> ObstacleTrajectory:
+    """Load a CSV path and convert it into a waypoint trajectory."""
+
+    expected_fields = {"x", "y", "z", "x_quat", "y_quat", "z_quat", "w_quat", "speed"}
+
+    path = Path(trajectory.path).expanduser()
+    if not path.is_absolute():
+        path = Path.cwd() / path
+
+    if not path.exists():
+        msg = f"CSV trajectory file not found: {path}"
+        raise FileNotFoundError(msg)
+
+    waypoints: list[TrajectoryWaypoint] = []
+    current_time = 0.0
+    last_speed = 0.0
+
+    with path.open() as f:
+        reader = csv.DictReader(f)
+        header = set(reader.fieldnames or [])
+        missing = expected_fields - header
+        if missing:
+            msg = f"CSV trajectory missing fields: {sorted(missing)}"
+            raise ValueError(msg)
+
+        prev_x = None
+        prev_y = None
+
+        for row in reader:
+            try:
+                x = float(row["x"])
+                y = float(row["y"])
+                z_quat = float(row["z_quat"])
+                w_quat = float(row["w_quat"])
+                speed = float(row["speed"])
+            except (TypeError, ValueError) as exc:
+                msg = f"Invalid numeric value in CSV trajectory row: {row}"
+                raise ValueError(msg) from exc
+
+            # Compute yaw from z-w quaternion (2D assumption)
+            yaw = 2.0 * math.atan2(z_quat, w_quat)
+
+            if prev_x is not None and prev_y is not None:
+                dist = math.hypot(x - prev_x, y - prev_y)
+                effective_speed = (
+                    speed if speed > 1e-3 else (last_speed if last_speed > 1e-3 else 1.0)
+                )
+                dt = dist / effective_speed if effective_speed > 0 else 0.0
+                current_time += dt
+
+            waypoints.append(TrajectoryWaypoint(time=current_time, x=x, y=y, yaw=yaw))
+
+            prev_x, prev_y = x, y
+            if speed > 1e-3:
+                last_speed = speed
+
+    if not waypoints:
+        msg = f"CSV trajectory is empty: {path}"
+        raise ValueError(msg)
+
+    return ObstacleTrajectory(
+        type="waypoint",
+        interpolation="linear",
+        waypoints=waypoints,
+        loop=trajectory.loop,
+    )
 
 
 def get_obstacle_state(obstacle: "SimulatorObstacle", time: float) -> "ObstacleState":

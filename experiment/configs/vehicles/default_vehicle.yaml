@@ -7,7 +7,7 @@ front_overhang: 0.467
 rear_overhang: 0.510
 
 # Kinematics
-max_steering_angle: 0.64
+max_steering_angle: 0.8
 max_velocity: 35.0
 max_acceleration: 5.0
 

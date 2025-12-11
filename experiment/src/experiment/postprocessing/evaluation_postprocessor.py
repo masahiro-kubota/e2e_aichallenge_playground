@@ -345,6 +345,30 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
         if dashboard_path.exists():
             artifact = Artifact(local_path=dashboard_path)
 
+            # Generate Screenshot
+            try:
+                target_path = get_project_root() / "dashboard_latest.png"
+                screenshot_path = self._capture_dashboard_screenshot(dashboard_path, target_path)
+                if screenshot_path and screenshot_path.exists():
+                    print(f"Dashboard screenshot saved to {screenshot_path}")
+                    # We can add it to artifacts or just keep it for the user to see
+                    # Check if artifacts list supports multiple or if we append to experiment result
+                    # The caller appends 'artifact' to experiment_result.artifacts
+                    # We might want to return a list of artifacts or handle it here?
+                    # The method signature returns `Artifact | None`.
+                    # So we can't return multiple.
+                    # We should probably manually append to result.artifacts here if we want both.
+                    # Or change return type.
+                    # For now, let's just print path and maybe copy it to a known location?
+                    # Or better, let's allow returning a list? No, signature is fixed by interface?
+                    # Interface says: -> Artifact | None
+                    # So we can only return one artifact from here.
+                    # But we can modify experiment_result.artifacts directly?
+                    # Yes, result is passed by reference.
+                    result.artifacts.append(Artifact(local_path=screenshot_path))
+            except Exception as e:
+                print(f"Warning: Dashboard screenshot failed: {e}")
+
         if is_ci:
             # In CI, save simulation log as JSON for dashboard injection
             ci_log_path = Path("simulation_log.json")
@@ -358,3 +382,50 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
                 print(f"Dashboard saved to {ci_dashboard_path} for CI artifact upload")
 
         return artifact
+
+    def _capture_dashboard_screenshot(
+        self, html_path: Path, screenshot_path: Path | None = None
+    ) -> Path | None:
+        """Capture screenshot of the dashboard using Selenium."""
+        try:
+            from selenium import webdriver
+            from selenium.webdriver.chrome.options import Options
+        except ImportError:
+            print("Warning: Selenium not installed. Skipping screenshot.")
+            return None
+
+        if screenshot_path is None:
+            screenshot_path = get_project_root() / "dashboard_latest.png"
+        else:
+            screenshot_path = html_path.with_suffix(".png")
+
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--window-size=1920,1080")
+
+        # Suppress logging
+        chrome_options.add_argument("--log-level=3")
+
+        driver = None
+        try:
+            # Assuming chromedriver is in path or managed by selenium manager (newer selenium versions)
+            driver = webdriver.Chrome(options=chrome_options)
+
+            driver.get(f"file://{html_path.absolute()}")
+
+            # Wait for dashboard to render (simple sleep for now, or check for element)
+            import time
+
+            time.sleep(2.0)  # Wait for React to mount and render map
+
+            driver.save_screenshot(str(screenshot_path))
+
+            return screenshot_path
+        except Exception as e:
+            print(f"Warning: Failed to capture screenshot: {e}")
+            return None
+        finally:
+            if driver:
+                driver.quit()

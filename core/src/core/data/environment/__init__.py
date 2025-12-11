@@ -1,6 +1,7 @@
 """Environment data structures."""
 
 from core.data.environment.obstacle import (
+    CsvPathTrajectory,
     Obstacle,
     ObstacleShape,
     ObstacleState,
@@ -13,6 +14,7 @@ from core.data.environment.obstacle import (
 from core.data.environment.scene import Scene
 
 __all__ = [
+    "CsvPathTrajectory",
     "Obstacle",
     "ObstacleShape",
     "ObstacleState",

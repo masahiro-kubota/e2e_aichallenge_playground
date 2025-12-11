@@ -97,6 +97,23 @@ class LoggerNode(Node[LoggerConfig]):
 
         ad_component_log = ADComponentLog(component_type="frame_data", data=data)
 
+        # Obstacle states (for visualization/logging)
+        obstacle_states = getattr(self.frame_data, "obstacle_states", None)
+        obstacle_state_dicts = []
+        if obstacle_states:
+            from dataclasses import asdict, is_dataclass
+
+            for obs_state in obstacle_states:
+                if is_dataclass(obs_state):
+                    obstacle_state_dicts.append(asdict(obs_state))
+                elif hasattr(obs_state, "model_dump"):
+                    obstacle_state_dicts.append(obs_state.model_dump())
+                else:
+                    try:
+                        obstacle_state_dicts.append(obs_state.__dict__)
+                    except Exception:
+                        continue
+
         # Create simulation step
         step = SimulationStep(
             timestamp=current_time,
@@ -105,6 +122,7 @@ class LoggerNode(Node[LoggerConfig]):
             ad_component_log=ad_component_log,
             info={
                 "goal_count": getattr(self.frame_data, "goal_count", 0),
+                "obstacle_states": obstacle_state_dicts,
             },
         )
 

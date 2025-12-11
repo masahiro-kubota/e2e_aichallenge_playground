@@ -11,6 +11,7 @@ from core.data.ad_components import (
     VehicleState,
 )
 from core.data.environment import (
+    CsvPathTrajectory,
     Obstacle,
     ObstacleShape,
     ObstacleState,
@@ -33,6 +34,7 @@ __all__ = [
     "ADComponentType",
     "Action",
     "Artifact",
+    "CsvPathTrajectory",
     "EvaluationMetrics",
     "ExperimentResult",
     "Observation",

@@ -16,6 +16,7 @@ dependencies = [
     "supervisor",
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
+    "selenium>=4.0.0",
 ]
 
 

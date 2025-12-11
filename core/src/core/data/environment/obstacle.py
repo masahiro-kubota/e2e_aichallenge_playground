@@ -70,6 +70,14 @@ class ObstacleTrajectory(BaseModel):
     loop: bool = Field(default=False, description="Loop trajectory")
 
 
+class CsvPathTrajectory(BaseModel):
+    """CSV-based obstacle trajectory definition."""
+
+    type: Literal["csv_path"] = Field(description="Trajectory type")
+    path: str = Field(description="Path to CSV file")
+    loop: bool = Field(default=False, description="Loop trajectory")
+
+
 class StaticObstaclePosition(BaseModel):
     """Static obstacle position."""
 
@@ -88,7 +96,7 @@ class SimulatorObstacle(BaseModel):
         None, description="Position (for static obstacle)"
     )
     # Dynamic obstacle parameters
-    trajectory: ObstacleTrajectory | None = Field(
+    trajectory: ObstacleTrajectory | CsvPathTrajectory | None = Field(
         None, description="Trajectory (for dynamic obstacle)"
     )
 

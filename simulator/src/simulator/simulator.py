@@ -7,8 +7,10 @@ from pydantic import Field
 
 from core.data import (
     Action,
+    ADComponentLog,
     SimulationLog,
     SimulationStep,
+    SimulatorObstacle,
     VehicleParameters,
     VehicleState,
 )
@@ -67,6 +69,7 @@ class Simulator(Node[SimulatorConfig]):
             },
             outputs={
                 "sim_state": VehicleState,
+                "obstacles": list[SimulatorObstacle],  # List[SimulatorObstacle]
             },
         )
 
@@ -119,6 +122,7 @@ class Simulator(Node[SimulatorConfig]):
                 SimulatorObstacle(**obs) if isinstance(obs, dict) else obs
                 for obs in self.config.obstacles
             ]
+            obstacles = [self._prepare_obstacle(obs) for obs in obstacles]
             self.obstacle_manager = ObstacleManager(obstacles)
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -169,12 +173,26 @@ class Simulator(Node[SimulatorConfig]):
                 if not self.map.is_drivable(vehicle_state.x, vehicle_state.y):
                     vehicle_state.off_track = True
 
-        # Obstacle collision detection
+        obstacle_states = []
         if self.obstacle_manager is not None:
+            from simulator.obstacle import check_collision, get_obstacle_polygon, get_obstacle_state
+
+            # Precompute obstacle states for logging and collision
+            for obstacle in self.obstacle_manager.obstacles:
+                try:
+                    obstacle_states.append(get_obstacle_state(obstacle, self.current_time))
+                except Exception:
+                    # Skip malformed obstacle state
+                    continue
+
+            # Obstacle collision detection
             try:
                 poly = self._get_vehicle_polygon(vehicle_state)
-                if self.obstacle_manager.check_vehicle_collision(poly, self.current_time):
-                    vehicle_state.collision = True
+                for obstacle, obs_state in zip(self.obstacle_manager.obstacles, obstacle_states):
+                    obstacle_polygon = get_obstacle_polygon(obstacle, obs_state)
+                    if check_collision(poly, obstacle_polygon):
+                        vehicle_state.collision = True
+                        break
             except Exception:
                 # If polygon check fails, skip collision detection
                 pass
@@ -191,6 +209,11 @@ class Simulator(Node[SimulatorConfig]):
 
         # Update frame_data with new state
         self.frame_data.sim_state = vehicle_state
+        if self.obstacle_manager:
+            self.frame_data.obstacles = self.obstacle_manager.obstacles
+        else:
+            self.frame_data.obstacles = []
+        self.frame_data.obstacle_states = obstacle_states
 
         return NodeExecutionResult.SUCCESS
 
@@ -213,3 +236,17 @@ class Simulator(Node[SimulatorConfig]):
         from core.data import ADComponentLog
 
         return ADComponentLog(component_type="simulator", data={})
+
+    def _prepare_obstacle(self, obstacle: SimulatorObstacle) -> SimulatorObstacle:
+        """Convert CSV-based trajectories into waypoint trajectories."""
+        if obstacle.type != "dynamic" or obstacle.trajectory is None:
+            return obstacle
+
+        trajectory = obstacle.trajectory
+        if getattr(trajectory, "type", None) != "csv_path":
+            return obstacle
+
+        from simulator.obstacle import load_csv_trajectory
+
+        new_trajectory = load_csv_trajectory(trajectory)
+        return obstacle.model_copy(update={"trajectory": new_trajectory})

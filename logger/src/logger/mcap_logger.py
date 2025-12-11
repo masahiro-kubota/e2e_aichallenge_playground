@@ -111,6 +111,25 @@ class MCAPLogger:
                         "info": {
                             "type": "object",
                             "description": "Additional simulation info",
+                            "properties": {
+                                "goal_count": {
+                                    "type": "number",
+                                    "description": "Reached goal count",
+                                },
+                                "obstacle_states": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "x": {"type": "number"},
+                                            "y": {"type": "number"},
+                                            "yaw": {"type": "number"},
+                                            "timestamp": {"type": "number"},
+                                        },
+                                    },
+                                    "description": "Obstacle states at timestamp",
+                                },
+                            },
                         },
                     },
                 }

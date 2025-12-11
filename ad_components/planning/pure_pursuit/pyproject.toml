@@ -7,6 +7,8 @@ dependencies = [
     "core",
     "pydantic",
     "planning-utils",
+    "shapely>=2.0.0",
+    "simulator",
 ]
 
 
@@ -27,6 +29,7 @@ packages = ["src/pure_pursuit"]
 core = { workspace = true }
 ad-component-core = { workspace = true }
 planning-utils = { workspace = true }
+simulator = { workspace = true }
 
 [tool.deptry]
 ignore_notebooks = true

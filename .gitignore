@@ -15,4 +15,5 @@ __pycache__/
 .venv/
 # Github
 dashboard.html
+dashboard_latest.png
 simulation_log.json
