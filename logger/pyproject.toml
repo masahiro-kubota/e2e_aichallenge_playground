@@ -7,6 +7,9 @@ dependencies = [
     "core",
 ]
 
+[project.entry-points."e2e_aichallenge.node"]
+LoggerNode = "logger.logger_node:LoggerNode"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

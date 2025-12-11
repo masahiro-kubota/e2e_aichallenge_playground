@@ -8,7 +8,7 @@ from core.data import VehicleParameters
 from core.interfaces.node import Node
 from core.utils import get_project_root
 from core.utils.config import load_yaml as core_load_yaml
-from core.utils.node_factory import create_node
+from core.utils.node_factory import NodeFactory
 from core.validation.node_graph import validate_node_graph
 from experiment.preprocessing.schemas import (
     ExperimentFile,
@@ -319,7 +319,7 @@ class DefaultPreprocessor:
         config = load_experiment_config(config_path)
 
         # 2. Create nodes from resolved config
-        nodes = self._create_nodes(config)
+        nodes = self.build_experiment_nodes(config)
 
         # 3. Create Experiment instance
         experiment_id = str(uuid.uuid4())
@@ -331,24 +331,17 @@ class DefaultPreprocessor:
             nodes=nodes,
         )
 
-    def _create_nodes(self, config: ResolvedExperimentConfig) -> list[Node]:
+    def build_experiment_nodes(self, config: ResolvedExperimentConfig) -> list[Node]:
         """Create experiment nodes from resolved configuration."""
         nodes: list[Node] = []
-
-        # Extract vehicle_params once for all nodes
-        vehicle_params = None
-        for node_config in config.nodes:
-            if node_config.name == "Simulator" and "vehicle_params" in node_config.params:
-                vehicle_params = node_config.params["vehicle_params"]
-                break
+        factory = NodeFactory()
 
         # Create all nodes using unified approach
         for node_config in config.nodes:
-            node = create_node(
+            node = factory.create(
                 node_type=node_config.type,
                 rate_hz=node_config.rate_hz,
                 params=node_config.params,
-                vehicle_params=vehicle_params,
             )
             nodes.append(node)
 

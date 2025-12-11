@@ -17,18 +17,15 @@ class PIDConfig(NodeConfig):
     kd: float = Field(..., description="Derivative gain")
     u_min: float = Field(..., description="Minimum acceleration [m/s^2]")
     u_max: float = Field(..., description="Maximum acceleration [m/s^2]")
+    vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
 
 
 class PIDControllerNode(Node[PIDConfig]):
     """PID Controller node for combined steering (Pure Pursuit logic legacy) and velocity control."""
 
-    def __init__(
-        self, config: PIDConfig, rate_hz: float, vehicle_params: VehicleParameters | None = None
-    ):
+    def __init__(self, config: PIDConfig, rate_hz: float):
         super().__init__("PIDController", rate_hz, config)
-        if vehicle_params is None:
-            raise ValueError("VehicleParameters must be provided to PIDControllerNode")
-        self.vehicle_params = vehicle_params
+        self.vehicle_params = config.vehicle_params
         self.wheelbase = self.vehicle_params.wheelbase
         # self.config is set by base class
 

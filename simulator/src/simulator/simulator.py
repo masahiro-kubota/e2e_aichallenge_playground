@@ -1,5 +1,6 @@
 """Simulator implementation."""
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pydantic import Field
@@ -31,7 +32,7 @@ class SimulatorConfig(NodeConfig):
         default_factory=lambda: VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
         description="Initial vehicle state",
     )
-    map_path: str | None = Field(None, description="Path to Lanelet2 map file")
+    map_path: Path | None = Field(None, description="Path to Lanelet2 map file")
     obstacles: list = Field(default_factory=list, description="List of obstacles")
 
 

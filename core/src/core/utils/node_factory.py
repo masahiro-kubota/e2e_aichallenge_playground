@@ -1,94 +1,135 @@
 import importlib
-import inspect
-from typing import Any
+import types
+from pathlib import Path
+from typing import Any, TypeVar, get_args, get_origin
 
-from core.data import VehicleParameters
+from pydantic import BaseModel
+
 from core.interfaces.node import Node
 from core.utils.paths import get_project_root
 
+T = TypeVar("T")
 
-def create_node(
-    node_type: str,
-    rate_hz: float,
-    params: dict[str, Any],
-    vehicle_params: VehicleParameters | None = None,
-) -> Node:
-    """Create a Node instance dynamically.
 
-    Args:
-        node_type: Class path (e.g., "package.module.ClassName") or short name alias
-        rate_hz: Execution frequency in Hz
-        params: Node configuration parameters
-        vehicle_params: Vehicle parameters to inject if required by Node
+class NodeFactory:
+    """Factory for creating Node instances dynamically."""
 
-    Returns:
-        Instantiated Node
-    """
-    # Map short names to full module paths
-    node_type_aliases = {
-        "KinematicSimulator": "simulator.simulator.Simulator",
-        "SupervisorNode": "supervisor.supervisor_node.SupervisorNode",
-        "LoggerNode": "logger.logger_node.LoggerNode",
-    }
+    def __init__(self) -> None:
+        self.workspace_root = get_project_root()
 
-    # Resolve alias if present
-    resolved_type = node_type_aliases.get(node_type, node_type)
+    def create(
+        self,
+        node_type: str,
+        rate_hz: float,
+        params: dict[str, Any],
+    ) -> Node:
+        """Create a Node instance dynamically.
 
-    # Resolve path parameters
-    path_keys = {"track_path", "model_path", "scaler_path"}
-    workspace_root = get_project_root()
+        Args:
+            node_type: Entry point name (e.g., "PurePursuit") or Class path
+            rate_hz: Execution frequency in Hz
+            params: Node configuration parameters
 
-    # Copy params to avoid mutation
-    node_params = params.copy()
+        Returns:
+            Instantiated Node
+        """
+        # 1. Resolve Node Class
+        node_class = self._resolve_node_class(node_type)
 
-    for key, value in node_params.items():
-        if key in path_keys and isinstance(value, str):
-            # Resolve relative paths against workspace root
-            node_params[key] = str(workspace_root / value)
+        # 2. Resolve Configuration Class (T) from Node[T]
+        config_class = self._resolve_config_class(node_class)
 
-    # Import class
-    try:
-        module_name, class_name = resolved_type.rsplit(".", 1)
-        module = importlib.import_module(module_name)
-        cls = getattr(module, class_name)
-    except (ValueError, ImportError, AttributeError) as e:
+        # 3. Prepare Parameters (Path resolution based on Config type)
+        resolved_params = self._resolve_paths(params, config_class)
+
+        # 4. Instantiate Node
+        return node_class.from_dict(
+            rate_hz=rate_hz,
+            config_class=config_class,
+            config_dict=resolved_params,
+        )
+
+    def _resolve_node_class(self, node_type: str) -> type[Node]:
+        """Import and return the Node class using Entry Points or dynamic import."""
+        # 1. Try Entry Points
+        eps = importlib.metadata.entry_points(group="e2e_aichallenge.node")
+        # In Python 3.10+, entry_points returns a SelectableGroups, we can access by name or iteration
+        # For compatibility, iterate
+        for ep in eps:
+            if ep.name == node_type:
+                return ep.load()
+
+        # 2. Fallback: Dynamic Import (if it looks like a module path)
+        if "." in node_type:
+            try:
+                module_name, class_name = node_type.rsplit(".", 1)
+                module = importlib.import_module(module_name)
+                cls = getattr(module, class_name)
+                if not issubclass(cls, Node):
+                    raise TypeError(f"Class {cls} is not a subclass of Node")
+                return cls
+            except (ValueError, ImportError, AttributeError):
+                pass  # Fall through to error raising
+
         raise ValueError(
-            f"Invalid node type: {node_type} (resolved to: {resolved_type}). "
-            f"Must be in 'module.ClassName' format and importable. Error: {e}"
-        ) from e
+            f"Node type '{node_type}' not found in entry points and valid import failed."
+        )
 
-    if not issubclass(cls, Node):
-        raise TypeError(f"Class {cls} is not a subclass of Node")
+    def _resolve_config_class(self, node_class: type[Node]) -> type:
+        """Extract the Config class from Node[Config] generic type."""
+        config_class = None
+        if hasattr(node_class, "__orig_bases__"):
+            for base in node_class.__orig_bases__:
+                if (
+                    hasattr(base, "__origin__")
+                    and base.__origin__ is Node
+                    and hasattr(base, "__args__")
+                    and base.__args__
+                ):
+                    config_class = base.__args__[0]
+                    break
 
-    # Get the config model from the class
-    # The Node class is Generic[T], we need to extract T
-    # We can look at __orig_bases__ to find the config type
-    config_class = None
-    if hasattr(cls, "__orig_bases__"):
-        for base in cls.__orig_bases__:
-            if (
-                hasattr(base, "__origin__")
-                and base.__origin__ is Node
-                and hasattr(base, "__args__")
-                and base.__args__
-            ):
-                config_class = base.__args__[0]
-                break
+        if config_class is None:
+            raise ValueError(f"Could not determine config class for {node_class}")
 
-    if config_class is None:
-        raise ValueError(f"Could not determine config class for {cls}")
+        return config_class
 
-    # Check if the class accepts vehicle_params
-    sig = inspect.signature(cls.__init__)
-    kwargs = {}
+    def _resolve_paths(
+        self, params: dict[str, Any], config_class: type[BaseModel]
+    ) -> dict[str, Any]:
+        """Resolve path parameters relative to workspace root based on Config type definition."""
+        resolved = params.copy()
 
-    if "vehicle_params" in sig.parameters and vehicle_params is not None:
-        kwargs["vehicle_params"] = vehicle_params
+        for name, field in config_class.model_fields.items():
+            if name in resolved:
+                value = resolved[name]
+                if isinstance(value, str) and self._is_path_type(field.annotation):
+                    resolved[name] = str(self.workspace_root / value)
 
-    # Use from_dict to create the node
-    return cls.from_dict(
-        rate_hz=rate_hz,
-        config_class=config_class,
-        config_dict=node_params,
-        **kwargs,
-    )
+        return resolved
+
+    def _is_path_type(self, annotation: Any) -> bool:
+        """Check if the type annotation implies a Path."""
+        if annotation is Path:
+            return True
+
+        # Handle Optional[Path] or Path | None (Union)
+        origin = get_origin(annotation)
+        if origin is types.UnionType or str(origin) == "typing.Union":
+            # UnionType is for A | B syntax in 3.10+
+            args = get_args(annotation)
+            for arg in args:
+                if self._is_path_type(arg):
+                    return True
+
+        # Check sub-types if needed (e.g. FilePath from pydantic)
+        # Pydantic types might not be exactly Path but behave like it?
+        # For now, we explicitly use pathlib.Path in configs.
+        # If annotation is a class and inherits Path?
+        try:
+            if isinstance(annotation, type) and issubclass(annotation, Path):
+                return True
+        except TypeError:
+            pass
+
+        return False

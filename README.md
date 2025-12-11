@@ -159,64 +159,73 @@ graph TD
 
 ## 🏗️ アーキテクチャ詳細
 
-### SingleProcessExecutor
+### 1. 実行モデル
 
-このプロジェクトでは、**SingleProcessExecutor**を使用してシミュレーションを実行します。これは、複数のノード（Simulator、Sensor、Planning、Control、Supervisor、Logger）を単一プロセス内で協調動作させる実行エンジンです。
+本プラットフォームは、すべてのコンポーネント（Simulator, Planning, Control等）を単一プロセス内の**Node**として実行します。各ノードは同期的に実行され、決定論的なシミュレーションと高速な実行を実現します。
 
-#### Nodeベースアーキテクチャ
+### 2. ノードシステム
 
-すべてのコンポーネント（シミュレータ、センサー、プランナー、コントローラーなど）は`Node`基底クラスを継承し、統一されたインターフェースで実行されます：
+すべてのコンポーネントは共通の`Node`基底クラスを継承します。
+
+- **型安全な設定**: Pydanticモデルによる厳密なパラメータ検証。
+- **統一インターフェース**: `on_run(current_time)` メソッドによる処理の実装。
+- **Config-Driven**: 依存関係（車両パラメータ等）はYAMLから明示的に注入されます。
 
 ```python
 class Node(ABC, Generic[ConfigT]):
     """実行可能なノードの基底クラス"""
 
     def __init__(self, name: str, rate_hz: float, config: ConfigT):
-        self.name = name
-        self.rate_hz = rate_hz
         self.config = config  # Pydanticで検証済みの設定
 
     @abstractmethod
     def on_run(self, current_time: float) -> NodeExecutionResult:
-        """ノードの実行ロジック"""
         pass
 ```
 
-#### 設定ベースのノード構築
+### 🛠️ 新しいノードの追加方法
 
-YAML設定ファイルから動的にノードを構築します。`loader.py`が設定を読み込み、`node_factory.create_node()`が各ノードをインスタンス化します：
+新しいコンポーネントやアルゴリズムを追加する場合の手順です。
+
+#### 1. Nodeの実装
+
+`Node` クラスを継承し、PydanticでConfigを定義します。
+
+```python
+from pydantic import Field
+from core.interfaces.node import Node, NodeConfig
+
+class MyAlgorithmConfig(NodeConfig):
+    param_a: float = Field(..., description="Important parameter")
+    file_path: str = Field(..., description="Path to model file")
+
+class MyAlgorithmNode(Node[MyAlgorithmConfig]):
+    def __init__(self, config: MyAlgorithmConfig, rate_hz: float):
+        super().__init__("MyAlgorithm", rate_hz, config)
+
+    def on_run(self, current_time: float) -> NodeExecutionResult:
+        # Implementation...
+        return NodeExecutionResult.SUCCESS
+```
+
+#### 2. Entry Pointの登録（推奨）
+
+`pyproject.toml` に登録することで、YAML設定ファイルで短いエイリアス名を使用できるようになります。
+
+```toml
+[project.entry-points."e2e_aichallenge.node"]
+my_algorithm = "my_package.my_module:MyAlgorithmNode"
+```
+
+#### 3. YAML設定での利用
 
 ```yaml
-# experiment/configs/modules/pure_pursuit_pid.yaml
-module:
-  name: "pure_pursuit_pid"
-  components:
-    ad_component:
+    - name: "MyComponent"
+      type: "my_algorithm"
       params:
-        nodes:
-          - name: "Sensor"
-            type: "experiment.processors.sensor.IdealSensorNode"
-            params: {}
-            rate_hz: 50.0
-
-          - name: "Planning"
-            type: "pure_pursuit.PurePursuitNode"
-            params:
-              min_lookahead_distance: 3.0
-              max_lookahead_distance: 15.0
-              lookahead_speed_ratio: 1.5
-              track_path: "path/to/track.csv"
-            rate_hz: 10.0
-
-          - name: "Control"
-            type: "pid_controller.PIDControllerNode"
-            params:
-              kp: 1.0
-              ki: 0.1
-              kd: 0.05
-              u_min: -3.0
-              u_max: 3.0
-            rate_hz: 30.0
+        param_a: 1.0
+        file_path: "models/model.pt"
+      rate_hz: 20.0
 ```
 
 ---

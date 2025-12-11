@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import Field
 
 from core.data import VehicleParameters, VehicleState
@@ -10,13 +12,14 @@ from core.utils.geometry import distance
 class PurePursuitConfig(NodeConfig):
     """Configuration for PurePursuitNode."""
 
-    track_path: str = Field(..., description="Path to reference trajectory CSV")
+    track_path: Path = Field(..., description="Path to reference trajectory CSV")
     lookahead_distance: float | None = Field(
         None, description="Detailed fixed lookahead (deprecated in favor of dynamic/min/max)"
     )
     min_lookahead_distance: float = Field(..., description="Minimum lookahead distance [m]")
     max_lookahead_distance: float = Field(..., description="Maximum lookahead distance [m]")
     lookahead_speed_ratio: float = Field(..., description="Lookahead distance speed ratio [s]")
+    vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
 
     # If lookahead_distance is set, it overrides the dynamic logic (backward compatibility)
 
@@ -28,12 +31,9 @@ class PurePursuitNode(Node[PurePursuitConfig]):
         self,
         config: PurePursuitConfig,
         rate_hz: float,
-        vehicle_params: VehicleParameters | None = None,
     ):
         super().__init__("PurePursuit", rate_hz, config)
-        if vehicle_params is None:
-            raise ValueError("VehicleParameters must be provided to PurePursuitNode")
-        self.vehicle_params = vehicle_params
+        self.vehicle_params = config.vehicle_params
         self.reference_trajectory: Trajectory | None = None
         # self.config is set by base class
 

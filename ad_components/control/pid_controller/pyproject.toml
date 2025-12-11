@@ -12,6 +12,9 @@ dependencies = [
 [project.entry-points."ad_components"]
 "PIDController" = "pid_controller:PIDController"
 
+[project.entry-points."e2e_aichallenge.node"]
+PIDControllerNode = "pid_controller:PIDControllerNode"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

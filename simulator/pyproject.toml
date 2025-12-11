@@ -16,8 +16,8 @@ dependencies = [
 [tool.uv.sources]
 core = { workspace = true }
 
-[project.entry-points."simulator"]
-"KinematicSimulator" = "simulator:KinematicSimulator"
+[project.entry-points."e2e_aichallenge.node"]
+KinematicSimulator = "simulator.simulator:Simulator"
 
 [build-system]
 requires = ["hatchling"]

@@ -23,20 +23,6 @@ class NodeConfig(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict, description="Node parameters")
 
 
-class ComponentConfig(BaseModel):
-    """Configuration for a component (AD component nodes container)."""
-
-    params: dict[str, Any] = Field(..., description="Component parameters (contains nodes list)")
-
-
-class SimulatorConfig(BaseModel):
-    """Configuration for simulator."""
-
-    type: str = Field(..., description="Simulator class name")
-    rate_hz: float = Field(..., description="Physics frequency in Hz")
-    params: dict[str, Any] = Field(..., description="Simulator parameters")
-
-
 class ExecutionConfig(BaseModel):
     """Configuration for execution."""
 
@@ -103,20 +89,6 @@ class ExperimentMetadata(BaseModel):
     description: str = Field(..., description="Experiment description")
 
 
-class ComponentsConfig(BaseModel):
-    """Configuration for all components."""
-
-    ad_component: ComponentConfig = Field(..., description="AD component config")
-
-
-class ModelCheckpointConfig(BaseModel):
-    """Configuration for model checkpointing."""
-
-    save_best: bool = Field(..., description="Save best model")
-    save_every_n_epochs: int = Field(..., description="Save checkpoint every N epochs")
-    output_dir: str = Field(..., description="Output directory for models")
-
-
 class ModuleConfig(BaseModel):
     """Module configuration (Pipeline definition)."""
 
@@ -145,12 +117,6 @@ class ExperimentLayerConfig(BaseModel):
     system: str = Field(..., description="Path to system configuration")
     execution: ExecutionConfig = Field(..., description="Execution configuration")
     postprocess: PostprocessConfig = Field(..., description="Postprocessing configuration")
-
-
-class SupervisorConfig(BaseModel):
-    """Configuration for supervisor."""
-
-    params: dict[str, Any] = Field(..., description="Supervisor parameters")
 
 
 class ResolvedExperimentConfig(BaseModel):

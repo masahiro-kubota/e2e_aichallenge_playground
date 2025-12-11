@@ -7,6 +7,9 @@ dependencies = [
     "core",
 ]
 
+[project.entry-points."e2e_aichallenge.node"]
+SupervisorNode = "supervisor.supervisor_node:SupervisorNode"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

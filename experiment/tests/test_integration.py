@@ -96,17 +96,25 @@ def test_node_instantiation(tmp_path) -> None:
         "min_lookahead_distance": 2.0,
         "max_lookahead_distance": 10.0,
         "lookahead_speed_ratio": 1.0,
+        "vehicle_params": vp,
     }
     pp_config = PurePursuitConfig(**pp_config_dict)
-    pp_node = PurePursuitNode(config=pp_config, rate_hz=10.0, vehicle_params=vp)
+    pp_node = PurePursuitNode(config=pp_config, rate_hz=10.0)
     assert pp_node.name == "PurePursuit"
-    assert pp_node.config.track_path == str(dummy_track)
+    assert pp_node.config.track_path == dummy_track
 
     # PID Controller
 
-    pid_config_dict = {"kp": 1.0, "ki": 0.1, "kd": 0.01, "u_min": -10.0, "u_max": 10.0}
+    pid_config_dict = {
+        "kp": 1.0,
+        "ki": 0.1,
+        "kd": 0.01,
+        "u_min": -10.0,
+        "u_max": 10.0,
+        "vehicle_params": vp,
+    }
     pid_config = PIDConfig(**pid_config_dict)
-    pid_node = PIDControllerNode(config=pid_config, rate_hz=10.0, vehicle_params=vp)
+    pid_node = PIDControllerNode(config=pid_config, rate_hz=10.0)
     assert pid_node.name == "PIDController"
     assert pid_node.config.kp == 1.0
 

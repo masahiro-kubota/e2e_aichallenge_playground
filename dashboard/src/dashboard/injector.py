@@ -163,7 +163,16 @@ def inject_simulation_data(
             json_data["map_polygons"] = map_polygons
 
         # Serialize to JSON string
-        json_content = json.dumps(json_data)
+        def _json_serial(obj):
+            if hasattr(obj, "model_dump"):
+                return obj.model_dump()
+            if hasattr(obj, "to_dict"):
+                return obj.to_dict()
+            if hasattr(obj, "dict"):  # Fallback for older Pydantic or other objects
+                return obj.dict()
+            raise TypeError(f"Type {type(obj)} not serializable")
+
+        json_content = json.dumps(json_data, default=_json_serial)
 
         # Use regex to find the marker
         pattern = re.compile(r"window\.SIMULATION_DATA\s*=\s*null;?")
