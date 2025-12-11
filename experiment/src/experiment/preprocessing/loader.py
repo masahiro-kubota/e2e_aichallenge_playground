@@ -71,6 +71,112 @@ def _resolve_defaults(
     return resolved
 
 
+def _resolve_nested_reference(ref_path: str, context: dict[str, Any]) -> Any:
+    """Resolve nested reference path (e.g., 'vehicle.config_path').
+
+    Args:
+        ref_path: Dot-separated reference path.
+        context: Context dictionary to resolve from.
+
+    Returns:
+        Resolved value.
+
+    Raises:
+        ValueError: If reference path is not found.
+    """
+    keys = ref_path.split(".")
+    value = context
+
+    for k in keys:
+        if isinstance(value, dict) and k in value:
+            value = value[k]
+        else:
+            available_keys = list(context.keys()) if isinstance(context, dict) else []
+            raise ValueError(
+                f"System reference '${{system.{ref_path}}}' not found. "
+                f"Available top-level keys: {available_keys}"
+            )
+
+    return value
+
+
+def _resolve_system_references(
+    params: dict[str, Any],
+    system_context: dict[str, Any],
+) -> dict[str, Any]:
+    """Resolve ${system.*} references in parameters.
+
+    Args:
+        params: Parameters that may contain ${system.*} references.
+        system_context: System context dictionary.
+
+    Returns:
+        Parameters with resolved references.
+
+    Examples:
+        >>> context = {"map_path": "/path/to/map.osm", "vehicle": {"config_path": "/path/to/vehicle.yaml"}}
+        >>> params = {"map_path": "${system.map_path}", "vehicle_config": "${system.vehicle.config_path}"}
+        >>> _resolve_system_references(params, context)
+        {"map_path": "/path/to/map.osm", "vehicle_config": "/path/to/vehicle.yaml"}
+    """
+    resolved = {}
+
+    for key, value in params.items():
+        if isinstance(value, str) and value.startswith("${system."):
+            # Extract reference path: ${system.map_path} -> "map_path"
+            ref_path = value.replace("${system.", "").rstrip("}")
+            resolved[key] = _resolve_nested_reference(ref_path, system_context)
+        elif isinstance(value, dict):
+            # Recursively resolve nested dictionaries
+            resolved[key] = _resolve_system_references(value, system_context)
+        elif isinstance(value, list):
+            # Resolve references in list items
+            resolved[key] = [
+                _resolve_system_references(item, system_context) if isinstance(item, dict) else item
+                for item in value
+            ]
+        else:
+            resolved[key] = value
+
+    return resolved
+
+
+def _build_system_context(system_layer: SystemConfig) -> dict[str, Any]:
+    """Build system context dictionary from SystemConfig.
+
+    Args:
+        system_layer: System configuration.
+
+    Returns:
+        Context dictionary with resolved system-level settings.
+
+    Note:
+        This function resolves:
+        - map_path: Converted to absolute path string
+        - vehicle_params: Loaded as VehicleParameters object
+        - vehicle: Dictionary with config_path and params for nested references
+    """
+    context = {}
+
+    # Resolve map_path to absolute path
+    if system_layer.map_path:
+        context["map_path"] = str(get_project_root() / system_layer.map_path)
+
+    # Resolve vehicle configuration
+    if system_layer.vehicle:
+        v_path = get_project_root() / system_layer.vehicle["config_path"]
+        vehicle_params = VehicleParameters(**load_yaml(v_path))
+
+        # Store both the resolved object and the nested structure
+        context["vehicle_params"] = vehicle_params
+        context["vehicle"] = {
+            "config_path": str(v_path),
+            "params": vehicle_params,
+        }
+
+    return context
+
+
 def load_yaml(path: Path | str) -> dict[str, Any]:
     """Load YAML file relative to project root.
 
@@ -127,12 +233,15 @@ def _resolve_node_configs(
 
     Args:
         module_nodes: Node configurations from module layer.
-        system_layer: System configuration for special injections.
+        system_layer: System configuration.
 
     Returns:
         List of resolved node configurations.
     """
     from core.utils.param_loader import load_component_defaults
+
+    # Build system context once for all nodes
+    system_context = _build_system_context(system_layer)
 
     resolved_nodes = []
 
@@ -149,14 +258,8 @@ def _resolve_node_configs(
         # 2. Resolve defaults in module params
         params = _resolve_defaults(node_config.params, defaults)
 
-        # 3. Special injections for Simulator
-        if node_name == "Simulator":
-            if system_layer.map_path:
-                params["map_path"] = str(get_project_root() / system_layer.map_path)
-
-            if system_layer.vehicle:
-                v_path = get_project_root() / system_layer.vehicle["config_path"]
-                params["vehicle_params"] = VehicleParameters(**load_yaml(v_path))
+        # 3. Resolve system references (${system.*})
+        params = _resolve_system_references(params, system_context)
 
         resolved_nodes.append(
             NodeConfig(
@@ -182,13 +285,22 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     # 1. Load all layers
     experiment_layer, system_layer, module_layer = _load_layer_configs(path)
 
-    # 2. Resolve all nodes
+    # 2. Build system context for reference resolution
+    system_context = _build_system_context(system_layer)
+
+    # 3. Resolve all nodes
     resolved_nodes = _resolve_node_configs(
         module_nodes=module_layer.nodes,
         system_layer=system_layer,
     )
 
-    # 3. Build final config
+    # 4. Resolve postprocess configuration references
+    postprocess_dict = (
+        experiment_layer.postprocess.model_dump() if experiment_layer.postprocess else {}
+    )
+    resolved_postprocess_dict = _resolve_system_references(postprocess_dict, system_context)
+
+    # 5. Build final config
     return ResolvedExperimentConfig(
         experiment=ExperimentMetadata(
             name=experiment_layer.name,
@@ -197,7 +309,7 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
         ),
         nodes=resolved_nodes,
         execution=experiment_layer.execution,
-        postprocess=experiment_layer.postprocess or {},
+        postprocess=resolved_postprocess_dict,
     )
 
 

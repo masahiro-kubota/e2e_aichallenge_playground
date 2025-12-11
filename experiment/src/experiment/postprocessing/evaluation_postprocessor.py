@@ -177,10 +177,9 @@ class EvaluationPostprocessor(
         print("Generating interactive dashboard...")
         dashboard_path = Path("/tmp/dashboard.html")
 
-        # Find OSM file from dashboard config or simulator config
+        # Find OSM file from dashboard config (already resolved by loader)
         osm_path = None
 
-        # First, check dashboard config
         if config.postprocess.dashboard.map_path:
             map_path_str = config.postprocess.dashboard.map_path
             potential_path = Path(map_path_str)
@@ -191,21 +190,6 @@ class EvaluationPostprocessor(
                 osm_path = potential_path
             else:
                 print(f"Warning: Configured dashboard map path not found: {potential_path}")
-
-        # Fallback to simulator config if not found in dashboard config
-        if osm_path is None:
-            simulator_node_config = next((n for n in config.nodes if n.name == "Simulator"), None)
-            if simulator_node_config and "map_path" in simulator_node_config.params:
-                map_path_str = simulator_node_config.params["map_path"]
-                if map_path_str:
-                    potential_path = Path(map_path_str)
-                    if not potential_path.is_absolute():
-                        potential_path = get_project_root() / potential_path
-
-                    if potential_path.exists():
-                        osm_path = potential_path
-                    else:
-                        print(f"Warning: Configured map path not found: {potential_path}")
 
         # Load vehicle parameters from dashboard config
         vehicle_params = None

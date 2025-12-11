@@ -8,17 +8,13 @@ module:
       type: "KinematicSimulator"
       rate_hz: 100.0
       params:
+        map_path: "${system.map_path}"
+        vehicle_params: "${system.vehicle_params}"
         initial_state:
           x: 89630.067
           y: 43130.695
           yaw: 2.2
           velocity: 0.0
-        vehicle_params:
-          wheelbase: 1.087
-          width: 1.30
-          max_steering_angle: 0.64
-          front_overhang: 0.467
-          rear_overhang: 0.510
         # 障害物設定（例）
         obstacles:
           # 静的障害物の例
