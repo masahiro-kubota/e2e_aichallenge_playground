@@ -291,10 +291,16 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
                                 velocity=0.0,
                                 timestamp=last_step_dict["timestamp"],
                             ),  # Dummy
-                            action=Action(steering=0.0, acceleration=0.0),  # Dummy
+                            action=Action(
+                                steering=last_step_dict["action"]["steering"],
+                                acceleration=last_step_dict["action"]["acceleration"],
+                            ),
                             ad_component_log=ADComponentLog(
-                                component_type="dummy", data={}
-                            ),  # Dummy
+                                component_type=last_step_dict["ad_component_log"]["component_type"],
+                                data=last_step_dict["ad_component_log"]["data"],
+                            )
+                            if last_step_dict.get("ad_component_log")
+                            else ADComponentLog(component_type="dummy", data={}),
                             info=last_step_dict.get("info", {}),
                         )
                         log.steps.append(step)
@@ -396,8 +402,6 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
 
         if screenshot_path is None:
             screenshot_path = get_project_root() / "dashboard_latest.png"
-        else:
-            screenshot_path = html_path.with_suffix(".png")
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")

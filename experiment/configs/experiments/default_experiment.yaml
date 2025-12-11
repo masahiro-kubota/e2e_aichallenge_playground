@@ -10,7 +10,7 @@ experiment:
     parallel: false
     num_workers: 1
     clock_rate_hz: 100.0  # Should match simulator.rate_hz (see system config)
-    duration_sec: 600.0    # Total simulation time in seconds
+    duration_sec: 200.0    # Total simulation time in seconds
     clock_type: "stepped"
 
   postprocess:

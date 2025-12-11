@@ -142,6 +142,7 @@ class HTMLDashboardGenerator(DashboardGenerator):
                                 "velocity": step_dict["vehicle_state"]["velocity"],
                                 "acceleration": step_dict["action"]["acceleration"],
                                 "steering": step_dict["action"]["steering"],
+                                "ad_component_log": step_dict.get("ad_component_log"),
                             }
                         )
                 logger.info("Loaded %d steps from MCAP", len(steps_data))
@@ -163,6 +164,12 @@ class HTMLDashboardGenerator(DashboardGenerator):
                         "velocity": step.vehicle_state.velocity,
                         "acceleration": step.action.acceleration,
                         "steering": step.action.steering,
+                        "ad_component_log": {
+                            "component_type": step.ad_component_log.component_type,
+                            "data": step.ad_component_log.data,
+                        }
+                        if step.ad_component_log
+                        else None,
                     }
                 )
 

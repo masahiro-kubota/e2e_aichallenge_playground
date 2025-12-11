@@ -146,21 +146,29 @@ export const TrajectoryView: React.FC<TrajectoryViewProps> = ({ width, height })
       });
     }
 
-    // Heading Arrow as a Line Trace
-    if (currentPoint) {
-      const arrowLength = 20;
+    // Lookahead Point Visualization (replaces Heading Arrow)
+    if (
+      currentPoint?.ad_component_log?.data?.trajectory &&
+      currentPoint.ad_component_log.data.trajectory.length > 0
+    ) {
+      const lookahead = currentPoint.ad_component_log.data.trajectory[0];
       traces.push({
-        x: [currentPoint.x, currentPoint.x + arrowLength * Math.cos(currentPoint.yaw)],
-        y: [currentPoint.y, currentPoint.y + arrowLength * Math.sin(currentPoint.yaw)],
-        mode: 'lines',
+        x: [lookahead.x],
+        y: [lookahead.y],
+        mode: 'markers',
         type: 'scatter',
-        name: 'Heading',
-        line: {
-          color: theme.palette.error.main,
-          width: 2,
+        name: 'Lookahead',
+        marker: {
+          color: theme.palette.secondary.main,
+          size: 12,
+          symbol: 'x-thin', // Thin x
+          line: {
+            color: theme.palette.secondary.dark,
+            width: 2,
+          },
         },
         showlegend: false,
-        hoverinfo: 'skip',
+        hovertemplate: 'Lookahead<br>X: %{x:.2f}<br>Y: %{y:.2f}<extra></extra>',
       });
     }
 

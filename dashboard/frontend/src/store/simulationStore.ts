@@ -42,6 +42,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => ({
         velocity: (vehicleState.velocity as number) ?? (step.velocity as number) ?? 0,
         acceleration: (action.acceleration as number) ?? (step.acceleration as number) ?? 0,
         steering: (action.steering as number) ?? (step.steering as number) ?? 0,
+        ad_component_log:
+          (step.ad_component_log as TrajectoryPoint['ad_component_log']) || undefined,
       };
     });
 

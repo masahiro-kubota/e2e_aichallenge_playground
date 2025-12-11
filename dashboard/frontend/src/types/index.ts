@@ -7,6 +7,13 @@ export interface TrajectoryPoint {
   velocity: number;
   acceleration: number;
   steering: number;
+  ad_component_log?: {
+    component_type: string;
+    data: {
+      trajectory?: { x: number; y: number; velocity: number }[];
+      [key: string]: unknown;
+    };
+  };
 }
 
 export interface SimulationMetadata {
