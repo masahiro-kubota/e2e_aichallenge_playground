@@ -280,10 +280,10 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     resolved_postprocess_dict = _resolve_system_references(postprocess_dict, system_context)
 
     # 5. Inject MCAP path into Logger node
-    # Note: We do this after postprocess resolution to get the correct output path
+    # Note: We pass the directory path, and LoggerNode will generate timestamped filename
     if resolved_postprocess_dict["mcap"]["enabled"]:
         output_dir = resolved_postprocess_dict["mcap"]["output_dir"]
-        logger_mcap_path = str(Path(output_dir) / "simulation.mcap")
+        logger_mcap_path = output_dir  # Pass directory, not full path
 
         for node in resolved_nodes:
             if node.name == "Logger":

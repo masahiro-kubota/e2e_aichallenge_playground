@@ -93,6 +93,27 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
             print(f"Warning: Vehicle config path not found: {vehicle_config_path}")
         return None
 
+    def _find_latest_mcap(self, output_dir: str | Path) -> Path | None:
+        """Find the latest MCAP file in the output directory.
+
+        Args:
+            output_dir: Directory to search for MCAP files
+
+        Returns:
+            Path to the latest MCAP file, or None if not found
+        """
+        output_path = Path(output_dir)
+        if not output_path.exists():
+            return None
+
+        # Find all MCAP files matching the pattern
+        mcap_files = list(output_path.glob("simulation*.mcap"))
+        if not mcap_files:
+            return None
+
+        # Return the most recently modified file
+        return max(mcap_files, key=lambda p: p.stat().st_mtime)
+
     def process(
         self, result: SimulationResult, config: ResolvedExperimentConfig
     ) -> ExperimentResult:
@@ -116,9 +137,11 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
 
         with mlflow_context:
             # 4. Save MCAP artifact if it exists (created by LoggerNode)
-            mcap_path = Path(config.postprocess.mcap.output_dir) / "simulation.mcap"
-            if config.postprocess.mcap.enabled and mcap_path.exists():
-                result_artifacts.append(Artifact(local_path=mcap_path))
+            mcap_path = None
+            if config.postprocess.mcap.enabled:
+                mcap_path = self._find_latest_mcap(config.postprocess.mcap.output_dir)
+                if mcap_path:
+                    result_artifacts.append(Artifact(local_path=mcap_path))
 
             # 5. Merge metadata into log
             self._update_log_metadata(result.log, result_params)
@@ -233,8 +256,10 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
 
         # If log is empty (streaming mode), try to recover last step from MCAP
         if not log.steps:
-            mcap_path = Path(config.postprocess.mcap.output_dir) / "simulation.mcap"
-            if config.postprocess.mcap.enabled and mcap_path.exists():
+            mcap_path = None
+            if config.postprocess.mcap.enabled:
+                mcap_path = self._find_latest_mcap(config.postprocess.mcap.output_dir)
+            if mcap_path and mcap_path.exists():
                 try:
                     import json
 

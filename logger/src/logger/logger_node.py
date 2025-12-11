@@ -33,7 +33,16 @@ class LoggerNode(Node[LoggerConfig]):
     def on_init(self) -> None:
         """Initialize resources."""
         if self.config.output_mcap_path:
-            self.mcap_logger = MCAPLogger(self.config.output_mcap_path)
+            from datetime import datetime
+
+            mcap_path = Path(self.config.output_mcap_path)
+
+            # If path is a directory, generate timestamped filename
+            if mcap_path.is_dir() or (not mcap_path.exists() and not mcap_path.suffix):
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                mcap_path = mcap_path / f"simulation_{timestamp}.mcap"
+
+            self.mcap_logger = MCAPLogger(mcap_path)
             self.mcap_logger.__enter__()
 
     def on_shutdown(self) -> None:

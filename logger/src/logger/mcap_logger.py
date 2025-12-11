@@ -32,19 +32,86 @@ class MCAPLogger:
         self.writer = Writer(self.file)
         self.writer.start()
 
-        # Register schema
+        # Register schema with detailed field definitions
+        # Note: Foxglove doesn't support array-style type definitions like ["number", "null"]
+        # so we use simple "number" type for nullable fields
         self.schema_id = self.writer.register_schema(
             name="SimulationStep",
-            encoding="json",
+            encoding="jsonschema",
             data=json.dumps(
                 {
                     "type": "object",
                     "properties": {
-                        "timestamp": {"type": "number"},
-                        "vehicle_state": {"type": "object"},
-                        "action": {"type": "object"},
-                        "ad_component_log": {"type": "object"},
-                        "info": {"type": "object"},
+                        "timestamp": {
+                            "type": "number",
+                            "description": "Simulation timestamp in seconds",
+                        },
+                        "vehicle_state": {
+                            "type": "object",
+                            "description": "Current vehicle state",
+                            "properties": {
+                                "x": {"type": "number", "description": "X position [m]"},
+                                "y": {"type": "number", "description": "Y position [m]"},
+                                "yaw": {"type": "number", "description": "Yaw angle [rad]"},
+                                "velocity": {"type": "number", "description": "Velocity [m/s]"},
+                                "acceleration": {
+                                    "type": "number",
+                                    "description": "Acceleration [m/s^2]",
+                                },
+                                "steering": {
+                                    "type": "number",
+                                    "description": "Steering angle [rad]",
+                                },
+                                "timestamp": {
+                                    "type": "number",
+                                    "description": "State timestamp [s]",
+                                },
+                                "off_track": {
+                                    "type": "boolean",
+                                    "description": "Off-track flag",
+                                },
+                                "collision": {
+                                    "type": "boolean",
+                                    "description": "Collision flag",
+                                },
+                            },
+                        },
+                        "action": {
+                            "type": "object",
+                            "description": "Control action",
+                            "properties": {
+                                "steering": {
+                                    "type": "number",
+                                    "description": "Steering command [rad]",
+                                },
+                                "acceleration": {
+                                    "type": "number",
+                                    "description": "Acceleration command [m/s^2]",
+                                },
+                                "timestamp": {
+                                    "type": "number",
+                                    "description": "Action timestamp [s]",
+                                },
+                            },
+                        },
+                        "ad_component_log": {
+                            "type": "object",
+                            "description": "AD component log data",
+                            "properties": {
+                                "component_type": {
+                                    "type": "string",
+                                    "description": "Component type (planner/controller/e2e)",
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "description": "Component-specific log data",
+                                },
+                            },
+                        },
+                        "info": {
+                            "type": "object",
+                            "description": "Additional simulation info",
+                        },
                     },
                 }
             ).encode(),
