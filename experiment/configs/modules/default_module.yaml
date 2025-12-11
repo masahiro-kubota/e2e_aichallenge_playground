@@ -1,30 +1,107 @@
 module:
   name: "pure_pursuit_pid"
 
-  components:
-    ad_component:
+  # All nodes in execution order
+  nodes:
+    # Simulator node
+    - name: "Simulator"
+      type: "KinematicSimulator"
+      rate_hz: 100.0
       params:
-        nodes:
-          - name: "Sensor"
-            type: "experiment.processors.sensor.IdealSensorNode"
-            params: {}
-            rate_hz: 50.0
+        initial_state:
+          x: 89630.067
+          y: 43130.695
+          yaw: 2.2
+          velocity: 0.0
+        vehicle_params:
+          wheelbase: 1.087
+          width: 1.30
+          max_steering_angle: 0.64
+          front_overhang: 0.467
+          rear_overhang: 0.510
+        # 障害物設定（例）
+        obstacles:
+          # 静的障害物の例
+          - type: "static"
+            shape:
+              type: "rectangle"
+              width: 2.0
+              length: 4.0
+            position:
+              x: 89645.0
+              y: 43132.0
+              yaw: 0.0
+          # 動的障害物の例（コメントアウト）
+          # - type: "dynamic"
+          #   shape:
+          #     type: "circle"
+          #     radius: 1.0
+          #   trajectory:
+          #     type: "waypoint"
+          #     interpolation: "linear"
+          #     waypoints:
+          #       - time: 0.0
+          #         x: 89640.0
+          #         y: 43130.0
+          #         yaw: 0.0
+          #       - time: 10.0
+          #         x: 89650.0
+          #         y: 43135.0
+          #         yaw: 0.5
+          #       - time: 20.0
+          #         x: 89640.0
+          #         y: 43130.0
+          #         yaw: 0.0
+          #     loop: true
 
-          - name: "Planning"
-            type: "pure_pursuit.PurePursuitNode"
-            params:
-              min_lookahead_distance: 3.0
-              max_lookahead_distance: 15.0
-              lookahead_speed_ratio: 1.5
-              track_path: "ad_components/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
-            rate_hz: 10.0
+    # AD Component nodes
+    - name: "Sensor"
+      type: "experiment.processors.sensor.IdealSensorNode"
+      rate_hz: 50.0
+      params: {}
 
-          - name: "Control"
-            type: "pid_controller.PIDControllerNode"
-            params:
-              kp: 1.0
-              ki: 0.1
-              kd: 0.05
-              u_min: -3.0
-              u_max: 3.0
-            rate_hz: 30.0
+    - name: "Planning"
+      type: "pure_pursuit.PurePursuitNode"
+      rate_hz: 10.0
+      params:
+        min_lookahead_distance: 3.0
+        max_lookahead_distance: 15.0
+        lookahead_speed_ratio: 1.5
+        track_path: "ad_components/planning/pure_pursuit/src/pure_pursuit/data/tracks/raceline_awsim_15km.csv"
+
+    - name: "Control"
+      type: "pid_controller.PIDControllerNode"
+      rate_hz: 30.0
+      params:
+        kp: 1.0
+        ki: 0.1
+        kd: 0.05
+        u_min: -3.0
+        u_max: 3.0
+
+    # Supervisor node
+    - name: "Supervisor"
+      type: "SupervisorNode"
+      rate_hz: 100.0
+      params:
+        # Goal-related termination condition
+        goal:
+          enabled: true             # Terminate simulation when goal is reached
+          x: 89630.067              # Goal position X coordinate
+          y: 43130.695              # Goal position Y coordinate
+          radius: 5.0               # Goal radius threshold
+          min_elapsed_time: 20.0    # Minimum time before goal detection starts
+
+        # Off-track termination condition
+        off_track:
+          enabled: true              # Terminate simulation when vehicle goes off-track
+
+        # Collision termination condition
+        collision:
+          enabled: true              # Terminate simulation when vehicle collides with obstacles
+
+    # Logger node
+    - name: "Logger"
+      type: "LoggerNode"
+      rate_hz: 100.0
+      params: {}

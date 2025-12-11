@@ -56,9 +56,14 @@ class EvaluationPostprocessor(
             mlflow.set_experiment(config.experiment.name)
             mlflow_context = mlflow.start_run()
 
-        # Prepare params to log
+        # Prepare params to log - collect from all AD nodes
+        ad_nodes_params = {}
+        for node_config in config.nodes:
+            if node_config.name not in ["Simulator", "Supervisor", "Logger"]:
+                ad_nodes_params.update(node_config.params)
+
         result_params = {
-            **config.components.ad_component.params,
+            **ad_nodes_params,
             "execution_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "termination_reason": getattr(sim_result, "reason", "unknown"),
         }
@@ -189,9 +194,9 @@ class EvaluationPostprocessor(
 
         # Fallback to simulator config if not found in dashboard config
         if osm_path is None:
-            sim_params = config.simulator.params
-            if sim_params and "map_path" in sim_params:
-                map_path_str = sim_params["map_path"]
+            simulator_node_config = next((n for n in config.nodes if n.name == "Simulator"), None)
+            if simulator_node_config and "map_path" in simulator_node_config.params:
+                map_path_str = simulator_node_config.params["map_path"]
                 if map_path_str:
                     potential_path = Path(map_path_str)
                     if not potential_path.is_absolute():

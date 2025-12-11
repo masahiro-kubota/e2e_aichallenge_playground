@@ -14,6 +14,15 @@ class ExperimentType(str, Enum):
     EVALUATION = "evaluation"
 
 
+class NodeConfig(BaseModel):
+    """Unified configuration for any node (Simulator, Supervisor, AD components, Logger)."""
+
+    name: str = Field(..., description="Node name (unique identifier)")
+    type: str = Field(..., description="Node type (class or entry point)")
+    rate_hz: float = Field(..., description="Node execution rate in Hz")
+    params: dict[str, Any] = Field(default_factory=dict, description="Node parameters")
+
+
 class ComponentConfig(BaseModel):
     """Configuration for a component (AD component nodes container)."""
 
@@ -112,7 +121,7 @@ class ModuleConfig(BaseModel):
     """Module configuration (Pipeline definition)."""
 
     name: str = Field(..., description="Module name")
-    components: dict[str, Any] = Field(..., description="Component definitions")
+    nodes: list[NodeConfig] = Field(..., description="All nodes in execution order")
 
 
 class SystemConfig(BaseModel):
@@ -122,12 +131,6 @@ class SystemConfig(BaseModel):
     module: str = Field(..., description="Path to module configuration")
     vehicle: dict[str, Any] = Field(..., description="Vehicle configuration")
     map_path: str | None = Field(None, description="Path to map file (e.g. Lanelet2 OSM)")
-    simulator: dict[str, Any] | None = Field(None, description="Simulator configuration")
-    simulator_overrides: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Simulator parameter overrides (Deprecated in favor of 'simulator')",
-    )
-    runtime: dict[str, Any] | None = Field(None, description="Runtime configuration")
 
 
 class ExperimentLayerConfig(BaseModel):
@@ -142,7 +145,6 @@ class ExperimentLayerConfig(BaseModel):
     system: str = Field(..., description="Path to system configuration")
     execution: ExecutionConfig | None = Field(None, description="Execution configuration")
     postprocess: PostprocessConfig | None = Field(None, description="Postprocessing configuration")
-    supervisor: dict[str, Any] | None = Field(None, description="Supervisor parameter overrides")
 
 
 class SupervisorConfig(BaseModel):
@@ -155,13 +157,6 @@ class ResolvedExperimentConfig(BaseModel):
     """Complete, resolved experiment configuration for evaluation experiments."""
 
     experiment: ExperimentMetadata = Field(..., description="Experiment metadata")
-    components: ComponentsConfig = Field(..., description="Components configuration")
-    simulator: SimulatorConfig = Field(..., description="Simulator configuration")
-    supervisor: SupervisorConfig | None = Field(None, description="Supervisor configuration")
+    nodes: list[NodeConfig] = Field(..., description="All resolved node configurations")
     execution: ExecutionConfig | None = Field(None, description="Execution configuration")
-    evaluation: EvaluationConfig | None = Field(None, description="Evaluation configuration")
     postprocess: PostprocessConfig = Field(..., description="Postprocessing configuration")
-    runtime: dict[str, Any] | None = Field(None, description="Runtime configuration")
-
-
-# Alias for backward compatibility

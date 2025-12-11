@@ -18,16 +18,21 @@ def test_pure_pursuit_experiment_nodes() -> None:
     config_path = workspace_root / "experiment/configs/experiments/default_experiment.yaml"
     config = load_experiment_config(config_path)
 
-    # Verify configuration structure
-    ad_component = config.components.ad_component
-    assert ad_component is not None
+    # Verify configuration structure - new unified nodes array
+    assert config.nodes is not None
+    assert len(config.nodes) > 0
 
-    # We can't easily check internal nodes list of config since it's just params
-    # But we can check values
-    nodes_config = ad_component.params["nodes"]
-    planning_config = next(n for n in nodes_config if n["name"] == "Planning")
-    assert planning_config["type"] == "pure_pursuit.PurePursuitNode"
-    assert planning_config["params"]["min_lookahead_distance"] == 3.0
+    # Check that we have the expected nodes
+    node_names = [n.name for n in config.nodes]
+    assert "Simulator" in node_names
+    assert "Planning" in node_names
+    assert "Control" in node_names
+    assert "Supervisor" in node_names
+
+    # Check Planning node configuration
+    planning_node = next(n for n in config.nodes if n.name == "Planning")
+    assert planning_node.type == "pure_pursuit.PurePursuitNode"
+    assert planning_node.params["min_lookahead_distance"] == 3.0
 
     # Run experiment
     orchestrator = ExperimentOrchestrator()

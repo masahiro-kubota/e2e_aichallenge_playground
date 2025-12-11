@@ -80,16 +80,14 @@ class EvaluationRunner(ExperimentRunner[ResolvedExperimentConfig, SimulationResu
 
         # Inject metadata into log
         if log is not None:
-            # Inject vehicle parameters
-            sim_params = config.simulator.params
-            if "vehicle_params" in sim_params:
-                v_params = sim_params["vehicle_params"]
+            # Inject vehicle parameters from Simulator node
+            simulator_node_config = next((n for n in config.nodes if n.name == "Simulator"), None)
+            if simulator_node_config and "vehicle_params" in simulator_node_config.params:
+                v_params = simulator_node_config.params["vehicle_params"]
                 if hasattr(v_params, "to_dict"):
                     log.metadata.update(v_params.to_dict())
                 elif isinstance(v_params, dict):
                     log.metadata.update(v_params)
-
-            # Note: controller type metadata removed as FlexibleADComponent.type no longer exists
 
         return SimulationResult(
             success=getattr(frame_data, "success", False),
