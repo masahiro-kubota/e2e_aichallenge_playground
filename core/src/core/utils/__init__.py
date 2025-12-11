@@ -15,6 +15,15 @@ from core.utils.geometry import (
     normalize_angle,
     rotate_point,
 )
+from core.utils.osm_parser import (
+    MapLine,
+    MapPolygon,
+    OSMData,
+    Point,
+    parse_osm_file,
+    parse_osm_for_collision,
+    parse_osm_for_visualization,
+)
 from core.utils.paths import get_project_root
 from core.utils.transforms import (
     global_to_local,
@@ -26,6 +35,10 @@ from core.utils.transforms import (
 )
 
 __all__ = [
+    "MapLine",
+    "MapPolygon",
+    "OSMData",
+    "Point",
     "angle_between_points",
     "curvature_from_points",
     "distance",
@@ -37,6 +50,9 @@ __all__ = [
     "merge_configs",
     "nearest_point_on_line",
     "normalize_angle",
+    "parse_osm_file",
+    "parse_osm_for_collision",
+    "parse_osm_for_visualization",
     "rotate_point",
     "rotation_matrix_2d",
     "save_yaml",

@@ -69,11 +69,9 @@ class TestLaneletMap:
         """Test behavior when map fails to load or has no lanelets."""
         from unittest.mock import patch
 
-        # Patch _load_map to prevent actual file loading
-        with patch("simulator.map.LaneletMap._load_map"):
+        # Patch parse_osm_for_collision to return None
+        with patch("simulator.map.parse_osm_for_collision", return_value=None):
             lanelet_map = LaneletMap(Path("dummy.osm"))
-            # Force drivable_area to None (default)
-            lanelet_map.drivable_area = None
 
             # Should return True (drivable) when map is not loaded/empty
             assert lanelet_map.is_drivable(0.0, 0.0) is True
@@ -127,9 +125,8 @@ class TestLaneletMapPolygon:
 
         from shapely.geometry import Polygon
 
-        with patch("simulator.map.LaneletMap._load_map"):
+        with patch("simulator.map.parse_osm_for_collision", return_value=None):
             lanelet_map = LaneletMap(Path("dummy.osm"))
-            lanelet_map.drivable_area = None
 
             polygon = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
 
@@ -142,8 +139,12 @@ class TestLaneletMapErrorHandling:
 
     def test_nonexistent_file(self) -> None:
         """Test loading nonexistent OSM file."""
-        with pytest.raises(FileNotFoundError):
-            LaneletMap(Path("/nonexistent/file.osm"))
+        # parse_osm_for_collision returns None for nonexistent files
+        # instead of raising FileNotFoundError
+        lanelet_map = LaneletMap(Path("/nonexistent/file.osm"))
+        assert lanelet_map.drivable_area is None
+        # Everything should be drivable when map fails to load
+        assert lanelet_map.is_drivable(0.0, 0.0) is True
 
     def test_invalid_osm_format(self, tmp_path: Path) -> None:
         """Test loading invalid OSM file."""
@@ -151,8 +152,11 @@ class TestLaneletMapErrorHandling:
         invalid_file = tmp_path / "invalid.osm"
         invalid_file.write_text("This is not valid XML")
 
-        with pytest.raises(Exception):  # Will raise XML parsing error
-            LaneletMap(invalid_file)
+        # parse_osm_for_collision catches exceptions and returns None
+        lanelet_map = LaneletMap(invalid_file)
+        assert lanelet_map.drivable_area is None
+        # Everything should be drivable when map fails to load
+        assert lanelet_map.is_drivable(0.0, 0.0) is True
 
     def test_empty_osm_file(self, tmp_path: Path) -> None:
         """Test loading empty OSM file."""

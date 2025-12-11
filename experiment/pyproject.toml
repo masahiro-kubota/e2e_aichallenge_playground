@@ -14,6 +14,8 @@ dependencies = [
     "boto3>=1.26.0",
     "logger",
     "supervisor",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
 ]
 
 
@@ -25,6 +27,7 @@ dev = [
 
 [project.scripts]
 experiment-runner = "experiment.cli:main"
+obstacle-editor = "experiment.cli_obstacle_editor:main"
 
 [tool.uv.sources]
 core = { workspace = true }

@@ -21,16 +21,51 @@ module:
           velocity: 0.0
         # 障害物設定（例）
         obstacles:
-          # 静的障害物の例
-          - type: "static"
+          - type: static
             shape:
-              type: "rectangle"
-              width: 2.0
-              length: 4.0
+              type: rectangle
+              width: 2
+              length: 4
+            position:
+              x: 89635.30304557543
+              y: 43148.38126281431
+              yaw: 0
+          - type: static
+            shape:
+              type: rectangle
+              width: 2
+              length: 4
+            position:
+              x: 89642.36393471953
+              y: 43156.66603941006
+              yaw: 0
+          - type: static
+            shape:
+              type: rectangle
+              width: 2
+              length: 4
+            position:
+              x: 89640.38688575919
+              y: 43139.62576027563
+              yaw: 0
+          - type: static
+            shape:
+              type: rectangle
+              width: 2
+              length: 4
+            position:
+              x: 89639.82201462766
+              y: 43149.416859888785
+              yaw: 0
+          - type: static
+            shape:
+              type: rectangle
+              width: 2
+              length: 4
             position:
               x: 89645.0
               y: 43132.0
-              yaw: 0.0
+              yaw: 0
           # 動的障害物の例（コメントアウト）
           # - type: "dynamic"
           #   shape:
