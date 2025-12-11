@@ -4,43 +4,28 @@ import logging
 from pathlib import Path
 from typing import Any, TypeVar
 
-from core.data import VehicleParameters, VehicleState
+from core.data import VehicleParameters
+from core.interfaces.node import Node
 from core.utils import get_project_root
 from core.utils.config import load_yaml as core_load_yaml
-from core.utils.config import merge_configs
 from core.utils.node_factory import create_node
 from core.validation.node_graph import validate_node_graph
 from experiment.preprocessing.schemas import (
+    ExperimentFile,
     ExperimentLayerConfig,
     ExperimentMetadata,
     ModuleConfig,
+    ModuleFile,
     NodeConfig,
     ResolvedExperimentConfig,
     SystemConfig,
+    SystemFile,
 )
 from experiment.structures import Experiment
-from logger import LoggerNode
-from supervisor import SupervisorNode
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
-
-
-def _recursive_merge(base: dict[str, Any], overrides: dict[str, Any]) -> dict[str, Any]:
-    """Recursively merge two dictionaries.
-
-    Args:
-        base: The base dictionary.
-        overrides: The dictionary with overrides.
-
-    Returns:
-        Merged dictionary.
-
-    Note:
-        This is a wrapper around core.utils.config.merge_configs for backward compatibility.
-    """
-    return merge_configs(base, overrides)
 
 
 def _resolve_defaults(
@@ -159,8 +144,7 @@ def _build_system_context(system_layer: SystemConfig) -> dict[str, Any]:
     context = {}
 
     # Resolve map_path to absolute path
-    if system_layer.map_path:
-        context["map_path"] = str(get_project_root() / system_layer.map_path)
+    context["map_path"] = str(get_project_root() / system_layer.map_path)
 
     # Resolve vehicle configuration
     if system_layer.vehicle:
@@ -204,23 +188,20 @@ def _load_layer_configs(
     Returns:
         Tuple of (experiment_layer, system_layer, module_layer).
     """
-    # Load Experiment Layer
+    # Load Experiment Layer with Pydantic validation
     exp_data = load_yaml(path)
-    if "experiment" not in exp_data:
-        raise ValueError(f"Missing 'experiment' key in {path}")
-    experiment_layer = ExperimentLayerConfig(**exp_data["experiment"])
+    exp_file = ExperimentFile(**exp_data)
+    experiment_layer = exp_file.experiment
 
-    # Load System Layer
+    # Load System Layer with Pydantic validation
     system_data = load_yaml(experiment_layer.system)
-    if "system" not in system_data:
-        raise ValueError(f"Missing 'system' key in {experiment_layer.system}")
-    system_layer = SystemConfig(**system_data["system"])
+    system_file = SystemFile(**system_data)
+    system_layer = system_file.system
 
-    # Load Module Layer
+    # Load Module Layer with Pydantic validation
     module_data = load_yaml(system_layer.module)
-    if "module" not in module_data:
-        raise ValueError(f"Missing 'module' key in {system_layer.module}")
-    module_layer = ModuleConfig(**module_data["module"])
+    module_file = ModuleFile(**module_data)
+    module_layer = module_file.module
 
     return experiment_layer, system_layer, module_layer
 
@@ -295,9 +276,7 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
     )
 
     # 4. Resolve postprocess configuration references
-    postprocess_dict = (
-        experiment_layer.postprocess.model_dump() if experiment_layer.postprocess else {}
-    )
+    postprocess_dict = experiment_layer.postprocess.model_dump()
     resolved_postprocess_dict = _resolve_system_references(postprocess_dict, system_context)
 
     # 5. Build final config
@@ -337,7 +316,7 @@ class DefaultPreprocessor:
         import uuid
 
         # 1. Load configuration
-        config = self.load_config(config_path)
+        config = load_experiment_config(config_path)
 
         # 2. Create nodes from resolved config
         nodes = self._create_nodes(config)
@@ -352,77 +331,25 @@ class DefaultPreprocessor:
             nodes=nodes,
         )
 
-    def load_config(self, config_path: Path) -> ResolvedExperimentConfig:
-        """YAML設定を読み込み、階層マージしてスキーマに変換"""
-        return load_experiment_config(config_path)
-
-    def _create_nodes(self, config: ResolvedExperimentConfig) -> list[Any]:
+    def _create_nodes(self, config: ResolvedExperimentConfig) -> list[Node]:
         """Create experiment nodes from resolved configuration."""
-        from simulator.simulator import Simulator, SimulatorConfig
+        nodes: list[Node] = []
 
-        nodes = []
-
+        # Extract vehicle_params once for all nodes
+        vehicle_params = None
         for node_config in config.nodes:
-            node_name = node_config.name
-            node_type = node_config.type
-            rate_hz = node_config.rate_hz
-            params = node_config.params.copy()
+            if node_config.name == "Simulator" and "vehicle_params" in node_config.params:
+                vehicle_params = node_config.params["vehicle_params"]
+                break
 
-            # Create node based on type
-            if node_name == "Simulator":
-                # Special handling for Simulator
-                initial_state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0)
-                if "initial_state" in params:
-                    initial_state_dict = params.pop("initial_state")
-                    if isinstance(initial_state_dict, dict):
-                        initial_state = VehicleState(**initial_state_dict, timestamp=0.0)
-
-                # vehicle_params is already a VehicleParameters object from resolution
-                vehicle_params = params.get("vehicle_params")
-                if vehicle_params is None:
-                    raise ValueError("Simulator requires vehicle_params to be configured")
-
-                simulator_config_dict = {
-                    "vehicle_params": vehicle_params,
-                    "initial_state": initial_state,
-                }
-
-                if "map_path" in params:
-                    simulator_config_dict["map_path"] = params["map_path"]
-
-                if "obstacles" in params:
-                    simulator_config_dict["obstacles"] = params["obstacles"]
-
-                simulator_config_model = SimulatorConfig(**simulator_config_dict)
-                node = Simulator(config=simulator_config_model, rate_hz=rate_hz)
-
-            elif node_name == "Supervisor":
-                # Special handling for Supervisor
-                from supervisor import SupervisorConfig
-
-                supervisor_config_model = SupervisorConfig(**params)
-                node = SupervisorNode(config=supervisor_config_model, rate_hz=rate_hz)
-
-            elif node_name == "Logger":
-                # Special handling for Logger
-                node = LoggerNode(rate_hz=rate_hz)
-
-            else:
-                # Generic AD component node
-                # Get vehicle params from Simulator node if available
-                vehicle_params = None
-                for n in config.nodes:
-                    if n.name == "Simulator" and "vehicle_params" in n.params:
-                        vehicle_params = n.params["vehicle_params"]
-                        break
-
-                node = create_node(
-                    node_type=node_type,
-                    rate_hz=rate_hz,
-                    params=params,
-                    vehicle_params=vehicle_params,
-                )
-
+        # Create all nodes using unified approach
+        for node_config in config.nodes:
+            node = create_node(
+                node_type=node_config.type,
+                rate_hz=node_config.rate_hz,
+                params=node_config.params,
+                vehicle_params=vehicle_params,
+            )
             nodes.append(node)
 
         # Validate AD nodes (exclude Simulator, Supervisor, Logger)

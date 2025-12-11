@@ -130,7 +130,7 @@ class SystemConfig(BaseModel):
     name: str = Field(..., description="System name")
     module: str = Field(..., description="Path to module configuration")
     vehicle: dict[str, Any] = Field(..., description="Vehicle configuration")
-    map_path: str | None = Field(None, description="Path to map file (e.g. Lanelet2 OSM)")
+    map_path: str = Field(..., description="Path to map file (e.g. Lanelet2 OSM)")
 
 
 class ExperimentLayerConfig(BaseModel):
@@ -143,8 +143,8 @@ class ExperimentLayerConfig(BaseModel):
 
     # Configuration fields
     system: str = Field(..., description="Path to system configuration")
-    execution: ExecutionConfig | None = Field(None, description="Execution configuration")
-    postprocess: PostprocessConfig | None = Field(None, description="Postprocessing configuration")
+    execution: ExecutionConfig = Field(..., description="Execution configuration")
+    postprocess: PostprocessConfig = Field(..., description="Postprocessing configuration")
 
 
 class SupervisorConfig(BaseModel):
@@ -158,5 +158,23 @@ class ResolvedExperimentConfig(BaseModel):
 
     experiment: ExperimentMetadata = Field(..., description="Experiment metadata")
     nodes: list[NodeConfig] = Field(..., description="All resolved node configurations")
-    execution: ExecutionConfig | None = Field(None, description="Execution configuration")
+    execution: ExecutionConfig = Field(..., description="Execution configuration")
     postprocess: PostprocessConfig = Field(..., description="Postprocessing configuration")
+
+
+class ExperimentFile(StrictConfig):
+    """Experiment YAML file structure."""
+
+    experiment: ExperimentLayerConfig
+
+
+class SystemFile(StrictConfig):
+    """System YAML file structure."""
+
+    system: SystemConfig
+
+
+class ModuleFile(StrictConfig):
+    """Module YAML file structure."""
+
+    module: ModuleConfig

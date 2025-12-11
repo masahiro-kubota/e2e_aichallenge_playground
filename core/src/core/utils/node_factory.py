@@ -11,12 +11,12 @@ def create_node(
     node_type: str,
     rate_hz: float,
     params: dict[str, Any],
-    vehicle_params: VehicleParameters,
+    vehicle_params: VehicleParameters | None = None,
 ) -> Node:
     """Create a Node instance dynamically.
 
     Args:
-        node_type: Class path (e.g., "package.module.ClassName")
+        node_type: Class path (e.g., "package.module.ClassName") or short name alias
         rate_hz: Execution frequency in Hz
         params: Node configuration parameters
         vehicle_params: Vehicle parameters to inject if required by Node
@@ -24,6 +24,16 @@ def create_node(
     Returns:
         Instantiated Node
     """
+    # Map short names to full module paths
+    node_type_aliases = {
+        "KinematicSimulator": "simulator.simulator.Simulator",
+        "SupervisorNode": "supervisor.supervisor_node.SupervisorNode",
+        "LoggerNode": "logger.logger_node.LoggerNode",
+    }
+
+    # Resolve alias if present
+    resolved_type = node_type_aliases.get(node_type, node_type)
+
     # Resolve path parameters
     path_keys = {"track_path", "model_path", "scaler_path"}
     workspace_root = get_project_root()
@@ -38,12 +48,12 @@ def create_node(
 
     # Import class
     try:
-        module_name, class_name = node_type.rsplit(".", 1)
+        module_name, class_name = resolved_type.rsplit(".", 1)
         module = importlib.import_module(module_name)
         cls = getattr(module, class_name)
     except (ValueError, ImportError, AttributeError) as e:
         raise ValueError(
-            f"Invalid node type: {node_type}. "
+            f"Invalid node type: {node_type} (resolved to: {resolved_type}). "
             f"Must be in 'module.ClassName' format and importable. Error: {e}"
         ) from e
 
@@ -72,7 +82,7 @@ def create_node(
     sig = inspect.signature(cls.__init__)
     kwargs = {}
 
-    if "vehicle_params" in sig.parameters:
+    if "vehicle_params" in sig.parameters and vehicle_params is not None:
         kwargs["vehicle_params"] = vehicle_params
 
     # Use from_dict to create the node

@@ -37,17 +37,13 @@ class SupervisorConfig(NodeConfig):
 class SupervisorNode(Node[SupervisorConfig]):
     """Node responsible for supervising simulation success/failure and termination conditions."""
 
-    def __init__(self, config: SupervisorConfig | dict, rate_hz: float):
+    def __init__(self, config: SupervisorConfig, rate_hz: float):
         """Initialize SupervisorNode.
 
         Args:
-            config: Validated configuration or configuration dict
+            config: Validated configuration
             rate_hz: Evaluation rate [Hz]
         """
-        # Convert dict to SupervisorConfig if needed
-        if isinstance(config, dict):
-            config = SupervisorConfig(**config)
-
         super().__init__("Supervisor", rate_hz, config)
         self.step_count = 0
         self.goal_count = 0
