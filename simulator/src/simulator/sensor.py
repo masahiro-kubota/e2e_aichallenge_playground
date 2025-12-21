@@ -6,6 +6,7 @@ import numpy as np
 from core.data import LidarConfig, LidarScan, VehicleState
 
 if TYPE_CHECKING:
+    from core.data import LidarConfig, LidarScan, VehicleState
     from simulator.map import LaneletMap
     from simulator.obstacle import ObstacleManager
 
@@ -58,15 +59,27 @@ class LidarSensor:
         )
 
         # Vectorized ray endpoint computation
-        cos_angles = np.cos(angles)
-        sin_angles = np.sin(angles)
-        ray_end_x = sensor_x + range_max * cos_angles
-        ray_end_y = sensor_y + range_max * sin_angles
+        ray_end_x = sensor_x + range_max * np.cos(angles)
+        ray_end_y = sensor_y + range_max * np.sin(angles)
 
         # Initialize ranges with infinity
         ranges = np.full(self.config.num_beams, np.inf, dtype=np.float64)
 
-        # Get map boundaries
+        # Get all boundaries (map and obstacles)
+        boundaries = self._get_map_boundaries()
+        boundaries.extend(self._get_obstacle_boundaries(vehicle_state, sensor_x, sensor_y))
+
+        # Check all boundaries with vectorized intersection
+        ranges = self._update_ranges_from_boundaries(
+            ranges, boundaries, sensor_x, sensor_y, ray_end_x, ray_end_y
+        )
+
+        return LidarScan(
+            timestamp=vehicle_state.timestamp, config=self.config, ranges=ranges.tolist()
+        )
+
+    def _get_map_boundaries(self) -> list:
+        """Extract boundaries from the map."""
         map_boundaries = []
         if (
             self.map is not None
@@ -80,17 +93,17 @@ class LidarSensor:
                 map_boundaries.extend(boundary.geoms)
             elif boundary.geom_type == "LinearRing":
                 map_boundaries.append(boundary)
+        return map_boundaries
 
-        # Check map boundaries with vectorized intersection
-        ranges = self._update_ranges_from_boundaries(
-            ranges, map_boundaries, sensor_x, sensor_y, ray_end_x, ray_end_y
-        )
+    def _get_obstacle_boundaries(
+        self, vehicle_state: "VehicleState", sensor_x: float, sensor_y: float
+    ) -> list:
+        """Extract boundaries from nearby obstacles."""
+        from simulator.obstacle import get_obstacle_polygon, get_obstacle_state
 
-        # Get obstacle polygons
-        obstacle_polygons = []
+        obstacle_boundaries = []
         if self.obstacle_manager is not None:
-            from simulator.obstacle import get_obstacle_polygon, get_obstacle_state
-
+            range_max = self.config.range_max
             for obs in self.obstacle_manager.obstacles:
                 try:
                     st = get_obstacle_state(obs, vehicle_state.timestamp)
@@ -98,24 +111,14 @@ class LidarSensor:
                     dist = math.hypot(st.x - sensor_x, st.y - sensor_y)
                     if dist < range_max + 10.0:  # +10 safety margin
                         poly = get_obstacle_polygon(obs, st)
-                        obstacle_polygons.append(poly)
+                        boundary = poly.boundary
+                        if boundary.geom_type in ("LineString", "LinearRing"):
+                            obstacle_boundaries.append(boundary)
+                        elif boundary.geom_type == "MultiLineString":
+                            obstacle_boundaries.extend(boundary.geoms)
                 except Exception:
                     continue
-
-        # Check obstacles with vectorized intersection
-        obstacle_boundaries = []
-        for poly in obstacle_polygons:
-            boundary = poly.boundary
-            if boundary.geom_type == "LineString" or boundary.geom_type == "LinearRing":
-                obstacle_boundaries.append(boundary)
-
-        ranges = self._update_ranges_from_boundaries(
-            ranges, obstacle_boundaries, sensor_x, sensor_y, ray_end_x, ray_end_y
-        )
-
-        return LidarScan(
-            timestamp=vehicle_state.timestamp, config=self.config, ranges=ranges.tolist()
-        )
+        return obstacle_boundaries
 
     def _update_ranges_from_boundaries(
         self,

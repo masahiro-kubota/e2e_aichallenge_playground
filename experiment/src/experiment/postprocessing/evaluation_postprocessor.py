@@ -172,7 +172,7 @@ class EvaluationPostprocessor(ExperimentPostprocessor[SimulationResult, Experime
             # For now, let's keep it or unlink if verified uploaded.
             # Given the original code unlinked it, let's restore that behavior if we treat it as temp.
             # But the user wants proper logging. Let's assume Artifact handles it.
-            if mcap_path.exists():
+            if mcap_path and mcap_path.exists():
                 # In original code it was unlinked.
                 # If we want to persist it as a proper log, we might want to keep it or move it.
                 # For now, consistent behavior: upload then delete local temp copy?

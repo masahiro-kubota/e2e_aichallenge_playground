@@ -253,12 +253,6 @@ uv run experiment-runner --config experiment/configs/experiments/default_experim
 ```bash
 # Speedscope形式で出力（推奨）
 uv run python scripts/profile_experiment.py --format speedscope
-
-# Flamegraph形式で出力
-uv run python scripts/profile_experiment.py --format flamegraph
-
-# サンプリングレートを変更（精度向上）
-uv run python scripts/profile_experiment.py --rate 200
 ```
 
 実行後、以下の方法で結果を確認できます:
