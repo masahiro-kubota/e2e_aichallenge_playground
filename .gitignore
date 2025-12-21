@@ -18,3 +18,7 @@ dashboard.html
 dashboard_latest.png
 simulation_log.json
 tmp/
+
+# Tiny Lidar Net Data
+ad_components/control/tiny_lidar_net/data/
+ad_components/control/tiny_lidar_net/checkpoints/

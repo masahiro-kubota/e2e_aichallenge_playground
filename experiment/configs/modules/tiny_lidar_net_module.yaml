@@ -72,7 +72,7 @@ module:
       rate_hz: 30.0
       params:
         vehicle_params: "${system.vehicle_params}"
-        model_path: "ad_components/control/tiny_lidar_net/ckpt/tinylidarnet_weights.npy"
+        model_path: "ad_components/control/tiny_lidar_net/data/tinylidarnet_weights.npy"
         input_dim: 1080
         output_dim: 2
         architecture: "large"
