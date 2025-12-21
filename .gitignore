@@ -17,3 +17,4 @@ __pycache__/
 dashboard.html
 dashboard_latest.png
 simulation_log.json
+tmp/

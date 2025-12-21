@@ -34,9 +34,33 @@ def test_pure_pursuit_experiment_nodes() -> None:
     assert planning_node.type == "pure_pursuit.PurePursuitNode"
     assert planning_node.params["min_lookahead_distance"] == 2.0
 
-    # Run experiment
+    # Create tmp directory for MCAP output
+    tmp_path = workspace_root / "tmp"
+    tmp_path.mkdir(exist_ok=True)
+
+    # Create tmp directory for MCAP output
+    tmp_path = workspace_root / "tmp"
+    tmp_path.mkdir(exist_ok=True)
+
+    # Create temporary experiment config to override output dir
+    import yaml
+
+    with open(config_path) as f:
+        exp_data = yaml.safe_load(f)
+
+    # Update output directory to tmp_path
+    exp_data["experiment"]["postprocess"]["mcap"]["output_dir"] = str(tmp_path)
+
+    # Disable parallel execution to avoid cluttering or race conditions?
+    # (Parallel=false is default in verification, but good to ensure)
+
+    temp_config_path = tmp_path / "temp_experiment.yaml"
+    with open(temp_config_path, "w") as f:
+        yaml.dump(exp_data, f)
+
+    # Run experiment with temp config
     orchestrator = ExperimentOrchestrator()
-    result = orchestrator.run(config_path)
+    result = orchestrator.run(temp_config_path)
 
     assert result is not None
     assert len(result.simulation_results) > 0
@@ -62,6 +86,58 @@ def test_pure_pursuit_experiment_nodes() -> None:
     ), f"Termination code {metrics.termination_code} should not be 5 (Collision)"
     # Goal reached
     assert metrics.goal_count == 1, f"Goal count {metrics.goal_count} != 1"
+
+    # Verify MCAP file contents
+    # Find any mcap file in tmp_path created recently?
+    # Since we cleared it or we just look for *simulation_*.mcap
+    mcap_files = list(tmp_path.glob("simulation_*.mcap"))
+    assert len(mcap_files) > 0, f"No MCAP file found in {tmp_path}"
+    mcap_path = mcap_files[-1]  # Take the last one (most recent usually)
+
+    # Simple verification using mcap library
+    from mcap.reader import make_reader
+
+    print("\nMCAP Verification:")
+    with open(mcap_path, "rb") as f:
+        reader = make_reader(f)
+        summary = reader.get_summary()
+        assert summary is not None
+
+        # Check statistics
+        print(
+            f"  Duration: {summary.statistics.message_start_time} - {summary.statistics.message_end_time}"
+        )
+        print(f"  Message Count: {summary.statistics.message_count}")
+        print(f"  Channel Count: {summary.statistics.channel_count}")
+
+        # Verify specific topics exist
+        topics = [c.topic for c in summary.channels.values()]
+        print(f"  Topics: {topics}")
+
+        # NOTE: Lidar verification skipped as per user request
+        expected_topics = [
+            "/tf",
+            "/localization/kinematic_state",
+            # "/perception/lidar/scan", # Disabled
+            "/simulation/info",
+            "/control/command/control_cmd",
+            "/map/vector",
+        ]
+        for topic in expected_topics:
+            assert topic in topics, f"Topic {topic} missing in MCAP"
+
+        print("  MCAP verification passed.")
+
+    # Verify Dashboard HTML exists in artifacts and save to tmp for inspection
+    dashboard_artifact = next((a for a in result.artifacts if a.local_path.suffix == ".html"), None)
+    assert dashboard_artifact is not None, "Dashboard HTML artifact not found"
+
+    # Copy dashboard to tmp for user visibility
+    import shutil
+
+    target_dashboard = tmp_path / "dashboard.html"
+    shutil.copy(dashboard_artifact.local_path, target_dashboard)
+    print(f"  Dashboard copied to {target_dashboard}")
 
 
 def test_node_instantiation(tmp_path) -> None:

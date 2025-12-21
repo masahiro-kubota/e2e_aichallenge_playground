@@ -149,4 +149,6 @@ module:
     - name: "Logger"
       type: "LoggerNode"
       rate_hz: *simulation_rate_hz
-      params: {}
+      params:
+        map_path: "${system.map_path}"
+        vehicle_params: "${system.vehicle_params}"
