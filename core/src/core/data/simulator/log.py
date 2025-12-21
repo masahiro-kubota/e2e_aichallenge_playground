@@ -50,6 +50,7 @@ class SimulationLog:
         from pathlib import Path
 
         import numpy as np
+        from pydantic import BaseModel
 
         class NormalizedEncoder(json.JSONEncoder):
             def default(self, obj: Any) -> Any:
@@ -59,6 +60,8 @@ class SimulationLog:
                     return float(obj)
                 if isinstance(obj, np.ndarray):
                     return obj.tolist()
+                if isinstance(obj, BaseModel):
+                    return obj.model_dump()
                 return super().default(obj)
 
         path_obj = Path(path)
