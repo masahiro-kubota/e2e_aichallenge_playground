@@ -251,23 +251,12 @@ uv run experiment-runner --config experiment/configs/experiments/default_experim
 `experiment-runner`の実行時間を計測し、ボトルネックを特定できます。1秒間のシミュレーションを実行してプロファイルを生成します。
 
 ```bash
-# Speedscope形式で出力（推奨）
-uv run python scripts/profile_experiment.py --format speedscope
-
 # 実行時間を指定（例：5秒間実行してプロファイリング）
 uv run python scripts/profile_experiment.py --duration 5
+
+# rateを指定（例：1000Hzでプロファイリング）
+uv run python scripts/profile_experiment.py --rate 1000
 ```
-
-実行後、以下の方法で結果を確認できます:
-
-- **Speedscope**: https://www.speedscope.app/ で `profile.speedscope.json` をドラッグ&ドロップ
-- **Flamegraph**: ブラウザで `profile_flamegraph.svg` を開く
-- **HTMLダッシュボード**: `profile_dashboard.html` をブラウザで開く（MUIスタイル）
-- **テキストサマリー**: `profile_summary.txt` で関数ごとの実行時間統計を確認（AIが読める形式）
-
-GitHub Actionsにより、最新のプロファイル結果が GitHub Pages で自動公開されます（公開用URLはリポジトリ設定を確認してください）。
-
-プロファイル結果では、横幅が広い関数ほど実行時間が長いことを示します。テキストサマリーでは`cumtime`（累積時間）が大きい関数がボトルネックです。
 
 ### テストの実行
 
