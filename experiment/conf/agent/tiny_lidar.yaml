@@ -1,0 +1,18 @@
+# Tiny LiDAR Agent Configuration
+
+model_path: "outputs/2025-12-21/21-46-10/tinylidarnet.npy"
+
+nodes:
+  - name: "TinyLidarNet"
+    type: "tiny_lidar_net.node.TinyLidarNetNode"
+    rate_hz: 50.0 # Match sensor rate or similar
+    params:
+      input_dim: 1080
+      output_dim: 2
+      architecture: "large"
+      # This path will be overridden via CLI in evaluation
+      model_path: ${agent.model_path}
+      fixed_acceleration: 1.0 # Use AI for accel if mode is AI
+      control_mode: "ai"
+      max_range: 30.0
+      vehicle_params: ${vehicle}

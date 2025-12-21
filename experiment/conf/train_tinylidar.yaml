@@ -1,0 +1,23 @@
+# Tiny LiDAR Net Training Configuration
+
+defaults:
+  - _self_
+
+experiment:
+  name: "train_tinylidar"
+  type: "training"
+  description: "Train TinyLidarNet with collected data"
+
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  num_epochs: 10
+  device: "cpu" # or "cuda"
+  validation_split: 0.2 # Used if explicit val_data is not provided
+
+model:
+  input_channels: 1
+  input_height: 1
+  # The width depends on the LiDAR beams (1080)
+  input_width: 1080
+  num_classes: 1 # Regression for steering

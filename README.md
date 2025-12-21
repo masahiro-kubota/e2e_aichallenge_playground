@@ -260,3 +260,88 @@ PYTHONPATH="" uv run pytest core/tests/test_config.py -v
 # Pre-commitフックの実行（全ファイル）
 uv run pre-commit run --all-files
 ```
+
+---
+
+## 🔄 MLOps ワークフロー (Tiny LiDAR Net)
+
+エンドツーエンドの学習パイプラインを実行する手順です。
+
+### 0. 準備
+
+スクリプトを実行しやすくするために、必要なファイルを `scripts/` に配置します。
+
+```bash
+# ライブラリと変換スクリプトをコピー
+cp -r ad_components/control/tiny_lidar_net/scripts/lib scripts/lib
+cp ad_components/control/tiny_lidar_net/scripts/convert_weight.py scripts/convert_model.py
+```
+
+### 1. データ収集
+
+Hydraを使用してパラメータをランダム化し、教師データと検証データを収集します。
+
+```bash
+# 学習データ (例: 100エピソード)
+uv run python scripts/collect_data.py \
+    execution.num_episodes=100 \
+    +split=train \
+    +seed=1000
+
+# 検証データ (例: 20エピソード)
+uv run python scripts/collect_data.py \
+    execution.num_episodes=20 \
+    +split=val \
+    +seed=2000
+```
+
+> **Note**: 出力先は `outputs/YYYY-MM-DD/HH-MM-SS/{split}/raw_data/` になります。
+
+### 2. データ抽出
+
+収集したMCAPファイルからデータを抽出し、NumPy配列に変換します。
+
+```bash
+# 学習データ
+uv run python ad_components/control/tiny_lidar_net/scripts/extract_data_from_mcap.py \
+    --input_dir outputs/202X-XX-XX/XX-XX-XX/train/raw_data \
+    --output_dir data/train_set
+
+# 検証データ
+uv run python ad_components/control/tiny_lidar_net/scripts/extract_data_from_mcap.py \
+    --input_dir outputs/202X-XX-XX/XX-XX-XX/val/raw_data \
+    --output_dir data/val_set
+```
+
+### 3. 学習
+
+WandBで記録しながらモデルを学習します。
+
+```bash
+uv run python scripts/train.py \
+    training.num_epochs=50 \
+    +train_data=data/train_set \
+    +val_data=data/val_set
+```
+
+### 4. モデル変換
+
+学習済みモデル (PyTorch) をシミュレータ用 (NumPy) に変換します。
+
+```bash
+uv run python scripts/convert_model.py \
+    --ckpt outputs/202X-XX-XX/XX-XX-XX/checkpoints/best_model.pth \
+    --output models/tinylidarnet_v1.npy
+```
+
+### 5. 評価実行
+
+学習したモデルを使ってシミュレーションを実行します。
+
+```bash
+uv run python scripts/collect_data.py \
+    execution.num_episodes=5 \
+    agent=tiny_lidar \
+    agent.params.model_path=models/tinylidarnet_v1.npy \
+    +split=eval
+```
