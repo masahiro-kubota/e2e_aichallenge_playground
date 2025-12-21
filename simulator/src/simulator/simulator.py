@@ -8,6 +8,7 @@ from pydantic import Field
 from core.data import (
     Action,
     ADComponentLog,
+    ComponentConfig,  # Added ComponentConfig
     SimulationLog,
     SimulationStep,
     SimulatorObstacle,
@@ -15,7 +16,7 @@ from core.data import (
     VehicleState,
 )
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult  # Removed NodeConfig
 from simulator.state import SimulationVehicleState
 
 if TYPE_CHECKING:
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     from core.data import ADComponentLog
 
 
-class SimulatorConfig(NodeConfig):
+class SimulatorConfig(ComponentConfig):
     """Configuration for Simulator."""
 
     vehicle_params: VehicleParameters = Field(
@@ -60,16 +61,22 @@ class Simulator(Node[SimulatorConfig]):
         self.log = SimulationLog(steps=[], metadata={})
         self.map: Any = None
         self.obstacle_manager: Any = None
+        self.lidar_sensor: Any = None
 
     def get_node_io(self) -> NodeIO:
         """Define node IO."""
+        # Use lazy import for LidarScan because it might be circular if imported at top-level
+        # (Though currently it's safe as it's in core.data)
+        from core.data import LidarScan
+
         return NodeIO(
             inputs={
                 "action": Action,
             },
             outputs={
                 "sim_state": VehicleState,
-                "obstacles": list[SimulatorObstacle],  # List[SimulatorObstacle]
+                "obstacles": list[SimulatorObstacle],
+                "lidar_scan": LidarScan,  # Declare output
             },
         )
 
@@ -124,6 +131,22 @@ class Simulator(Node[SimulatorConfig]):
             ]
             obstacles = [self._prepare_obstacle(obs) for obs in obstacles]
             self.obstacle_manager = ObstacleManager(obstacles)
+
+        # Initialize Lidar config
+        # Priority 1: Direct config (deprecated)
+        # Priority 2: Vehicle parameters
+        lidar_config = None
+        if hasattr(self.config, "lidar_config") and self.config.lidar_config:
+            lidar_config = self.config.lidar_config
+        elif self.config.vehicle_params and self.config.vehicle_params.lidar:
+            lidar_config = self.config.vehicle_params.lidar
+
+        if lidar_config:
+            from simulator.sensor import LidarSensor
+
+            self.lidar_sensor = LidarSensor(
+                config=lidar_config, map_instance=self.map, obstacle_manager=self.obstacle_manager
+            )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
         """Execute physics simulation step.
@@ -198,12 +221,16 @@ class Simulator(Node[SimulatorConfig]):
                 pass
 
         # Logging
+        lidar_scan = None
+        if self.lidar_sensor:
+            lidar_scan = self.lidar_sensor.scan(vehicle_state)
+
         step_log = SimulationStep(
             timestamp=self.current_time,
             vehicle_state=vehicle_state,
             action=action,
             ad_component_log=self._create_ad_component_log(),
-            info={},
+            info={"lidar_scan": lidar_scan} if lidar_scan else {},
         )
         self.log.steps.append(step_log)
 
@@ -214,6 +241,11 @@ class Simulator(Node[SimulatorConfig]):
         else:
             self.frame_data.obstacles = []
         self.frame_data.obstacle_states = obstacle_states
+
+        # Expose Lidar data to frame_data (NodeIO) if needed
+        # Currently NodeIO doesn't explicitly define 'scan' output, but we can add it to info or frame_data dynamic
+        if lidar_scan:
+            setattr(self.frame_data, "lidar_scan", lidar_scan)
 
         return NodeExecutionResult.SUCCESS
 

@@ -1,10 +1,14 @@
 """Supervisor node for simulation judgment and monitoring."""
 
+from core.data import (
+    ComponentConfig,
+    VehicleState,
+)
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult
 
 
-class GoalConfig(NodeConfig):
+class GoalConfig(ComponentConfig):
     """Goal-related termination configuration."""
 
     enabled: bool = True
@@ -14,19 +18,19 @@ class GoalConfig(NodeConfig):
     min_elapsed_time: float = 0.0
 
 
-class OffTrackConfig(NodeConfig):
+class OffTrackConfig(ComponentConfig):
     """Off-track termination configuration."""
 
     enabled: bool = True
 
 
-class CollisionConfig(NodeConfig):
+class CollisionConfig(ComponentConfig):
     """Collision termination configuration."""
 
     enabled: bool = True
 
 
-class SupervisorConfig(NodeConfig):
+class SupervisorConfig(ComponentConfig):
     """Configuration for SupervisorNode."""
 
     goal: GoalConfig
@@ -51,7 +55,6 @@ class SupervisorNode(Node[SupervisorConfig]):
 
     def get_node_io(self) -> NodeIO:
         """Define node IO."""
-        from core.data import VehicleState
 
         return NodeIO(
             inputs={

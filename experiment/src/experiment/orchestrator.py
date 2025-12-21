@@ -43,9 +43,17 @@ class ExperimentOrchestrator:
         runner: ExperimentRunner = self.runner_factory.create(experiment.type)
 
         # 4. 実行
+        import time
+
+        start_time = time.perf_counter()
         result = runner.run(experiment)
+        simulation_time = time.perf_counter() - start_time
+        print(f"Simulation execution time: {simulation_time:.2f} seconds")
 
         # 5. 後処理
+        start_time = time.perf_counter()
         processed_result = postprocessor.process(result, experiment.config)
+        postprocess_time = time.perf_counter() - start_time
+        print(f"Postprocessing (Dashboard) execution time: {postprocess_time:.2f} seconds")
 
         return processed_result

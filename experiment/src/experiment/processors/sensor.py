@@ -1,11 +1,11 @@
 from typing import Any
 
-from core.data import VehicleState
+from core.data import ComponentConfig, VehicleState
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult
 
 
-class IdealSensorConfig(NodeConfig):
+class IdealSensorConfig(ComponentConfig):
     pass
 
 

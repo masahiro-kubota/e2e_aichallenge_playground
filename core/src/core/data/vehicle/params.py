@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel, Field
+
+from core.data.sensor import LidarConfig
 
 if TYPE_CHECKING:
     pass
 
 
-@dataclass
-class VehicleParameters:
+class VehicleParameters(BaseModel):
     """統一車両パラメータ定義.
 
     運動学・動力学シミュレータの両方で使用可能な車両パラメータ。
@@ -54,7 +56,10 @@ class VehicleParameters:
     front_overhang: float  # フロントオーバーハング [m]
     rear_overhang: float  # リアオーバーハング [m]
 
-    tire_params: dict[str, Any] = field(default_factory=dict)  # タイヤパラメータ(将来の拡張用)
+    tire_params: dict[str, Any] = Field(default_factory=dict)  # タイヤパラメータ(将来の拡張用)
+
+    # センサー設定
+    lidar: LidarConfig | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """辞書形式に変換.
@@ -62,24 +67,4 @@ class VehicleParameters:
         Returns:
             dict: 車両パラメータの辞書
         """
-        return {
-            "wheelbase": self.wheelbase,
-            "width": self.width,
-            "length": self.length,
-            "max_steering_angle": self.max_steering_angle,
-            "max_velocity": self.max_velocity,
-            "max_acceleration": self.max_acceleration,
-            "mass": self.mass,
-            "inertia": self.inertia,
-            "lf": self.lf,
-            "lr": self.lr,
-            "cf": self.cf,
-            "cr": self.cr,
-            "c_drag": self.c_drag,
-            "c_roll": self.c_roll,
-            "max_drive_force": self.max_drive_force,
-            "max_brake_force": self.max_brake_force,
-            "front_overhang": self.front_overhang,
-            "rear_overhang": self.rear_overhang,
-            "tire_params": self.tire_params,
-        }
+        return self.model_dump()

@@ -23,7 +23,9 @@ from core.data.environment import (
     TrajectoryWaypoint,
 )
 from core.data.experiment import Artifact, EvaluationMetrics, ExperimentResult
+from core.data.node import ComponentConfig, NodeExecutionResult
 from core.data.observation import Observation
+from core.data.sensor import LidarConfig, LidarScan
 from core.data.simulator import SimulationLog, SimulationResult, SimulationStep
 from core.data.vehicle import VehicleParameters
 
@@ -34,9 +36,13 @@ __all__ = [
     "ADComponentType",
     "Action",
     "Artifact",
+    "ComponentConfig",
     "CsvPathTrajectory",
     "EvaluationMetrics",
     "ExperimentResult",
+    "LidarConfig",
+    "LidarScan",
+    "NodeExecutionResult",
     "Observation",
     "Obstacle",
     "ObstacleShape",

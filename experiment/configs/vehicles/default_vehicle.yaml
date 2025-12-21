@@ -23,3 +23,11 @@ c_roll: 0.015
 max_drive_force: 5000.0
 max_brake_force: 8000.0
 tire_params: {}
+
+# Sensors
+lidar:
+  num_beams: 100
+  range_max: 30.0
+  fov: 270.0
+  x: 1.5   # Front of vehicle
+  z: 1.8

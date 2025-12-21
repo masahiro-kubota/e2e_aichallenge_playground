@@ -290,7 +290,7 @@ def load_experiment_config(path: Path | str) -> ResolvedExperimentConfig:
                 node.params["output_mcap_path"] = logger_mcap_path
                 break
 
-    # 5. Build final config
+    # 6. Build final config
     return ResolvedExperimentConfig(
         experiment=ExperimentMetadata(
             name=experiment_layer.name,

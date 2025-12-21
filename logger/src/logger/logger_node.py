@@ -3,13 +3,13 @@
 from pathlib import Path
 from typing import Any
 
-from core.data import SimulationLog, SimulationStep
+from core.data import ComponentConfig, SimulationLog, SimulationStep
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult
 from logger.mcap_logger import MCAPLogger
 
 
-class LoggerConfig(NodeConfig):
+class LoggerConfig(ComponentConfig):
     """Configuration for LoggerNode."""
 
     output_mcap_path: str | None = None
@@ -114,16 +114,25 @@ class LoggerNode(Node[LoggerConfig]):
                     except Exception:
                         continue
 
+        # Prepare info dictionary
+        simulation_info = {
+            "goal_count": getattr(self.frame_data, "goal_count", 0),
+            "obstacle_states": obstacle_state_dicts,
+        }
+
+        # Add Lidar scan if present
+        lidar_scan = getattr(self.frame_data, "lidar_scan", None)
+        if lidar_scan:
+            # Convert LidarScan (BaseModel) to dict
+            simulation_info["lidar_scan"] = lidar_scan.model_dump()
+
         # Create simulation step
         step = SimulationStep(
             timestamp=current_time,
             vehicle_state=sim_state,
             action=action,
             ad_component_log=ad_component_log,
-            info={
-                "goal_count": getattr(self.frame_data, "goal_count", 0),
-                "obstacle_states": obstacle_state_dicts,
-            },
+            info=simulation_info,
         )
 
         # NOTE: We do NOT append to self.log (memory) anymore to save memory.

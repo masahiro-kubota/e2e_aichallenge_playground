@@ -1,11 +1,12 @@
 import pytest
 from pydantic import ValidationError
 
+from core.data import ComponentConfig
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult
 
 
-class MockNodeConfig(NodeConfig):
+class MockNodeConfig(ComponentConfig):
     """Configuration for MockNode."""
 
     param_int: int

@@ -2,14 +2,14 @@ import math
 
 from pydantic import Field
 
-from core.data import Action, VehicleParameters, VehicleState
+from core.data import Action, ComponentConfig, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult
 from core.utils.geometry import distance, normalize_angle
 
 
-class PIDConfig(NodeConfig):
+class PIDConfig(ComponentConfig):
     """Configuration for PIDControllerNode."""
 
     kp: float = Field(..., description="Proportional gain")

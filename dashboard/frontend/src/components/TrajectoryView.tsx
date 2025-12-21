@@ -172,6 +172,54 @@ export const TrajectoryView: React.FC<TrajectoryViewProps> = ({ width, height })
       });
     }
 
+    // LiDAR Visualization
+    if (currentPoint && currentPoint.lidar_scan) {
+      const scan = currentPoint.lidar_scan;
+      const { config, ranges } = scan;
+      const { x: vx, y: vy, yaw: vyaw } = currentPoint;
+
+      const lidarPoints: { x: number; y: number }[] = [];
+      const angle_increment = (config.fov * Math.PI) / 180 / (config.num_beams - 1);
+
+      const cos_vyaw = Math.cos(vyaw);
+      const sin_vyaw = Math.sin(vyaw);
+
+      ranges.forEach((range, i) => {
+        if (range === Infinity || range >= config.range_max || range <= config.range_min) {
+          return;
+        }
+
+        const ray_angle_vehicle =
+          config.yaw + (-(config.fov * Math.PI) / 180 / 2 + i * angle_increment);
+
+        const px_v = config.x + range * Math.cos(ray_angle_vehicle);
+        const py_v = config.y + range * Math.sin(ray_angle_vehicle);
+
+        const gx = vx + px_v * cos_vyaw - py_v * sin_vyaw;
+        const gy = vy + px_v * sin_vyaw + py_v * cos_vyaw;
+
+        lidarPoints.push({ x: gx, y: gy });
+      });
+
+      if (lidarPoints.length > 0) {
+        traces.push({
+          x: lidarPoints.map((p) => p.x),
+          y: lidarPoints.map((p) => p.y),
+          mode: 'markers',
+          type: 'scatter',
+          name: 'LiDAR',
+          marker: {
+            color: theme.palette.info.main,
+            size: 3,
+            symbol: 'circle',
+            opacity: 0.8,
+          },
+          showlegend: true,
+          hoverinfo: 'skip',
+        });
+      }
+    }
+
     // Obstacles
     if (data.obstacles && currentPoint) {
       const currentTime = currentPoint.timestamp;

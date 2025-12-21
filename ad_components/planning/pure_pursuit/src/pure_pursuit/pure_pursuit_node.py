@@ -3,15 +3,15 @@ from pathlib import Path
 
 from pydantic import Field
 
-from core.data import SimulatorObstacle, VehicleParameters, VehicleState
+from core.data import ComponentConfig, SimulatorObstacle, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory, TrajectoryPoint
 from core.data.node_io import NodeIO
-from core.interfaces.node import Node, NodeConfig, NodeExecutionResult
+from core.interfaces.node import Node, NodeExecutionResult
 from core.utils.geometry import distance
 from simulator.obstacle import get_obstacle_polygon, get_obstacle_state
 
 
-class PurePursuitConfig(NodeConfig):
+class PurePursuitConfig(ComponentConfig):
     """Configuration for PurePursuitNode."""
 
     track_path: Path = Field(..., description="Path to reference trajectory CSV")

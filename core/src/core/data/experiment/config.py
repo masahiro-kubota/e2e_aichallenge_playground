@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from core.interfaces.node import StrictConfig
+from core.data.node import ComponentConfig
 
 
 class ExperimentType(str, Enum):
@@ -14,9 +14,6 @@ class ExperimentType(str, Enum):
     EVALUATION = "evaluation"
     DATA_COLLECTION = "data_collection"
     TRAINING = "training"
-
-
-# Copied from experiment/src/experiment/preprocessing/schemas.py
 
 
 class NodeConfig(BaseModel):
@@ -55,21 +52,21 @@ class EvaluationConfig(BaseModel):
     generate_dashboard: bool = Field(..., description="Generate dashboard")
 
 
-class MLflowConfig(StrictConfig):
+class MLflowConfig(ComponentConfig):
     """Configuration for MLflow logging."""
 
     enabled: bool = Field(..., description="Enable MLflow logging")
     tracking_uri: str = Field(..., description="MLflow tracking URI")
 
 
-class MCAPConfig(StrictConfig):
+class MCAPConfig(ComponentConfig):
     """Configuration for MCAP logging."""
 
     enabled: bool = Field(..., description="Enable MCAP logging")
     output_dir: str = Field(..., description="Output directory for MCAP files")
 
 
-class DashboardConfig(StrictConfig):
+class DashboardConfig(ComponentConfig):
     """Configuration for dashboard generation."""
 
     enabled: bool = Field(..., description="Enable dashboard generation")
@@ -77,7 +74,7 @@ class DashboardConfig(StrictConfig):
     vehicle_config_path: str = Field(..., description="Path to vehicle configuration YAML file")
 
 
-class PostprocessConfig(StrictConfig):
+class PostprocessConfig(ComponentConfig):
     """Configuration for postprocessing (logging, metrics, dashboard)."""
 
     inputs: list[str] = Field(..., description="List of input files to log as artifacts")
@@ -133,19 +130,19 @@ class ResolvedExperimentConfig(BaseModel):
     postprocess: PostprocessConfig = Field(..., description="Postprocessing configuration")
 
 
-class ExperimentFile(StrictConfig):
+class ExperimentFile(ComponentConfig):
     """Experiment YAML file structure."""
 
     experiment: ExperimentLayerConfig
 
 
-class SystemFile(StrictConfig):
+class SystemFile(ComponentConfig):
     """System YAML file structure."""
 
     system: SystemConfig
 
 
-class ModuleFile(StrictConfig):
+class ModuleFile(ComponentConfig):
     """Module YAML file structure."""
 
     module: ModuleConfig

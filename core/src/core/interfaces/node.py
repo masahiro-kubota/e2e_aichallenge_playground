@@ -1,21 +1,11 @@
 """Node interface."""
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Any, Generic, Protocol, TypeVar
 
-from pydantic import BaseModel, ConfigDict
-
+from core.data import ComponentConfig, NodeExecutionResult
 from core.data.frame_data import FrameData
 from core.data.node_io import NodeIO
-
-
-class NodeExecutionResult(Enum):
-    """Result of node execution."""
-
-    SUCCESS = "success"  # 正常実行完了
-    SKIPPED = "skipped"  # 入力データ不足等でスキップ
-    FAILED = "failed"  # エラー発生
 
 
 class FrameDataProtocol(Protocol):
@@ -24,20 +14,8 @@ class FrameDataProtocol(Protocol):
     pass
 
 
-class StrictConfig(BaseModel):
-    """Base configuration with strict validation.
-
-    All configuration classes should inherit from this to automatically
-    enforce strict validation (extra fields are forbidden).
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-
-# Alias for backward compatibility
-NodeConfig = StrictConfig
-
-T = TypeVar("T", bound=StrictConfig)
+# Type variable for ComponentConfig
+T = TypeVar("T", bound=ComponentConfig)
 
 
 class Node(ABC, Generic[T]):

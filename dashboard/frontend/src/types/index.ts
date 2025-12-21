@@ -7,6 +7,7 @@ export interface TrajectoryPoint {
   velocity: number;
   acceleration: number;
   steering: number;
+  lidar_scan?: LidarScan;
   ad_component_log?: {
     component_type: string;
     data: {
@@ -14,6 +15,25 @@ export interface TrajectoryPoint {
       [key: string]: unknown;
     };
   };
+}
+
+export interface LidarConfig {
+  num_beams: number;
+  fov: number;
+  range_min: number;
+  range_max: number;
+  angle_increment: number;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+}
+
+export interface LidarScan {
+  timestamp: number;
+  config: LidarConfig;
+  ranges: number[];
+  intensities: number[] | null;
 }
 
 export interface SimulationMetadata {
