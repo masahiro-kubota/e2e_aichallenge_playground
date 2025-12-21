@@ -32,6 +32,13 @@ def main() -> None:
         help="サンプリングレート (Hz) (default: 1000)",
     )
     parser.add_argument(
+        "--duration",
+        "-d",
+        type=float,
+        default=1.0,
+        help="シミュレーション実行時間 (sec) (default: 1.0)",
+    )
+    parser.add_argument(
         "--subprocesses",
         action="store_true",
         help="サブプロセスも含めてプロファイリング",
@@ -82,7 +89,7 @@ def main() -> None:
             "python",
             "-m",
             "experiment.cli",
-            "execution.duration_sec=1",  # 1秒のみ実行
+            f"execution.duration_sec={args.duration}",
             "postprocess.dashboard.enabled=false",  # ダッシュボード生成を無効化
             "postprocess.mcap.enabled=false",  # MCAP出力を無効化
         ]

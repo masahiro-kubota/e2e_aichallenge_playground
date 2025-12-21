@@ -253,6 +253,9 @@ uv run experiment-runner --config experiment/configs/experiments/default_experim
 ```bash
 # Speedscope形式で出力（推奨）
 uv run python scripts/profile_experiment.py --format speedscope
+
+# 実行時間を指定（例：5秒間実行してプロファイリング）
+uv run python scripts/profile_experiment.py --duration 5
 ```
 
 実行後、以下の方法で結果を確認できます:
