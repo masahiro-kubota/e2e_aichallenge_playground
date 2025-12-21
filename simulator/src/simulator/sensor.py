@@ -1,8 +1,7 @@
 import math
 from typing import TYPE_CHECKING
 
-from shapely.geometry import LineString, Point
-from shapely.ops import nearest_points
+import numpy as np
 
 from core.data import LidarConfig, LidarScan, VehicleState
 
@@ -41,7 +40,7 @@ class LidarSensor:
         self.start_angle = -fov_rad / 2.0
 
     def scan(self, vehicle_state: VehicleState) -> LidarScan:
-        """Perform LiDAR scan.
+        """Perform LiDAR scan using vectorized NumPy operations.
 
         Args:
             vehicle_state: Current vehicle state
@@ -51,11 +50,23 @@ class LidarSensor:
         """
         range_max = self.config.range_max
         sensor_x, sensor_y = self._get_sensor_pose(vehicle_state)
-        sensor_point = Point(sensor_x, sensor_y)
 
-        ranges = []
+        # Vectorized angle computation for all beams
+        beam_indices = np.arange(self.config.num_beams)
+        angles = (
+            self.start_angle + beam_indices * self.increment + vehicle_state.yaw + self.config.yaw
+        )
 
-        # Get relevant map boundaries
+        # Vectorized ray endpoint computation
+        cos_angles = np.cos(angles)
+        sin_angles = np.sin(angles)
+        ray_end_x = sensor_x + range_max * cos_angles
+        ray_end_y = sensor_y + range_max * sin_angles
+
+        # Initialize ranges with infinity
+        ranges = np.full(self.config.num_beams, np.inf, dtype=np.float64)
+
+        # Get map boundaries
         map_boundaries = []
         if (
             self.map is not None
@@ -70,12 +81,29 @@ class LidarSensor:
             elif boundary.geom_type == "LinearRing":
                 map_boundaries.append(boundary)
 
-        # Get relevant obstacle polygons (use current time for dynamic ones)
-        # Note: Optimization would be to select only nearby obstacles
+        # Check map boundaries with vectorized intersection
+        for boundary in map_boundaries:
+            coords = np.array(boundary.coords)
+            if len(coords) < 2:
+                continue
+
+            # Process each line segment in the boundary
+            for i in range(len(coords) - 1):
+                seg_x1, seg_y1 = coords[i]
+                seg_x2, seg_y2 = coords[i + 1]
+
+                # Vectorized line-segment intersection
+                distances = self._vectorized_ray_segment_intersection(
+                    sensor_x, sensor_y, ray_end_x, ray_end_y, seg_x1, seg_y1, seg_x2, seg_y2
+                )
+
+                # Update ranges with minimum distances
+                valid_mask = (distances >= self.config.range_min) & (distances < ranges)
+                ranges = np.where(valid_mask, distances, ranges)
+
+        # Get obstacle polygons
         obstacle_polygons = []
         if self.obstacle_manager is not None:
-            # We need to access get_obstacle_polygon logic
-            # Assuming we can get all obstacles
             from simulator.obstacle import get_obstacle_polygon, get_obstacle_state
 
             for obs in self.obstacle_manager.obstacles:
@@ -83,90 +111,103 @@ class LidarSensor:
                     st = get_obstacle_state(obs, vehicle_state.timestamp)
                     # Simple distance check before polygon creation
                     dist = math.hypot(st.x - sensor_x, st.y - sensor_y)
-                    # Rough culling
-                    if dist < range_max + 10.0:  # +10 safety margin for size
+                    if dist < range_max + 10.0:  # +10 safety margin
                         poly = get_obstacle_polygon(obs, st)
                         obstacle_polygons.append(poly)
                 except Exception:
                     continue
 
-        for i in range(self.config.num_beams):
-            angle = self.start_angle + i * self.increment + vehicle_state.yaw + self.config.yaw
-
-            # Limited ray for intersection check
-            ray_end_x = sensor_x + range_max * math.cos(angle)
-            ray_end_y = sensor_y + range_max * math.sin(angle)
-            ray = LineString([(sensor_x, sensor_y), (ray_end_x, ray_end_y)])
-
-            min_dist = float("inf")
-            found_hit = False
-
-            # Check map boundaries
-            for boundary in map_boundaries:
-                if ray.intersects(boundary):
-                    intersection = ray.intersection(boundary)
-                    # Intersection can be Point, MultiPoint, or other
-                    if intersection.is_empty:
-                        continue
-
-                    points = []
-                    if intersection.geom_type == "Point":
-                        points = [intersection]
-                    elif intersection.geom_type == "MultiPoint":
-                        points = list(intersection.geoms)
-                    elif intersection.geom_type in [
-                        "LineString",
-                        "MultiLineString",
-                        "GeometryCollection",
-                    ]:
-                        # Complex intersection, take nearest point
-                        # Usually boundary and ray intersect at point(s)
-                        # Simplify by taking distance to intersection
-                        points = [nearest_points(sensor_point, intersection)[1]]
-
-                    for p in points:
-                        dist = sensor_point.distance(p)
-                        if dist < min_dist:
-                            min_dist = dist
-                            found_hit = True
-
-            # Check obstacles
-            for poly in obstacle_polygons:
-                if ray.intersects(poly):
-                    intersection = ray.intersection(
-                        poly
-                    )  # Usually produces a LineString (ray inside) or Point
-                    if intersection.is_empty:
-                        continue
-
-                    # For a solid polygon, ray enters and exits. We want the first entry point.
-                    # intersection of a LineString (Ray) and Polygon is a LineString (segment inside)
-                    # or MultiLineString
-
-                    geoms = []
-                    if intersection.geom_type == "LineString":
-                        geoms = [intersection]
-                    elif intersection.geom_type == "MultiLineString":
-                        geoms = list(intersection.geoms)
-                    elif intersection.geom_type == "Point":  # Touch
-                        geoms = [intersection]
-                    elif intersection.geom_type == "MultiPoint":
-                        geoms = list(intersection.geoms)
-
-                    for geom in geoms:
-                        # Get nearest point on the intersection geometry to the sensor
-                        p = nearest_points(sensor_point, geom)[1]
-                        dist = sensor_point.distance(p)
-                        if dist < min_dist:
-                            min_dist = dist
-                            found_hit = True
-
-            if found_hit and min_dist >= self.config.range_min:
-                ranges.append(float(min_dist))
+        # Check obstacles with vectorized intersection
+        for poly in obstacle_polygons:
+            boundary = poly.boundary
+            if boundary.geom_type == "LineString" or boundary.geom_type == "LinearRing":
+                coords = np.array(boundary.coords)
             else:
-                ranges.append(float("inf"))
+                continue
 
-        return LidarScan(timestamp=vehicle_state.timestamp, config=self.config, ranges=ranges)
+            if len(coords) < 2:
+                continue
+
+            # Process each line segment in the obstacle boundary
+            for i in range(len(coords) - 1):
+                seg_x1, seg_y1 = coords[i]
+                seg_x2, seg_y2 = coords[i + 1]
+
+                # Vectorized line-segment intersection
+                distances = self._vectorized_ray_segment_intersection(
+                    sensor_x, sensor_y, ray_end_x, ray_end_y, seg_x1, seg_y1, seg_x2, seg_y2
+                )
+
+                # Update ranges with minimum distances
+                valid_mask = (distances >= self.config.range_min) & (distances < ranges)
+                ranges = np.where(valid_mask, distances, ranges)
+
+        return LidarScan(
+            timestamp=vehicle_state.timestamp, config=self.config, ranges=ranges.tolist()
+        )
+
+    def _vectorized_ray_segment_intersection(
+        self,
+        ray_x: float,
+        ray_y: float,
+        ray_end_x: np.ndarray,
+        ray_end_y: np.ndarray,
+        seg_x1: float,
+        seg_y1: float,
+        seg_x2: float,
+        seg_y2: float,
+    ) -> np.ndarray:
+        """Compute ray-segment intersections for all rays at once.
+
+        Uses vectorized line-line intersection algorithm.
+
+        Args:
+            ray_x: Ray origin x
+            ray_y: Ray origin y
+            ray_end_x: Array of ray endpoint x coordinates
+            ray_end_y: Array of ray endpoint y coordinates
+            seg_x1: Segment start x
+            seg_y1: Segment start y
+            seg_x2: Segment end x
+            seg_y2: Segment end y
+
+        Returns:
+            Array of distances (inf if no intersection)
+        """
+        # Ray direction vectors
+        ray_dx = ray_end_x - ray_x
+        ray_dy = ray_end_y - ray_y
+
+        # Segment direction vector
+        seg_dx = seg_x2 - seg_x1
+        seg_dy = seg_y2 - seg_y1
+
+        # Compute determinant (cross product)
+        det = ray_dx * seg_dy - ray_dy * seg_dx
+
+        # Parallel rays (det ≈ 0)
+        eps = 1e-10
+        parallel_mask = np.abs(det) < eps
+
+        # Compute intersection parameters
+        dx = seg_x1 - ray_x
+        dy = seg_y1 - ray_y
+
+        # Parameter along ray (t) and segment (u)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            t = (dx * seg_dy - dy * seg_dx) / det
+            u = (dx * ray_dy - dy * ray_dx) / det
+
+        # Valid intersection: t >= 0 (forward along ray), 0 <= u <= 1 (within segment)
+        valid_mask = ~parallel_mask & (t >= 0) & (u >= 0) & (u <= 1)
+
+        # Compute distances
+        distances = np.full_like(t, np.inf)
+        distances[valid_mask] = t[valid_mask] * np.sqrt(
+            ray_dx[valid_mask] ** 2 + ray_dy[valid_mask] ** 2
+        )
+
+        return distances
 
     def _get_sensor_pose(self, vehicle_state: VehicleState) -> tuple[float, float]:
         """Calculate sensor position in global frame."""

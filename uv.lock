@@ -14,6 +14,7 @@ members = [
     "pure-pursuit",
     "simulator",
     "supervisor",
+    "tiny-lidar-net",
 ]
 
 [[package]]
@@ -650,6 +651,7 @@ dependencies = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "simulator" },
+    { name = "tiny-lidar-net" },
 ]
 
 [package.dev-dependencies]
@@ -677,6 +679,7 @@ requires-dist = [
     { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "ruff", specifier = ">=0.8.0" },
     { name = "simulator", editable = "simulator" },
+    { name = "tiny-lidar-net", editable = "ad_components/control/tiny_lidar_net" },
 ]
 
 [package.metadata.requires-dev]
@@ -2521,6 +2524,7 @@ version = "0.1.0"
 source = { editable = "simulator" }
 dependencies = [
     { name = "core" },
+    { name = "numpy" },
     { name = "pydantic" },
     { name = "pyright" },
     { name = "pytest" },
@@ -2532,6 +2536,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "core", editable = "core" },
+    { name = "numpy", specifier = ">=1.24.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pyright", specifier = ">=1.1.0" },
     { name = "pytest", specifier = ">=8.0.0" },
@@ -2762,6 +2767,23 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b7/4d/08c89e34946fce2aec4fbb45c9016efd5f4d7f24af8e5d93296e935631d8/threadpoolctl-3.6.0.tar.gz", hash = "sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e", size = 21274 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl", hash = "sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb", size = 18638 },
+]
+
+[[package]]
+name = "tiny-lidar-net"
+version = "0.1.0"
+source = { editable = "ad_components/control/tiny_lidar_net" }
+dependencies = [
+    { name = "core" },
+    { name = "numpy" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "numpy" },
+    { name = "pydantic" },
 ]
 
 [[package]]

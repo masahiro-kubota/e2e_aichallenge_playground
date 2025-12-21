@@ -13,7 +13,8 @@ def validate_node_graph(nodes: list[Node]) -> None:
         ValueError: If graph is invalid
     """
     # 利用可能な出力(初期値として"action"と"sim_state"を含む - 循環のため)
-    available_outputs = {"action", "sim_state", "obstacles"}
+    # Simulatorからの出力も含める
+    available_outputs = {"action", "sim_state", "obstacles", "lidar_scan"}
 
     for node in nodes:
         io_spec = node.get_node_io()
