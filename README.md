@@ -69,38 +69,30 @@ docker compose down -v  # データも削除
 e2e_aichallenge_playground/
 ├── core/                           # プロジェクト基盤（データ構造・インターフェース）
 ├── ad_components/             # コンポーネントパッケージ
-│   ├── core/                      # コンポーネント共通基盤
 │   ├── planning/                  # 計画コンポーネント
-│   │   ├── pure_pursuit/
-│   │   └── planning_utils/
 │   └── control/                   # 制御コンポーネント
-│       ├── pid_controller/
-│       └── neural_controller/
 ├── simulator/                     # シミュレータ実装
 ├── experiment/                    # 実験フレームワーク
-│   ├── configs/                  # 実験設定ファイル
-│   │   ├── experiments/          # 実験設定
-│   │   ├── modules/              # モジュール設定(ADコンポーネント構成)
-│   │   ├── scenes/               # シーン設定
-│   │   ├── systems/              # システム設定(車両・シーン・モジュールの組み合わせ)
-│   │   └── vehicles/             # 車両パラメータ
+│   ├── conf/                     # Hydra設定 (YAML)
+│   ├── tools/                    # 便利ツール (profile, diagram等)
 │   └── src/
 │       └── experiment/           # 実験実行メインロジック
-│           ├── runner/           # 実行エンジン
-│           ├── postprocessing/   # 後処理 (評価・可視化)
-│           └── preprocessing/    # 前処理 (Config解析)
+│           ├── engine/           # ライフサイクル管理 (Collect, Extract, Train, Eval)
+│           ├── core/             # Orchestrator, Structures
+│           ├── data/             # Dataset, DataLoading
+│           └── models/           # 模型定義 (TinyLidarNet)
 ├── dashboard/                    # 可視化ダッシュボード
-├── supervisor/                   # シミュレーション監視・判定
+├── supervisor/                   # シミュレート監視・判定
 ├── logger/                       # ログ記録
-├── data/                         # 一時データ(Git対象外)
-└── mlflow/                       # MLflow + MinIO サーバー
+├── mlflow/                       # MLflow + MinIO サーバー
+└── models/                       # 学習済みモデル (.npy)
 ```
 
 ### アーキテクチャ概要
 
-> **Note**: この図は `scripts/generate_architecture_diagram.py` によって自動生成されています。更新する際は以下のコマンドを実行してください：
+> **Note**: この図は `experiment/tools/generate_architecture_diagram.py` によって自動生成されています。更新する際は以下のコマンドを実行してください：
 > ```bash
-> uv run python scripts/generate_architecture_diagram.py
+> uv run python experiment/tools/generate_architecture_diagram.py
 > ```
 
 <!-- ARCHITECTURE_DIAGRAM_START -->
@@ -143,6 +135,8 @@ graph TD
         class planning_utils impl;
         pid_controller["pid-controller<br/>PID controller"]
         class pid_controller impl;
+        tiny_lidar_net["tiny-lidar-net<br/>Tiny LiDAR Net end-t.."]
+        class tiny_lidar_net impl;
     end
     %% Dependencies
     logger --> core
@@ -159,6 +153,7 @@ graph TD
     pure_pursuit --> simulator
     planning_utils --> core
     pid_controller --> core
+    tiny_lidar_net --> core
 ```
 <!-- ARCHITECTURE_DIAGRAM_END -->
 
@@ -170,113 +165,32 @@ graph TD
 
 本プラットフォームは、すべてのコンポーネント（Simulator, Planning, Control等）を単一プロセス内の**Node**として実行します。各ノードは同期的に実行され、決定論的なシミュレーションと高速な実行を実現します。
 
-### 2. ノードシステム
+### 2. ライフサイクル管理 (Engine)
 
-すべてのコンポーネントは共通の`Node`基底クラスを継承します。
+実験は「フェーズ」ごとに Engine として抽象化されています。
 
-- **型安全な設定**: Pydanticモデルによる厳密なパラメータ検証。
-- **統一インターフェース**: `on_run(current_time)` メソッドによる処理の実装。
-- **Config-Driven**: 依存関係（車両パラメータ等）はYAMLから明示的に注入されます。
-
-```python
-class Node(ABC, Generic[ConfigT]):
-    """実行可能なノードの基底クラス"""
-
-    def __init__(self, name: str, rate_hz: float, config: ConfigT):
-        self.config = config  # Pydanticで検証済みの設定
-
-    @abstractmethod
-    def on_run(self, current_time: float) -> NodeExecutionResult:
-        pass
-```
-
-### 🛠️ 新しいノードの追加方法
-
-新しいコンポーネントやアルゴリズムを追加する場合の手順です。
-
-#### 1. Nodeの実装
-
-`Node` クラスを継承し、PydanticでConfigを定義します。
-
-```python
-from pydantic import Field
-from core.interfaces.node import Node, NodeConfig
-
-class MyAlgorithmConfig(NodeConfig):
-    param_a: float = Field(..., description="Important parameter")
-    file_path: str = Field(..., description="Path to model file")
-
-class MyAlgorithmNode(Node[MyAlgorithmConfig]):
-    def __init__(self, config: MyAlgorithmConfig, rate_hz: float):
-        super().__init__("MyAlgorithm", rate_hz, config)
-
-    def on_run(self, current_time: float) -> NodeExecutionResult:
-        # Implementation...
-        return NodeExecutionResult.SUCCESS
-```
-
-#### 2. Entry Pointの登録（推奨）
-
-`pyproject.toml` に登録することで、YAML設定ファイルで短いエイリアス名を使用できるようになります。
-
-```toml
-[project.entry-points."e2e_aichallenge.node"]
-my_algorithm = "my_package.my_module:MyAlgorithmNode"
-```
-
-#### 3. YAML設定での利用
-
-```yaml
-    - name: "MyComponent"
-      type: "my_algorithm"
-      params:
-        param_a: 1.0
-        file_path: "models/model.pt"
-      rate_hz: 20.0
-
-```
+- **CollectorEngine**: シミュレーションを実行し、生データ (MCAP) を収集。
+- **ExtractorEngine**: MCAPから特徴量を抽出し、統計量 (stats.json) を計算。
+- **TrainerEngine**: 抽出されたデータと統計量を用いて学習を実行。
+- **EvaluatorEngine**: 学習済みモデルを用いて閉ループ評価を実行。
 
 ---
 
 ## 📖 開発フロー
 
-### 基本的な実験実行
-
-```bash
-uv run experiment-runner --config experiment/configs/experiments/default_experiment.yaml
-```
-
 ### パフォーマンスプロファイリング
 
-`experiment-runner`の実行時間を計測し、ボトルネックを特定できます。1秒間のシミュレーションを実行してプロファイルを生成します。
+`experiment-runner`の実行時間を計測し、ボトルネックを特定できます。
 
 ```bash
-# 実行時間を指定（例：5秒間実行してプロファイリング）
-uv run python scripts/profile_experiment.py --duration 5
-
-# rateを指定（例：1000Hzでプロファイリング）
-uv run python scripts/profile_experiment.py --rate 1000
+uv run python experiment/tools/profile_experiment.py --duration 5
 ```
 
 ### テストの実行
 
-> **注意**: ROSがインストールされている環境では、`PYTHONPATH`環境変数にROSのパスが含まれているため、pytestが干渉を受けます。`PYTHONPATH=""`を付けてテストを実行してください。
-
 ```bash
 # 全テストの実行
 PYTHONPATH="" uv run pytest
-
-# 統合テストの実行
-PYTHONPATH="" uv run pytest -m integration -v
-
-# 統合テストを除外（単体テストのみ）
-PYTHONPATH="" uv run pytest -m "not integration"
-
-# 特定のテストファイルを実行
-PYTHONPATH="" uv run pytest core/tests/test_config.py -v
-
-# Pre-commitフックの実行（全ファイル）
-uv run pre-commit run --all-files
 ```
 
 ---
@@ -285,81 +199,57 @@ uv run pre-commit run --all-files
 
 エンドツーエンドの学習パイプラインを実行する手順です。
 
-### 0. 準備
+### 1. データ収集 (Collect)
 
-スクリプトを実行しやすくするために、必要なファイルを `scripts/` に配置します。
-
-```bash
-# ライブラリと変換スクリプトをコピー
-cp -r ad_components/control/tiny_lidar_net/scripts/lib scripts/lib
-cp ad_components/control/tiny_lidar_net/scripts/convert_weight.py scripts/convert_model.py
-```
-
-### 1. データ収集
-
-Hydraを使用してパラメータをランダム化し、教師データと検証データを収集します。
-
-```bash
-# 学習データ (例: 100エピソード)
-uv run python scripts/collect_data.py \
-    execution.num_episodes=100 \
-    +split=train \
-    +seed=1000
-
-# 検証データ (例: 20エピソード)
-uv run python scripts/collect_data.py \
-    execution.num_episodes=20 \
-    +split=val \
-    +seed=2000
-```
-
-> **Note**: 出力先は `outputs/YYYY-MM-DD/HH-MM-SS/{split}/raw_data/` になります。
-
-### 2. データ抽出
-
-収集したMCAPファイルからデータを抽出し、NumPy配列に変換します。
+Hydraを使用してパラメータをランダム化し、生データを収集します。
 
 ```bash
 # 学習データ
-uv run python ad_components/control/tiny_lidar_net/scripts/extract_data_from_mcap.py \
-    --input_dir outputs/202X-XX-XX/XX-XX-XX/train/raw_data \
-    --output_dir data/train_set
+uv run experiment-runner experiment=data_collection execution.num_episodes=100 +split=train
 
 # 検証データ
-uv run python ad_components/control/tiny_lidar_net/scripts/extract_data_from_mcap.py \
-    --input_dir outputs/202X-XX-XX/XX-XX-XX/val/raw_data \
-    --output_dir data/val_set
+uv run experiment-runner experiment=data_collection execution.num_episodes=20 +split=val
 ```
 
-### 3. 学習
+### 2. データ抽出・統計計算 (Extract)
 
-WandBで記録しながらモデルを学習します。
+MCAPから `scans.npy`, `steers.npy` 等を抽出し、**統計量 (Standardization)** を計算します。
 
 ```bash
-uv run python scripts/train.py \
-    training.num_epochs=50 \
-    +train_data=data/train_set \
-    +val_data=data/val_set
+# 学習データ
+uv run experiment-runner experiment=extraction input_dir=outputs/latest/train/raw_data output_dir=data/train_set
+
+# 検証データ
+uv run experiment-runner experiment=extraction input_dir=outputs/latest/val/raw_data output_dir=data/val_set
 ```
 
-### 4. モデル変換
+### 3. 学習 (Train)
+
+抽出されたデータと統計量を用いて学習します。統計量は自動的に適用されます。
+
+```bash
+uv run experiment-runner experiment=training \
+    training.num_epochs=50 \
+    train_data=data/train_set \
+    val_data=data/val_set
+```
+
+### 4. モデル変換 (工具)
 
 学習済みモデル (PyTorch) をシミュレータ用 (NumPy) に変換します。
 
 ```bash
-uv run python scripts/convert_model.py \
-    --ckpt outputs/202X-XX-XX/XX-XX-XX/checkpoints/best_model.pth \
+uv run python experiment/tools/convert_model.py \
+    --ckpt outputs/latest/training/checkpoints/best_model.pth \
     --output models/tinylidarnet_v1.npy
 ```
 
-### 5. 評価実行
+### 5. 評価 (Eval)
 
 学習したモデルを使ってシミュレーションを実行します。
 
 ```bash
-uv run python scripts/collect_data.py \
-    execution.num_episodes=5 \
+uv run experiment-runner experiment=evaluation \
     agent=tiny_lidar \
-    agent.model_path=models/tinylidarnet_v1.npy \
-    +split=eval
+    agent.model_path=models/tinylidarnet_v1.npy
 ```

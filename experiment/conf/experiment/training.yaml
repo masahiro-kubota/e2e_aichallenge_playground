@@ -1,0 +1,23 @@
+# @package _global_
+# Training Configuration
+
+defaults:
+  - _self_
+
+experiment:
+  name: "train_tinylidar"
+  type: "training"
+  description: "Train TinyLidarNet with processed data"
+
+train_data: "outputs/latest/processed_data"
+val_data: "outputs/latest/processed_data"
+
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  num_epochs: 10
+  device: "cpu"
+
+model:
+  input_width: 1080
+  output_dim: 2

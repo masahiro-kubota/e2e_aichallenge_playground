@@ -8,7 +8,7 @@ def test_metadata_injection() -> None:
     from hydra import compose, initialize_config_dir
     from omegaconf import OmegaConf
 
-    from experiment.orchestrator import ExperimentOrchestrator
+    from experiment.core.orchestrator import ExperimentOrchestrator
 
     workspace_root = get_project_root()
     config_dir = str(workspace_root / "experiment/conf")
@@ -18,7 +18,7 @@ def test_metadata_injection() -> None:
         cfg = compose(
             config_name="config",
             overrides=[
-                "experiment=run",
+                "experiment=evaluation",
                 "execution.duration_sec=0.1",
             ],
         )

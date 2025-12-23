@@ -6,7 +6,7 @@ from pathlib import Path
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
-from .orchestrator import ExperimentOrchestrator
+from experiment.core.orchestrator import ExperimentOrchestrator
 
 
 @hydra.main(

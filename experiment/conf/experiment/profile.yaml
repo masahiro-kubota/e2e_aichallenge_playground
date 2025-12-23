@@ -69,11 +69,10 @@ system:
         collision:
           enabled: false
 
-    # Logger - Disabled for profiling
-    # - name: "Logger"
-    #   type: "logger.LoggerNode"
-    #   rate_hz: ${execution.clock_rate_hz}
-    #   params:
-    #     vehicle_params: ${vehicle}
-    #     map_path: ${env.map_path}
-    #     output_mcap_path: "${hydra:runtime.output_dir}"
+    - name: "Logger"
+      type: "logger.LoggerNode"
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        vehicle_params: ${vehicle}
+        map_path: ${env.map_path}
+        output_mcap_path: "${hydra:runtime.output_dir}"

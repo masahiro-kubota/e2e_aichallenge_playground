@@ -1,0 +1,47 @@
+# @package _global_
+# Data Collection Configuration
+
+defaults:
+  - _self_
+
+experiment:
+  name: "data_collection"
+  type: "data_collection"
+  description: "Data collection with randomized episodes"
+
+execution:
+  num_episodes: 1
+  clock_rate_hz: 100.0
+  duration_sec: 200.0
+  clock_type: "stepped"
+
+system:
+  simulation_rate_hz: 100.0
+  nodes:
+    - name: "Simulator"
+      type: "KinematicSimulator"
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        map_path: ${env.map_path}
+        vehicle_params: ${vehicle}
+        initial_state: ${env.initial_state}
+        obstacles: ${env.obstacles}
+    - name: "Logger"
+      type: "LoggerNode"
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        map_path: ${env.map_path}
+        vehicle_params: ${vehicle}
+
+postprocess:
+  inputs: []
+  mlflow:
+    enabled: false
+    tracking_uri: "http://localhost:5000"
+  mcap:
+    enabled: true
+    output_dir: ${hydra:runtime.output_dir}/raw_data
+  dashboard:
+    enabled: false
+    map_path: ${env.map_path}
+    vehicle_config_path: "experiment/conf/vehicle/default.yaml"

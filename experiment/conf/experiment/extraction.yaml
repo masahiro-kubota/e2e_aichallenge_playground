@@ -1,0 +1,14 @@
+# @package _global_
+# Data Extraction Configuration
+
+experiment:
+  name: "data_extraction"
+  type: "extraction"
+  description: "Extract features from MCAP and calculate statistics"
+
+input_dir: null
+output_dir: null
+
+normalization:
+  enabled: true
+  method: "standard" # standard (mean/std) or minmax

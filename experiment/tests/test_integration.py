@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import pytest
+from ideal_sensor.sensor_node import IdealSensorConfig, IdealSensorNode
 from pid_controller.pid_controller_node import PIDConfig, PIDControllerNode
 from pure_pursuit.pure_pursuit_node import PurePursuitConfig, PurePursuitNode
 
 from core.data import VehicleParameters
-from experiment.orchestrator import ExperimentOrchestrator
-from experiment.processors.sensor import IdealSensorNode
+from experiment.core.orchestrator import ExperimentOrchestrator
 
 
 @pytest.mark.integration
@@ -26,7 +26,7 @@ def test_pure_pursuit_experiment_nodes() -> None:
     env_cfg = OmegaConf.load(config_dir / "env/default.yaml")
     vehicle_cfg = OmegaConf.load(config_dir / "vehicle/default.yaml")
     agent_cfg = OmegaConf.load(config_dir / "agent/pure_pursuit.yaml")
-    experiment_cfg = OmegaConf.load(config_dir / "experiment/run.yaml")
+    experiment_cfg = OmegaConf.load(config_dir / "experiment/evaluation.yaml")
 
     # Merge configs
     cfg = OmegaConf.merge(
@@ -187,8 +187,6 @@ def test_node_instantiation(tmp_path) -> None:
     assert pid_node.config.kp == 1.0
 
     # Sensor
-    from experiment.processors.sensor import IdealSensorConfig
-
     sensor_config = IdealSensorConfig()
     sensor_node = IdealSensorNode(config=sensor_config, rate_hz=50.0)
     assert sensor_node.name == "Sensor"

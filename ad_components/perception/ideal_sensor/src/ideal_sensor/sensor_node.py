@@ -1,24 +1,26 @@
-from typing import Any
+from pydantic import Field
 
-from core.data import ComponentConfig, VehicleState
+from core.data.experiment.config import NodeConfig
 from core.data.node_io import NodeIO
 from core.interfaces.node import Node, NodeExecutionResult
 
 
-class IdealSensorConfig(ComponentConfig):
-    pass
+class IdealSensorConfig(NodeConfig):
+    name: str = "Sensor"
+    type: str = "IdealSensorNode"
+    rate_hz: float = 10.0
+    params: dict = Field(default_factory=dict)
 
 
 class IdealSensorNode(Node[IdealSensorConfig]):
-    """理想的なセンサーノード (ノイズなし、遅延なし)."""
+    """テスト用のパススルーセンサーノード"""
 
-    def __init__(
-        self, config: IdealSensorConfig, rate_hz: float, vehicle_params: Any | None = None
-    ):
+    def __init__(self, config: IdealSensorConfig, rate_hz: float = 10.0):
         super().__init__("Sensor", rate_hz, config)
-        _ = vehicle_params
 
     def get_node_io(self) -> NodeIO:
+        from core.data import VehicleState
+
         return NodeIO(inputs={"sim_state": VehicleState}, outputs={"vehicle_state": VehicleState})
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -26,9 +28,7 @@ class IdealSensorNode(Node[IdealSensorConfig]):
             return NodeExecutionResult.FAILED
 
         sim_state = getattr(self.frame_data, "sim_state", None)
-        if sim_state is None:
-            return NodeExecutionResult.SKIPPED
+        if sim_state:
+            self.frame_data.vehicle_state = sim_state
 
-        # Pass through
-        self.frame_data.vehicle_state = sim_state
         return NodeExecutionResult.SUCCESS

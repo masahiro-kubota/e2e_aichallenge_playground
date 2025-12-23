@@ -3,7 +3,7 @@ import pathlib
 import tomllib
 from typing import NamedTuple
 
-PROJECT_ROOT = pathlib.Path(__file__).parent.parent
+PROJECT_ROOT = pathlib.Path(__file__).parent.parent.parent
 
 
 class ProjectInfo(NamedTuple):

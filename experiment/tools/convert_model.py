@@ -5,22 +5,20 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from lib.model import TinyLidarNet, TinyLidarNetSmall
+
+from experiment.models.tiny_lidar import TinyLidarNet
 
 
-def convert_pytorch_to_numpy(ckpt_path: Path, output_path: Path, model_type: str = "large"):
+def convert_pytorch_to_numpy(ckpt_path: Path, output_path: Path):
     """Convert PyTorch checkpoint to NumPy format.
 
     Args:
         ckpt_path: Path to PyTorch checkpoint (.pth)
         output_path: Path to save NumPy weights (.npy)
-        model_type: Model architecture type ('large' or 'small')
     """
     # Load PyTorch model
-    if model_type == "small":
-        model = TinyLidarNetSmall()
-    else:
-        model = TinyLidarNet()
+    # Note: TinyLidarNet currently has input_dim, output_dim params
+    model = TinyLidarNet(input_dim=1080, output_dim=2)
 
     # Load state dict
     state_dict = torch.load(ckpt_path, map_location="cpu")
@@ -48,13 +46,10 @@ def main():
     parser = argparse.ArgumentParser(description="Convert PyTorch checkpoint to NumPy")
     parser.add_argument("--ckpt", type=Path, required=True, help="Path to PyTorch checkpoint")
     parser.add_argument("--output", type=Path, required=True, help="Path to save NumPy weights")
-    parser.add_argument(
-        "--model", type=str, default="large", choices=["large", "small"], help="Model architecture"
-    )
 
     args = parser.parse_args()
 
-    convert_pytorch_to_numpy(args.ckpt, args.output, args.model)
+    convert_pytorch_to_numpy(args.ckpt, args.output)
 
 
 if __name__ == "__main__":

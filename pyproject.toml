@@ -25,6 +25,7 @@ dependencies = [
     "hydra-core>=1.3.2",
     "wandb>=0.23.1",
     "py-spy>=0.4.1",
+    "ideal-sensor",
 ]
 
 [tool.uv]
@@ -39,6 +40,10 @@ planning-utils = { workspace = true }
 pid-controller = { workspace = true }
 tiny-lidar-net = { workspace = true }
 simulator = { workspace = true }
+"ideal-sensor" = { workspace = true }
+"dashboard" = { workspace = true }
+"supervisor" = { workspace = true }
+"logger" = { workspace = true }
 
 [tool.uv.workspace]
 members = [
@@ -54,6 +59,7 @@ members = [
     "dashboard",
     "supervisor",
     "logger",
+    "ad_components/perception/ideal_sensor",
 ]
 
 [tool.ruff]

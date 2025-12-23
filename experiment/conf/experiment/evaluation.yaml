@@ -1,0 +1,67 @@
+# @package _global_
+# Evaluation Configuration
+
+defaults:
+  - _self_
+
+agent: tiny_lidar
+
+experiment:
+  name: "evaluation"
+  type: "evaluation"
+  description: "Closed-loop evaluation of trained model"
+
+execution:
+  num_episodes: 1
+  clock_rate_hz: 100.0
+  duration_sec: 20.0
+  clock_type: "stepped"
+
+system:
+  simulation_rate_hz: 100.0
+  nodes:
+    - name: "Simulator"
+      type: "KinematicSimulator"
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        map_path: ${env.map_path}
+        vehicle_params: ${vehicle}
+        initial_state: ${env.initial_state}
+        obstacles: ${env.obstacles}
+    - name: "Sensor"
+      type: "ideal_sensor.sensor_node.IdealSensorNode"
+      rate_hz: 50.0
+      params: {}
+    - name: "Supervisor"
+      type: "SupervisorNode"
+      rate_hz: 10.0
+      params:
+        goal:
+          enabled: true
+          x: ${env.goal_position.x}
+          y: ${env.goal_position.y}
+          radius: 1.0
+          min_elapsed_time: 1.0
+        collision:
+          enabled: true
+        off_track:
+          enabled: false
+    - name: "Logger"
+      type: "LoggerNode"
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        map_path: ${env.map_path}
+        vehicle_params: ${vehicle}
+
+postprocess:
+  inputs: []
+  mlflow:
+    enabled: false
+    tracking_uri: "http://localhost:5000"
+  dashboard:
+    enabled: true
+    map_path: ${env.map_path}
+    vehicle_config_path: "experiment/conf/vehicle/default.yaml"
+  mcap:
+    enabled: true
+    output_dir: "${hydra:runtime.output_dir}"

@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from torch.utils.data import Dataset
@@ -13,18 +14,22 @@ class ScanControlDataset(Dataset):
     """PyTorch Dataset for LiDAR scans and control commands.
 
     Loads synchronized .npy files (scans, steers, accelerations) from a directory.
-    The LiDAR scans are normalized by the specified maximum range.
+    The LiDAR scans can be normalized by max range or by statistical parameters (mean/std).
     """
 
-    def __init__(self, data_dir: Path | str, max_range: float = 30.0):
+    def __init__(
+        self, data_dir: Path | str, max_range: float = 30.0, stats: dict[str, Any] | None = None
+    ):
         """Initialize the dataset.
 
         Args:
             data_dir: Path to the directory containing .npy files
-            max_range: Maximum range for LiDAR normalization
+            max_range: Maximum range (fallback if stats is not provided)
+            stats: Dictionary containing normalization statistics (mean, std, etc.)
         """
         self.data_dir = Path(data_dir)
         self.max_range = max_range
+        self.stats = stats
 
         try:
             # Load raw data
@@ -42,8 +47,16 @@ class ScanControlDataset(Dataset):
                 f"Scans={len(self.scans)}, Steers={len(self.steers)}, Accels={len(self.accels)}"
             )
 
-        # Preprocessing: Clip and Normalize
-        self.scans = np.clip(self.scans, 0.0, self.max_range) / self.max_range
+        # Preprocessing: Normalization
+        if self.stats and "scans" in self.stats:
+            s_stats = self.stats["scans"]
+            logger.info(
+                f"Applying statistical normalization for scans: mean={s_stats['mean']}, std={s_stats['std']}"
+            )
+            self.scans = (self.scans - s_stats["mean"]) / (s_stats["std"] + 1e-6)
+        else:
+            logger.info(f"Applying range-based normalization for scans: max_range={self.max_range}")
+            self.scans = np.clip(self.scans, 0.0, self.max_range) / self.max_range
 
         logger.info(f"Loaded {n_samples} samples from {self.data_dir}")
 
