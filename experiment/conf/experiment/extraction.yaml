@@ -12,3 +12,7 @@ output_dir: null
 normalization:
   enabled: true
   method: "standard" # standard (mean/std) or minmax
+
+dvc:
+  auto_add: true
+  auto_push: true

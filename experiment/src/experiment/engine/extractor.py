@@ -1,5 +1,6 @@
 import json
 import logging
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -86,9 +87,52 @@ class ExtractorEngine(BaseEngine):
         np.save(output_dir / "steers.npy", steers)
         np.save(output_dir / "accelerations.npy", accels)
 
+        # 5. Save metadata (Lineage)
+        self._save_metadata(output_dir, input_dir)
+
         logger.info(f"Successfully extracted {len(scans)} samples.")
         logger.info(f"Dataset saved to {output_dir}")
+
+        # 6. DVC Automation
+        if cfg.get("dvc", {}).get("auto_add", False):
+            self._run_dvc_commands(output_dir, cfg.get("dvc", {}).get("auto_push", False))
+
         return output_dir
+
+    def _save_metadata(self, output_dir: Path, input_dir: Path) -> None:
+        """Save metadata for data lineage."""
+        metadata = {
+            "input_dir": str(input_dir),
+            "created_at": str(np.datetime64("now")),
+            # Try to get git commit hash
+            "git_commit": self._get_git_commit(),
+        }
+        try:
+            with open(output_dir / "metadata.json", "w") as f:
+                json.dump(metadata, f, indent=4)
+        except Exception as e:
+            logger.warning(f"Failed to save metadata: {e}")
+
+    def _get_git_commit(self) -> str:
+        try:
+            return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+        except Exception:
+            return "unknown"
+
+    def _run_dvc_commands(self, target_dir: Path, push: bool = False) -> None:
+        """Run dvc add and optionally dvc push."""
+        try:
+            logger.info(f"Running: dvc add {target_dir}")
+            subprocess.run(["dvc", "add", str(target_dir)], check=True)
+
+            if push:
+                logger.info("Running: dvc push")
+                subprocess.run(["dvc", "push"], check=True)
+
+        except subprocess.CalledProcessError as e:
+            logger.error(f"DVC command failed: {e}")
+        except FileNotFoundError:
+            logger.error("dvc command not found. Please ensure DVC is installed.")
 
     def _extract_from_single_mcap(self, mcap_path: Path) -> dict[str, Any] | None:
         """Extract and sync data from one MCAP."""

@@ -130,7 +130,7 @@ class EvaluatorEngine(BaseEngine):
             from experiment.core.structures import Experiment
 
             generator = HTMLDashboardGenerator()
-            dashboard_path = output_dir / "results_dashboard.html"
+            dashboard_path = output_dir / "dashboard.html"
 
             try:
                 # Provide a dummy experiment container for the dashboard generator
@@ -154,7 +154,7 @@ class EvaluatorEngine(BaseEngine):
                     vehicle_params=cfg.vehicle,
                 )
                 artifacts.append(Artifact(local_path=dashboard_path))
-                mlflow.log_artifact(str(dashboard_path), "reports")
+                mlflow.log_artifact(str(dashboard_path))
             except Exception as e:
                 logger.warning(f"Failed to generate dashboard: {e}")
 

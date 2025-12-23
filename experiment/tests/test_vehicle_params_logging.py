@@ -1,7 +1,11 @@
+from unittest.mock import patch
+
 from core.utils import get_project_root
 
 
-def test_metadata_injection() -> None:
+@patch("experiment.engine.base.mlflow")
+@patch("experiment.engine.evaluator.mlflow")
+def test_metadata_injection(_mock_mlflow_eval, _mock_mlflow_base) -> None:
     """Test that vehicle parameters are injected into log metadata."""
     # This test validates that the orchestrator properly validates Hydra config
     # before starting simulation (fail-fast behavior)

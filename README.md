@@ -28,13 +28,13 @@ cd ..
 
 # 4. 実験を実行 (追跡用環境変数の指定が必須です)
 # デフォルト実行 (Pure Pursuit, 60秒)
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner
+uv run experiment-runner
 
 # パラメータを上書き
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner execution.duration_sec=10.0
+uv run experiment-runner execution.duration_sec=10.0
 
 # エージェントを切り替え (Tiny LiDAR Net)
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner agent=tiny_lidar agent.model_path=models/tinylidarnet_v2.npy
+uv run experiment-runner agent=tiny_lidar agent.model_path=models/tinylidarnet_v2.npy
 
 # 5. 結果を確認
 # MLflow UI: http://localhost:5000
@@ -248,15 +248,16 @@ Hydraを使用してパラメータをランダム化し、生データを収集
 
 ```bash
 # 学習データ
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner experiment=data_collection execution.num_episodes=100 +split=train
+uv run experiment-runner experiment=data_collection execution.num_episodes=100 +split=train
 
 # 検証データ
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner experiment=data_collection execution.num_episodes=20 +split=val
+uv run experiment-runner experiment=data_collection execution.num_episodes=20 +split=val
 ```
 
 ### 2. データ抽出・統計計算 (Extract)
 
 MCAPから `scans.npy`, `steers.npy` 等を抽出し、**統計量 (Standardization)** を計算します。
+データの抽出が完了したら、DVCでバージョン管理を行います。
 
 ```bash
 # 学習データ
@@ -264,20 +265,32 @@ uv run experiment-runner experiment=extraction input_dir=outputs/latest/train/ra
 
 # 検証データ
 uv run experiment-runner experiment=extraction input_dir=outputs/latest/val/raw_data output_dir=data/val_set
+
+# データのバージョン管理 (DVC)
+# 抽出したデータを管理対象に追加
+dvc add data/train_set data/val_set
+
+# リモートストレージへプッシュ (設定済みの場合)
+dvc push
 ```
 
 ### 3. 学習 (Train)
 
 抽出されたデータと統計量を用いて学習します。統計量は自動的に適用されます。
+他の環境で実行する場合などは、事前にデータをpullしてください。
 
 ```bash
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner experiment=training \
+# データ取得 (必要な場合)
+dvc pull
+
+# 学習実行
+uv run experiment-runner experiment=training \
     training.num_epochs=50 \
     train_data=data/train_set \
     val_data=data/val_set
 ```
 
-### 4. モデル変換 (工具)
+### 4. モデル変換
 
 学習済みモデル (PyTorch) をシミュレータ用 (NumPy) に変換します。
 
@@ -292,7 +305,7 @@ uv run python experiment/tools/convert_model.py \
 学習したモデルを使ってシミュレーションを実行します。
 
 ```bash
-MLFLOW_TRACKING_URI=http://localhost:5000 uv run experiment-runner experiment=evaluation \
+uv run experiment-runner experiment=evaluation \
     agent=tiny_lidar \
     agent.model_path=models/tinylidarnet_v1.npy
 ```

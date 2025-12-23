@@ -1,5 +1,7 @@
+import contextlib
 import shutil
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from ideal_sensor.sensor_node import IdealSensorConfig, IdealSensorNode
@@ -10,14 +12,10 @@ from core.data import VehicleParameters
 from experiment.core.orchestrator import ExperimentOrchestrator
 
 
-@pytest.fixture(autouse=True)
-def mock_mlflow(monkeypatch, tmp_path) -> None:
-    """Set a temporary MLflow tracking URI for tests."""
-    monkeypatch.setenv("MLFLOW_TRACKING_URI", f"file://{tmp_path}/mlflow")
-
-
 @pytest.mark.integration
-def test_pure_pursuit_experiment_nodes() -> None:
+@patch("experiment.engine.base.mlflow")
+@patch("experiment.engine.evaluator.mlflow")
+def test_pure_pursuit_experiment_nodes(_mock_mlflow_eval, _mock_mlflow_base) -> None:
     """Test Pure Pursuit experiment execution with Hydra configuration."""
     from omegaconf import OmegaConf
 
@@ -95,7 +93,9 @@ def test_pure_pursuit_experiment_nodes() -> None:
     if mcap_source.exists():
         if mcap_path.exists():
             mcap_path.unlink()
-        shutil.move(mcap_source, mcap_path)
+
+        with contextlib.suppress(shutil.SameFileError):
+            shutil.move(mcap_source, mcap_path)
 
     assert mcap_path.exists(), f"MCAP file not found at {mcap_path}"
 
@@ -139,7 +139,8 @@ def test_pure_pursuit_experiment_nodes() -> None:
 
     # Copy dashboard to tmp for user visibility
     target_dashboard = tmp_path / "dashboard.html"
-    shutil.copy(dashboard_artifact.local_path, target_dashboard)
+    if dashboard_artifact.local_path.absolute() != target_dashboard.absolute():
+        shutil.copy(dashboard_artifact.local_path, target_dashboard)
     print(f"  Dashboard copied to {target_dashboard}")
 
 

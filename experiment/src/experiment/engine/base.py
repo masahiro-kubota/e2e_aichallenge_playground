@@ -1,4 +1,5 @@
 import os
+import subprocess
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -29,13 +30,49 @@ class BaseEngine(ABC):
         ):
             # 基本タグの記録
             mlflow.set_tag("phase", cfg.experiment.type)
+            mlflow.set_tag("git_commit", self._get_git_commit())
             if "id" in cfg.experiment:
                 mlflow.set_tag("experiment_id", cfg.experiment.id)
 
             # 設定をアーティファクトとして保存
-            mlflow.log_dict(OmegaConf.to_container(cfg, resolve=True), "config.yaml")
+            container = OmegaConf.to_container(cfg, resolve=True)
+            if isinstance(container, dict):
+                # パラメータをフラット化して記録
+                flat_params = self._flatten_config(container)
+                # MLflowの制限（100パラメータ/回）を考慮して分割登録はMLflow clientがやる場合もあるが
+                # ここでは単純に渡す（大量にある場合はbatch loggingが必要だが一旦そのまま）
+                for i in range(0, len(flat_params), 100):
+                    chunk = dict(list(flat_params.items())[i : i + 100])
+                    mlflow.log_params(chunk)
+
+            mlflow.log_dict(container, "config.yaml")
 
             return self._run_impl(cfg)
+
+    def _flatten_config(
+        self, d: dict[str, Any], parent_key: str = "", sep: str = "."
+    ) -> dict[str, Any]:
+        """設定辞書をフラット化 (dot-notation)"""
+        items: list[tuple[str, Any]] = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(self._flatten_config(v, new_key, sep=sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
+    def _get_git_commit(self) -> str:
+        """現在のGitコミットハッシュを取得"""
+        try:
+            commit = (
+                subprocess.check_output(["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL)
+                .decode("utf-8")
+                .strip()
+            )
+            return commit
+        except Exception:
+            return "unknown"
 
     @abstractmethod
     def _run_impl(self, cfg: DictConfig) -> Any:

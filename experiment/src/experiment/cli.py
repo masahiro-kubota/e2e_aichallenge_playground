@@ -4,6 +4,7 @@
 from pathlib import Path
 
 import hydra
+from dotenv import load_dotenv
 from omegaconf import DictConfig, OmegaConf
 
 from experiment.core.orchestrator import ExperimentOrchestrator
@@ -20,6 +21,8 @@ def main(cfg: DictConfig) -> None:
     Args:
         cfg: Hydra configuration object
     """
+    load_dotenv()  # Load environment variables from .env file
+
     print("=" * 80)
     print("Running experiment with Hydra configuration")
     print("=" * 80)

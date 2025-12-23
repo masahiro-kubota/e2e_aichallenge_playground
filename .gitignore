@@ -9,7 +9,10 @@ mlartifacts/
 mlflow/*/
 mlflow/.trash/
 # Data and Models
-/data/
+/data/*
+!/data/*.dvc
+!/data/.gitignore
+
 outputs/
 # Python
 __pycache__/
