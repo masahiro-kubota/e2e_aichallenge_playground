@@ -17,56 +17,48 @@ from experiment.core.orchestrator import ExperimentOrchestrator
 @patch("experiment.engine.evaluator.mlflow")
 def test_pure_pursuit_experiment_nodes(_mock_mlflow_eval, _mock_mlflow_base) -> None:
     """Test Pure Pursuit experiment execution with Hydra configuration."""
+    from hydra import compose, initialize_config_dir
     from omegaconf import OmegaConf
 
     # Load Hydra config files manually
     workspace_root = Path(__file__).parent.parent.parent
-    config_dir = workspace_root / "experiment/conf"
+    config_dir = str(workspace_root / "experiment/conf")
 
     # Create tmp directory for MCAP output
     tmp_path = workspace_root / "tmp"
     tmp_path.mkdir(exist_ok=True)
 
-    # Manually compose config by loading each component
-    env_cfg = OmegaConf.load(config_dir / "env/default.yaml")
-    vehicle_cfg = OmegaConf.load(config_dir / "vehicle/default.yaml")
-    agent_cfg = OmegaConf.load(config_dir / "agent/pure_pursuit.yaml")
-    experiment_cfg = OmegaConf.load(config_dir / "experiment/evaluation.yaml")
+    # Use Hydra's compose to properly handle defaults
+    with initialize_config_dir(config_dir=config_dir, version_base=None):
+        cfg = compose(
+            config_name="config",
+            overrides=[
+                "experiment=evaluation",
+                "agent=pure_pursuit",
+                "execution.duration_sec=200.0",
+                "execution.num_episodes=1",
+            ],
+        )
 
-    # Merge configs
-    cfg = OmegaConf.merge(
-        experiment_cfg,
-        {
-            "env": env_cfg,
-            "vehicle": vehicle_cfg,
-            "agent": agent_cfg,
-            "seed": 42,
-            "split": "test",
-        },
-    )
+        # Manually resolve hydra interpolations for testing
+        OmegaConf.set_struct(cfg, False)
+        cfg["hydra"] = {"runtime": {"output_dir": str(tmp_path)}}
+        cfg["output_dir"] = str(tmp_path)
 
-    # Override for testing
-    cfg.execution.duration_sec = 200.0
-    cfg.execution.num_episodes = 1
-    cfg.output_dir = str(tmp_path)
-    cfg.postprocess.mcap.output_dir = str(tmp_path)
+        # Replace ${hydra:runtime.output_dir} in postprocess config
+        if "postprocess" in cfg and "mcap" in cfg.postprocess:
+            cfg.postprocess.mcap.output_dir = str(tmp_path)
 
-    # Manually replace Hydra interpolations before resolution
-    OmegaConf.set_struct(cfg, False)
-    cfg.hydra = {"runtime": {"output_dir": str(tmp_path)}}
-    # Replace ${hydra:runtime.output_dir} in Logger params
-    for node in cfg.system.nodes:
-        if node.name == "Logger" and "output_mcap_path" in node.params:
-            node.params.output_mcap_path = str(tmp_path)
-    OmegaConf.set_struct(cfg, True)
+        # Replace ${hydra:runtime.output_dir} in Logger params
+        for node in cfg.system.nodes:
+            if node.name == "Logger" and "output_mcap_path" in node.params:
+                node.params.output_mcap_path = str(tmp_path)
 
-    # Resolve all interpolations
-    cfg = OmegaConf.to_container(cfg, resolve=True)
-    cfg = OmegaConf.create(cfg)
+        OmegaConf.set_struct(cfg, True)
 
-    # Run experiment with Hydra config
-    orchestrator = ExperimentOrchestrator()
-    result = orchestrator.run_from_hydra(cfg)
+        # Run experiment with Hydra config
+        orchestrator = ExperimentOrchestrator()
+        result = orchestrator.run_from_hydra(cfg)
 
     assert result is not None
     assert len(result.simulation_results) > 0

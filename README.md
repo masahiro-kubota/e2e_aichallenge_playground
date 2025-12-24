@@ -197,7 +197,7 @@ graph TD
     experiment --> supervisor
     dashboard --> core
     supervisor --> core
-    ad_component_core --> core
+    ad_component_core --      | 0/20000 Simulation:   0%|                                        > core
     pure_pursuit --> core
     pure_pursuit --> planning_utils
     pure_pursuit --> simulator

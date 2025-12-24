@@ -2,6 +2,7 @@
 # Evaluation Configuration
 
 defaults:
+  - base
   - _self_
 
 agent: tiny_lidar
@@ -11,15 +12,9 @@ experiment:
   type: "evaluation"
   description: "Closed-loop evaluation of trained model"
 
-execution:
-  num_episodes: 1
-  clock_rate_hz: 100.0
-  duration_sec: 200.0
-  clock_type: "stepped"
-
 system:
-  simulation_rate_hz: 100.0
   nodes:
+    # Base nodes from base.yaml
     - name: "Simulator"
       type: "KinematicSimulator"
       rate_hz: ${execution.clock_rate_hz}
@@ -32,6 +27,15 @@ system:
       type: "ideal_sensor.sensor_node.IdealSensorNode"
       rate_hz: 50.0
       params: {}
+    - name: "Logger"
+      type: "LoggerNode"
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        output_mcap_path: ${postprocess.mcap.output_dir}/simulation.mcap
+        map_path: ${env.map_path}
+        track_path: ${env.track_path}
+        vehicle_params: ${vehicle}
+    # Add Supervisor node for evaluation
     - name: "Supervisor"
       type: "SupervisorNode"
       rate_hz: 10.0
@@ -40,31 +44,16 @@ system:
           enabled: true
           x: ${env.goal_position.x}
           y: ${env.goal_position.y}
-          radius: 1.0
+          radius: ${env.goal_tolerance}
           min_elapsed_time: 20.0
         collision:
           enabled: true
         off_track:
-          enabled: false
-    - name: "Logger"
-      type: "LoggerNode"
-      rate_hz: ${execution.clock_rate_hz}
-      params:
-        # Must be a file path, not directory
-        output_mcap_path: ${postprocess.mcap.output_dir}/simulation.mcap
-        map_path: ${env.map_path}
-        track_path: ${env.track_path}
-        vehicle_params: ${vehicle}
+          enabled: true
 
+# Enable dashboard for evaluation
 postprocess:
-  inputs: []
-  mlflow:
-    enabled: false
-    tracking_uri: "http://localhost:5000"
   dashboard:
     enabled: true
-    map_path: ${env.map_path}
-    vehicle_config_path: "experiment/conf/vehicle/default.yaml"
-  mcap:
-    enabled: true
-    output_dir: "${hydra:runtime.output_dir}"
+  inputs:
+    - ${postprocess.mcap.output_dir}/simulation.mcap

@@ -28,6 +28,7 @@ from logger.ros_message_builder import (
 from logger.track_loader import load_track_csv_simple
 from logger.visualization.map_visualizer import MapVisualizer
 from logger.visualization.obstacle_visualizer import ObstacleVisualizer
+from logger.visualization.path_visualizer import PathVisualizer
 from logger.visualization.trajectory_visualizer import TrajectoryVisualizer
 from logger.visualization.vehicle_visualizer import VehicleVisualizer
 
@@ -57,7 +58,11 @@ class LoggerNode(Node[LoggerConfig]):
         self.vehicle_visualizer = VehicleVisualizer(config.vehicle_params)
         self.obstacle_visualizer = ObstacleVisualizer()
         self.trajectory_visualizer = TrajectoryVisualizer()
+        self.path_visualizer = PathVisualizer(max_history=0)  # Unlimited for batch processing
         self.map_visualizer: MapVisualizer | None = None
+
+        # Data accumulation for path visualization only
+        self.vehicle_positions: list[tuple[float, float]] = []
 
     def on_init(self) -> None:
         """Initialize resources."""
@@ -80,6 +85,9 @@ class LoggerNode(Node[LoggerConfig]):
 
     def on_shutdown(self) -> None:
         """Cleanup resources."""
+        # Finalize visualizations before closing MCAP
+        self._finalize_visualizations()
+
         if self.mcap_logger:
             self.mcap_logger.__exit__(None, None, None)
 
@@ -126,6 +134,9 @@ class LoggerNode(Node[LoggerConfig]):
         self._log_control_command(action, current_time)
         self._log_simulation_info(simulation_info, current_time)
 
+        # Accumulate vehicle positions for path visualization (batch processing)
+        self.vehicle_positions.append((sim_state.x, sim_state.y))
+
         return NodeExecutionResult.SUCCESS
 
     def _log_vehicle_state(self, vehicle_state: VehicleState, timestamp: float) -> None:
@@ -138,12 +149,12 @@ class LoggerNode(Node[LoggerConfig]):
         odom_msg = build_odometry_message(vehicle_state, timestamp)
         self.mcap_logger.log("/localization/kinematic_state", odom_msg, timestamp)
 
-        # Vehicle marker
+        # Vehicle marker (real-time)
         vehicle_marker = self.vehicle_visualizer.create_marker(vehicle_state, timestamp)
         vehicle_marker_array = MarkerArray(markers=[vehicle_marker])
         self.mcap_logger.log("/vehicle/marker", vehicle_marker_array, timestamp)
 
-        # Obstacle markers
+        # Obstacle markers (real-time)
         obstacles = getattr(self.frame_data, "obstacles", None)
         if obstacles:
             obstacle_marker_array = self.obstacle_visualizer.create_marker_array(
@@ -185,6 +196,26 @@ class LoggerNode(Node[LoggerConfig]):
             marker = self.trajectory_visualizer.create_marker(trajectory, timestamp)
             if marker:
                 self.mcap_logger.log("/planning/marker", MarkerArray(markers=[marker]), timestamp)
+
+    def _finalize_visualizations(self) -> None:
+        """Finalize path visualization at the end of simulation."""
+        if not self.mcap_logger:
+            return
+
+        # Use the first timestamp for static visualizations (like map)
+        first_timestamp = self.log.steps[0].timestamp if self.log.steps else 0.0
+
+        # Vehicle path (entire trajectory as a single marker)
+        if self.vehicle_positions:
+            # Set all positions at once
+            for x, y in self.vehicle_positions:
+                self.path_visualizer.add_position(x, y)
+
+            path_marker = self.path_visualizer.create_marker(first_timestamp)
+            if path_marker:
+                self.mcap_logger.log(
+                    "/vehicle/path", MarkerArray(markers=[path_marker]), first_timestamp
+                )
 
     def _publish_map(self) -> None:
         """Publish map markers."""

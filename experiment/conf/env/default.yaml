@@ -14,7 +14,7 @@ initial_state:
 goal_position:
   x: 89630.067
   y: 43130.695
-goal_tolerance: 5.0
+goal_tolerance: 1.0
 
 # Obstacles
 # Obstacles

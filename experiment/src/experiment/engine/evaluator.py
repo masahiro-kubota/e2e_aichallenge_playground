@@ -46,20 +46,29 @@ class SimulatorRunner:
         log = None
         # Prefer Simulator log as it contains better metadata (obstacles, etc.)
         for node in nodes:
-            if node.__class__.__name__ == "Simulator":
-                log = node.get_log()
+            class_name = node.__class__.__name__
+            logger.debug(f"Checking node: {class_name}, has get_log: {hasattr(node, 'get_log')}")
+            if class_name == "Simulator":
+                if hasattr(node, "get_log"):
+                    log = node.get_log()
+                    logger.debug(f"Got log from Simulator: {log is not None}")
                 break
 
         # Fallback to LoggerNode
         if log is None:
             for node in nodes:
                 if isinstance(node, LoggerNode):
-                    log = node.get_log()
+                    if hasattr(node, "get_log"):
+                        log = node.get_log()
+                        logger.debug(f"Got log from LoggerNode: {log is not None}")
                     break
+
+        if log is None:
+            logger.warning("No log found from any node")
 
         return SimulationResult(
             success=getattr(frame_data, "success", False),
-            reason=getattr(frame_data, "done_reason", "unknown"),
+            reason=getattr(frame_data, "done_reason", None),
             final_state=getattr(frame_data, "sim_state", None),
             log=log,
         )
@@ -117,8 +126,9 @@ class EvaluatorEngine(BaseEngine):
             res = runner.run_simulation(experiment_structure)
             results.append(res)
 
+            reason = res.reason or "unknown"
             logger.info(
-                f"Episode {i+1}/{num_episodes}: {'Success' if res.success else 'Failed (' + res.reason + ')'}"
+                f"Episode {i+1}/{num_episodes}: {'Success' if res.success else 'Failed (' + reason + ')'}"
             )
 
         # Calculate Aggregate Metrics
@@ -128,7 +138,7 @@ class EvaluatorEngine(BaseEngine):
         metrics = Metrics(
             success_rate=success_rate,
             goal_count=success_count,
-            collision_count=sum(1 for r in results if "collision" in r.reason.lower()),
+            collision_count=sum(1 for r in results if r.reason and "collision" in r.reason.lower()),
             termination_code=0,
         )
 
