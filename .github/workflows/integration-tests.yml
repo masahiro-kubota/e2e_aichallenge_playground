@@ -86,6 +86,6 @@ jobs:
           name: github-pages-content
           path: |
             index.html
-            dashboard.html
+            tmp/dashboard.html
             docs/build/html/
           retention-days: 7

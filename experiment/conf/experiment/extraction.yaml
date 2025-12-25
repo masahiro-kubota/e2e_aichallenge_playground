@@ -1,6 +1,10 @@
 # @package _global_
 # Data Extraction Configuration
 
+defaults:
+  - base
+  - _self_
+
 experiment:
   name: "data_extraction"
   type: "extraction"

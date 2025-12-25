@@ -2,6 +2,7 @@
 # Training Configuration
 
 defaults:
+  - base
   - _self_
 
 experiment:
