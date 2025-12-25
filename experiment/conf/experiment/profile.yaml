@@ -13,30 +13,3 @@ experiment:
 # Override execution for 1-step profiling
 execution:
   duration_sec: 1  # 1 step at 100Hz = 0.01 seconds
-  parallel: false
-  num_workers: 1
-
-# Override sensor rate for profiling
-system:
-  nodes:
-    sensor:
-      type: "experiment.processors.sensor.IdealSensorNode"
-      rate_hz: 50.0
-      params: {}
-    supervisor:
-      params:
-        goal:
-          enabled: false
-        collision:
-          enabled: false
-        off_track:
-          enabled: false
-
-# Disable all postprocessing for profiling
-postprocess:
-  mlflow:
-    enabled: false
-  mcap:
-    enabled: false
-  dashboard:
-    enabled: false

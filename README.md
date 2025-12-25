@@ -119,6 +119,25 @@ uv run dvc status
 
 ---
 
+## 🔧 TODO / 既知の課題
+
+### 設定ファイルの階層構造の改善
+
+**問題:**
+現在の`base.yaml`はevaluation/data_collection向けの設定（シミュレーション実行）を含んでいますが、`extraction.yaml`や`training.yaml`のような非シミュレーション実験では、これらの設定がほとんど不要です。しかし、Hydraの`defaults`で`base.yaml`を継承しているため、不要な設定を明示的にオーバーライドする必要があります。
+
+**改善案:**
+- `base.yaml`を最小限の共通設定のみに限定
+- シミュレーション関連の設定を`simulation_base.yaml`のような別ファイルに分離
+- 各実験タイプ（evaluation, data_collection, extraction, training）が必要な設定のみを継承できるようにする
+
+**影響範囲:**
+- `experiment/conf/experiment/base.yaml`
+- `experiment/conf/experiment/extraction.yaml`
+- `experiment/conf/experiment/training.yaml`
+
+---
+
 ## 📁 ディレクトリ構成
 
 ```

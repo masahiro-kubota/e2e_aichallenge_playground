@@ -34,8 +34,6 @@ class ExecutionConfig(BaseModel):
         ..., description="Clock rate in Hz (should match simulator.rate_hz for efficiency)"
     )
     duration_sec: float = Field(..., description="Simulation duration in seconds")
-    parallel: bool = Field(default=False, description="Run episodes in parallel")
-    num_workers: int = Field(default=1, description="Number of parallel workers")
 
     # Future support for executor/clock switching
     clock_type: Literal["stepped", "realtime", "external"] = Field(
