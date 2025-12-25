@@ -50,9 +50,18 @@ def test_pure_pursuit_experiment_nodes(_mock_mlflow_eval, _mock_mlflow_base) -> 
             cfg.postprocess.mcap.output_dir = str(tmp_path)
 
         # Replace ${hydra:runtime.output_dir} in Logger params
-        for node in cfg.system.nodes:
-            if node.name == "Logger" and "output_mcap_path" in node.params:
-                node.params.output_mcap_path = str(tmp_path)
+        nodes_iter = (
+            cfg.system.nodes.values() if isinstance(cfg.system.nodes, dict) else cfg.system.nodes
+        )
+        for node in nodes_iter:
+            node_name = node.get("name") if isinstance(node, dict) else getattr(node, "name", None)
+            if node_name == "Logger" and "output_mcap_path" in (
+                node.get("params", {}) if isinstance(node, dict) else node.params
+            ):
+                if isinstance(node, dict):
+                    node["params"]["output_mcap_path"] = str(tmp_path)
+                else:
+                    node.params.output_mcap_path = str(tmp_path)
 
         OmegaConf.set_struct(cfg, True)
 

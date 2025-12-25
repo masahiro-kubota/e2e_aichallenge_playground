@@ -17,7 +17,7 @@ execution:
 # Default system configuration
 system:
   nodes:
-    - name: "Simulator"
+    simulator:
       type: "KinematicSimulator"
       rate_hz: ${execution.clock_rate_hz}
       params:
@@ -25,11 +25,11 @@ system:
         vehicle_params: ${vehicle}
         initial_state: ${env.initial_state}
         obstacles: ${env.obstacles}
-    - name: "Sensor"
+    sensor:
       type: "ideal_sensor.sensor_node.IdealSensorNode"
       rate_hz: 50.0
       params: {}
-    - name: "Logger"
+    logger:
       type: "LoggerNode"
       rate_hz: ${execution.clock_rate_hz}
       params:
@@ -38,10 +38,25 @@ system:
         map_path: ${env.map_path}
         track_path: ${env.track_path}
         vehicle_params: ${vehicle}
+    supervisor:
+      type: "SupervisorNode"
+      rate_hz: 10.0
+      params:
+        goal:
+          enabled: true
+          x: ${env.goal_position.x}
+          y: ${env.goal_position.y}
+          radius: ${env.goal_tolerance}
+          min_elapsed_time: 20.0
+        collision:
+          enabled: true
+        off_track:
+          enabled: true
 
 # Default postprocessing configuration
 postprocess:
-  inputs: []
+  inputs:
+    - ${postprocess.mcap.output_dir}/simulation.mcap
   mlflow:
     enabled: false
     tracking_uri: "http://localhost:5000"
@@ -49,6 +64,6 @@ postprocess:
     enabled: true
     output_dir: "${hydra:runtime.output_dir}"
   dashboard:
-    enabled: false
+    enabled: true
     map_path: ${env.map_path}
     vehicle_config_path: "experiment/conf/vehicle/default.yaml"

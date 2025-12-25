@@ -111,6 +111,12 @@ uv run dvc status
 
 *   **明示的なファイルパス**: 出力パス等は、ディレクトリパスではなく、具体的なファイル名まで含むフルパスを指定してください（例: `output_dir/simulation.mcap`）。プログラム側での「ファイル名の自動補完」や「ディレクトリ判定」は、予期せぬ挙動を防ぐために排除されています。
 
+### 4. ノード実行順序の制限
+
+*   **辞書形式のノード設定**: `system.nodes` は辞書形式で定義されており、Hydraでの部分的な上書きとMLflowパラメータの可読性を向上させています。
+*   **順序の保証**: Pythonの辞書は挿入順序を保持しますが、意図的な順序管理が難しいという制限があります。現在の実装では、辞書のキー順序でノードの実行順序が決まります。
+*   **将来の改善**: 各ノード設定に `order` や `priority` フィールドを追加することで、明示的な順序制御を実装する予定です。
+
 ---
 
 ## 📁 ディレクトリ構成
@@ -272,6 +278,9 @@ Hydraを使用してパラメータをランダム化し、生データを収集
 ```bash
 # 学習データ
 uv run experiment-runner experiment=data_collection execution.num_episodes=100 split=train
+
+# 環境設定をrandomizedに変更
+uv run experiment-runner experiment=data_collection env=randomized execution.num_episodes=100 split=train
 
 # 検証データ
 uv run experiment-runner experiment=data_collection execution.num_episodes=20 split=val

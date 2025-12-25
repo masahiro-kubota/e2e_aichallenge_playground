@@ -2,7 +2,7 @@
 
 # Nodes definition for the agent (Planning + Control)
 nodes:
-  - name: "Planning"
+  planning:
     type: "pure_pursuit.PurePursuitNode"
     rate_hz: 10.0
     params:
@@ -13,7 +13,7 @@ nodes:
       lookahead_speed_ratio: 1.5
       track_path: ${env.track_path}
 
-  - name: "Control"
+  control:
     type: "pid_controller.PIDControllerNode"
     rate_hz: 30.0
     params:

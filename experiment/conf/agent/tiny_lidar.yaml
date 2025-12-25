@@ -3,7 +3,7 @@
 model_path: "outputs/2025-12-21/21-46-10/tinylidarnet.npy"
 
 nodes:
-  - name: "TinyLidarNet"
+  tiny_lidar_net:
     type: "tiny_lidar_net.node.TinyLidarNetNode"
     rate_hz: 50.0 # Match sensor rate or similar
     params:

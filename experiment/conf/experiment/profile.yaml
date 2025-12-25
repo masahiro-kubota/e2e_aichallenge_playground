@@ -19,24 +19,17 @@ execution:
 # Override sensor rate for profiling
 system:
   nodes:
-    - name: "Sensor"
+    sensor:
       type: "experiment.processors.sensor.IdealSensorNode"
       rate_hz: 50.0
       params: {}
-    # Add Supervisor with all checks disabled
-    - name: "Supervisor"
-      type: "supervisor.SupervisorNode"
-      rate_hz: 10.0
+    supervisor:
       params:
         goal:
           enabled: false
-          x: ${env.goal_position.x}
-          y: ${env.goal_position.y}
-          radius: ${env.goal_tolerance}
-          min_elapsed_time: 20.0
-        off_track:
-          enabled: false
         collision:
+          enabled: false
+        off_track:
           enabled: false
 
 # Disable all postprocessing for profiling
