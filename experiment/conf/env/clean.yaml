@@ -1,0 +1,10 @@
+# Clean Environment Configuration (No Obstacles)
+defaults:
+  - default
+  - _self_
+
+obstacles:
+  generation:
+    enabled: false
+    groups: []
+  list: []

@@ -1,0 +1,35 @@
+# MPC Planner Agent Configuration
+
+nodes:
+  planning:
+    type: "mpc_planner.MPCPlannerNode"
+    rate_hz: 10.0
+    params:
+      vehicle_params: ${vehicle}
+      track_path: ${env.track_path}
+      
+      horizon_distance: 20.0
+      horizon_num_points: 30
+      
+      trigger_distance: 10.0
+      
+      max_iterations: 200
+      solver_timeout: 3.0
+      
+      collision_method: "multi_circle"
+      safety_margin: 0.5
+      
+      weight_progress: 1.0
+      weight_deviation: 0.5
+      weight_smoothness: 0.1
+          
+  control:
+    type: "pid_controller.PIDControllerNode"
+    rate_hz: 30.0
+    params:
+      vehicle_params: ${vehicle}
+      kp: 1.0
+      ki: 0.1
+      kd: 0.05
+      u_min: -3.0
+      u_max: 3.0

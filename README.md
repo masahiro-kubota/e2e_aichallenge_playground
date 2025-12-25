@@ -286,6 +286,119 @@ uv run pre-commit run --all-files
 
 ---
 
+## 🚧 障害物の設定
+
+シミュレーション環境に障害物を配置する方法は2つあります: **動的生成**と**静的リスト**。
+
+### 動的生成 (Dynamic Generation)
+
+ランダムに障害物を生成する場合は、`env.obstacles.generation`を使用します。
+
+```yaml
+obstacles:
+  generation:
+    enabled: true
+    groups:
+      - name: "random_static_on_track"
+        type: static
+        count: 10                    # 生成する障害物の数
+        shape:
+          type: rectangle
+          width: 2.0                 # 幅 [m]
+          length: 4.0                # 長さ [m]
+        placement:
+          strategy: random_track     # トラック上にランダム配置
+          offset:
+            min: -1.0                # トラック中心からの最小オフセット [m]
+            max: 1.0                 # トラック中心からの最大オフセット [m]
+          yaw_mode: aligned          # トラックに沿った向き
+
+      - name: "random_static_scattered"
+        type: static
+        count: 5
+        shape:
+          type: rectangle
+          width: 1.0
+          length: 1.0
+        placement:
+          strategy: random_map       # マップ上の指定範囲にランダム配置
+          bounds:
+            x_min: 89620
+            x_max: 89660
+            y_min: 43120
+            y_max: 43160
+  list: []
+```
+
+**配置戦略:**
+- `random_track`: トラックに沿ってランダムに配置（`offset`で中心からのずれを指定）
+- `random_map`: 指定した座標範囲内にランダムに配置（`bounds`で範囲を指定）
+
+**向きモード (`yaw_mode`):**
+- `aligned`: トラックに沿った向き
+- `random`: ランダムな向き
+
+### 静的リスト (Static List)
+
+固定位置に障害物を配置する場合は、`env.obstacles.list`を使用します。
+
+```yaml
+obstacles:
+  generation:
+    enabled: false
+    groups: []
+  list:
+    - type: static
+      shape:
+        type: rectangle
+        width: 2
+        length: 4
+      position:
+        x: 89635.303
+        y: 43148.381
+        yaw: 0
+    - type: static
+      shape:
+        type: rectangle
+        width: 2
+        length: 4
+      position:
+        x: 89642.364
+        y: 43156.666
+        yaw: 0
+```
+
+### 組み合わせ
+
+動的生成と静的リストを組み合わせることも可能です:
+
+```yaml
+obstacles:
+  generation:
+    enabled: true
+    groups:
+      - name: "random_obstacles"
+        type: static
+        count: 5
+        # ... (設定)
+  list:
+    - type: static
+      # ... (固定障害物)
+```
+
+### 環境設定の使用例
+
+```bash
+# デフォルト環境（固定障害物）
+uv run experiment-runner env=default
+
+# ランダム障害物環境
+uv run experiment-runner env=randomized
+
+# データ収集でランダム障害物を使用
+uv run experiment-runner experiment=data_collection env=randomized execution.num_episodes=100
+
+
 ## 🔄 MLOps ワークフロー (Tiny LiDAR Net)
 
 エンドツーエンドの学習パイプラインを実行する手順です。

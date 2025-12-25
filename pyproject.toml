@@ -15,6 +15,7 @@ dependencies = [
     "planning-utils",
     "pid-controller",
     "tiny-lidar-net",
+    "mpc-planner",
     "simulator",
     "core",
     "ad-component-core",
@@ -30,6 +31,7 @@ dependencies = [
     "dvc[s3]>=3.65.0",
     "numba>=0.63.1",
     "onnxscript>=0.5.7",
+    "casadi>=3.6.0",
 ]
 
 [tool.uv]
@@ -43,6 +45,7 @@ pure-pursuit = { workspace = true }
 planning-utils = { workspace = true }
 pid-controller = { workspace = true }
 tiny-lidar-net = { workspace = true }
+mpc-planner = { workspace = true }
 simulator = { workspace = true }
 "ideal-sensor" = { workspace = true }
 "dashboard" = { workspace = true }
@@ -55,6 +58,7 @@ members = [
     "ad_components/core",
     "ad_components/planning/pure_pursuit",
     "ad_components/planning/planning_utils",
+    "ad_components/planning/mpc_planner",
     "ad_components/control/pid_controller",
     "ad_components/control/tiny_lidar_net",
     "simulator",

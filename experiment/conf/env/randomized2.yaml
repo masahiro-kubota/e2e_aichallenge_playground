@@ -1,0 +1,26 @@
+# Randomized Environment Configuration
+defaults:
+  - default
+  - _self_
+
+obstacles:
+  generation:
+    enabled: true
+    groups:
+      - name: "random_static_on_track"
+        type: static
+        count: 10
+        shape:
+          type: rectangle
+          width: 1.30   # Vehicle width
+          length: 2.064 # Vehicle total length (wheelbase + front_overhang + rear_overhang)
+        placement:
+          strategy: random_track
+          offset:
+            min: -1.0
+            max: 1.0
+          yaw_mode: aligned
+
+
+  # You can also include specific fixed obstacles here using the list key
+  list: []
