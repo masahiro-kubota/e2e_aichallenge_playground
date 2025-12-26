@@ -12,9 +12,7 @@ class Clock(ABC):
         Returns:
             float: Current time in seconds.
         """
-        pass
 
     @abstractmethod
     def tick(self) -> None:
         """Advance time by one step (if applicable)."""
-        pass

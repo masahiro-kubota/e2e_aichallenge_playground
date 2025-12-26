@@ -11,8 +11,6 @@ from core.data.node_io import NodeIO
 class FrameDataProtocol(Protocol):
     """Protocol for dynamic FrameData types."""
 
-    pass
-
 
 # Type variable for ComponentConfig
 T = TypeVar("T", bound=ComponentConfig)
@@ -107,7 +105,6 @@ class Node(ABC, Generic[T]):
         Called once before the first execution.
         Override to perform initialization tasks.
         """
-        pass
 
     def on_shutdown(self) -> None:
         """Clean up node resources.
@@ -115,7 +112,6 @@ class Node(ABC, Generic[T]):
         Called once after the last execution.
         Override to perform cleanup tasks.
         """
-        pass
 
     @abstractmethod
     def on_run(self, current_time: float) -> NodeExecutionResult:

@@ -18,5 +18,4 @@ def create_clock(start_time: float, rate_hz: float, clock_type: str = "stepped")
     """
     if clock_type == "stepped":
         return SteppedClock(start_time=start_time, dt=1.0 / rate_hz)
-    else:
-        raise ValueError(f"Unsupported clock type: {clock_type}")
+    raise ValueError(f"Unsupported clock type: {clock_type}")

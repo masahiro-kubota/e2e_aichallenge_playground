@@ -93,7 +93,7 @@ class HTMLDashboardGenerator(DashboardGenerator):
             if k == "obstacles":
                 # Skip obstacles - will be added directly to data["obstacles"]
                 continue
-            elif isinstance(v, dict | list):
+            if isinstance(v, dict | list):
                 sanitized_metadata[k] = str(v)
             else:
                 sanitized_metadata[k] = v

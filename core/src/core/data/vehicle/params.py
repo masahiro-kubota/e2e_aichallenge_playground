@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from core.data.sensor import LidarConfig
-
-if TYPE_CHECKING:
-    pass
 
 
 class VehicleParameters(BaseModel):

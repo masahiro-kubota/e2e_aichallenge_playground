@@ -2,15 +2,11 @@
 
 import logging
 from collections.abc import Callable
-from typing import TYPE_CHECKING
 
 from tqdm import tqdm
 
 from core.interfaces.clock import Clock
 from core.interfaces.node import Node, NodeExecutionResult
-
-if TYPE_CHECKING:
-    pass
 
 logger = logging.getLogger(__name__)
 

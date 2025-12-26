@@ -151,11 +151,10 @@ class ColorRGBA(BaseModel):
         if len(hex_str) == 6:
             r, g, b = struct.unpack("BBB", bytes.fromhex(hex_str))
             return cls(r=r / 255.0, g=g / 255.0, b=b / 255.0, a=1.0)
-        elif len(hex_str) == 8:
+        if len(hex_str) == 8:
             r, g, b, a = struct.unpack("BBBB", bytes.fromhex(hex_str))
             return cls(r=r / 255.0, g=g / 255.0, b=b / 255.0, a=a / 255.0)
-        else:
-            raise ValueError(f"Invalid hex color string: {hex_str}")
+        raise ValueError(f"Invalid hex color string: {hex_str}")
 
 
 class Marker(BaseModel):

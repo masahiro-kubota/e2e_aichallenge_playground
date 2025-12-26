@@ -27,13 +27,13 @@ class NodeIO:
         if outputs is None:
             outputs = {}
         if isinstance(inputs, list):
-            self.inputs = {k: "Any" for k in inputs}
+            self.inputs = dict.fromkeys(inputs, "Any")
         else:
             self.inputs = inputs
 
         if isinstance(outputs, str):
             self.outputs = {outputs: "Any"}
         elif isinstance(outputs, list):
-            self.outputs = {k: "Any" for k in outputs}
+            self.outputs = dict.fromkeys(outputs, "Any")
         else:
             self.outputs = outputs

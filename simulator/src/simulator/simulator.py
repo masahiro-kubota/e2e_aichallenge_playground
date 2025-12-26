@@ -226,7 +226,7 @@ class Simulator(Node[SimulatorConfig]):
         # Expose Lidar data to frame_data (NodeIO) if needed
         # Currently NodeIO doesn't explicitly define 'scan' output, but we can add it to info or frame_data dynamic
         if lidar_scan:
-            setattr(self.frame_data, "lidar_scan", lidar_scan)
+            self.frame_data.lidar_scan = lidar_scan
 
         return NodeExecutionResult.SUCCESS
 
