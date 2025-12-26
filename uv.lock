@@ -689,6 +689,7 @@ dependencies = [
     { name = "pytest-cov" },
     { name = "pyyaml" },
     { name = "ruff" },
+    { name = "scipy" },
     { name = "shapely" },
     { name = "tqdm" },
 ]
@@ -704,6 +705,7 @@ requires-dist = [
     { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.8.0" },
+    { name = "scipy", specifier = ">=1.10.0" },
     { name = "shapely", specifier = ">=2.0.0" },
     { name = "tqdm", specifier = ">=4.66.0" },
 ]
@@ -4205,7 +4207,6 @@ dependencies = [
     { name = "pyright" },
     { name = "pytest" },
     { name = "ruff" },
-    { name = "scipy" },
     { name = "shapely" },
 ]
 
@@ -4218,7 +4219,6 @@ requires-dist = [
     { name = "pyright", specifier = ">=1.1.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "ruff", specifier = ">=0.8.0" },
-    { name = "scipy", specifier = ">=1.10.0" },
     { name = "shapely", specifier = ">=2.1.2" },
 ]
 

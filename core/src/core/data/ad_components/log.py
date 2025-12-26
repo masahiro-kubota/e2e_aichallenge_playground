@@ -1,11 +1,11 @@
 """AD Component Log data structure."""
 
-from dataclasses import dataclass, field
 from typing import Any
 
+from pydantic import BaseModel, Field
 
-@dataclass
-class ADComponentLog:
+
+class ADComponentLog(BaseModel):
     """ADコンポーネントのログ（柔軟な構造）.
 
     各ADコンポーネントが出力する任意のログデータを格納します。
@@ -36,4 +36,4 @@ class ADComponentLog:
     """
 
     component_type: str
-    data: dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = Field(default_factory=dict)

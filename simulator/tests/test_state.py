@@ -1,6 +1,6 @@
 """Tests for SimulationVehicleState."""
 
-from core.data import Action, VehicleState
+from core.data import VehicleState
 from simulator.state import SimulationVehicleState
 
 
@@ -65,14 +65,13 @@ class TestSimulationVehicleState:
         assert vehicle_state.steering == 0.1
         assert vehicle_state.timestamp == 100.0
 
-        # Test with action
-        action = Action(steering=0.2, acceleration=1.0)
-        vehicle_state_with_action = dynamic_state.to_vehicle_state(action)
+        # Test with direct values
+        vehicle_state_with_input = dynamic_state.to_vehicle_state(steering=0.2, acceleration=1.0)
 
-        assert vehicle_state_with_action.acceleration == 1.0
-        assert vehicle_state_with_action.steering == 0.2
+        assert vehicle_state_with_input.acceleration == 1.0
+        assert vehicle_state_with_input.steering == 0.2
         # Other fields should remain same
-        assert vehicle_state_with_action.x == 10.0
+        assert vehicle_state_with_input.x == 10.0
 
 
 class TestSimulationVehicleStateProperties:

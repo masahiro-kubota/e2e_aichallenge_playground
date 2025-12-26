@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.data import Action, ComponentConfig, VehicleParameters, VehicleState
+from core.data import ComponentConfig, VehicleParameters, VehicleState
 from core.data.node_io import NodeIO
 from core.data.ros import ColorRGBA, Header, Marker, MarkerArray, Point, Time, Vector3
 from core.interfaces.node import Node, NodeExecutionResult
@@ -93,13 +93,15 @@ class MPPIControllerNode(Node[MPPIControllerConfig]):
         )
 
     def get_node_io(self) -> NodeIO:
+        from core.data.ros import AckermannDriveStamped
+
         return NodeIO(
             inputs={
                 "vehicle_state": VehicleState,
                 "obstacles": list,  # List[SimulatorObstacle]
             },
             outputs={
-                "action": Action,
+                "control_cmd": AckermannDriveStamped,
                 "mppi_candidates": MarkerArray,
                 "mppi_optimal": MarkerArray,
             },
@@ -128,11 +130,16 @@ class MPPIControllerNode(Node[MPPIControllerConfig]):
         steering_angle = float(controls[0, 0])
         acceleration = float(controls[0, 1])
 
-        # Output Action
-        self.frame_data.action = Action(
-            steering=steering_angle,
-            acceleration=acceleration,
-            timestamp=current_time,
+        # Output AckermannDriveStamped for ROS compatibility
+        from core.data.ros import AckermannDrive, AckermannDriveStamped
+        from core.utils.ros_message_builder import to_ros_time
+
+        self.frame_data.control_cmd = AckermannDriveStamped(
+            header=Header(stamp=to_ros_time(current_time), frame_id="base_link"),
+            drive=AckermannDrive(
+                steering_angle=steering_angle,
+                acceleration=acceleration,
+            ),
         )
 
         # Generate Debug Markers (Candidate Paths + Optimal Trajectory)

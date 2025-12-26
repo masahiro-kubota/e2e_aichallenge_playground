@@ -5,6 +5,7 @@ from core.data import ComponentConfig, SimulatorObstacle, VehicleParameters, Veh
 from core.data.ad_components import Trajectory, TrajectoryPoint
 from core.data.ad_components.log import ADComponentLog
 from core.data.node_io import NodeIO
+from core.data.ros import MarkerArray
 from core.interfaces.node import Node, NodeExecutionResult
 from core.utils.geometry import distance
 from pydantic import Field
@@ -50,6 +51,7 @@ class PurePursuitNode(Node[PurePursuitConfig]):
             inputs={"vehicle_state": VehicleState, "obstacles": list},
             outputs={
                 "trajectory": Trajectory,
+                "lookahead_marker": MarkerArray,
                 "ad_component_log": ADComponentLog,
             },
         )
@@ -83,8 +85,11 @@ class PurePursuitNode(Node[PurePursuitConfig]):
             color=ColorRGBA.from_hex(self.config.lookahead_marker_color),
         )
 
+        marker_array = MarkerArray(markers=[marker])
+        self.frame_data.lookahead_marker = marker_array
+
         self.frame_data.ad_component_log = ADComponentLog(
-            component_type="pure_pursuit", data={"lookahead_marker": MarkerArray(markers=[marker])}
+            component_type="pure_pursuit", data={"lookahead_marker": marker_array}
         )
 
         return NodeExecutionResult.SUCCESS

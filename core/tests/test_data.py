@@ -1,7 +1,7 @@
 """Tests for core data structures."""
 
 import numpy as np
-from core.data import Action, Observation, Trajectory, TrajectoryPoint, VehicleState
+from core.data import Observation, Trajectory, TrajectoryPoint, VehicleState
 
 
 class TestVehicleState:
@@ -70,30 +70,6 @@ class TestObservation:
         assert obs.heading_error == 0.1
         assert obs.velocity == 5.0
         assert obs.target_velocity == 6.0
-
-
-class TestAction:
-    """Tests for Action data class."""
-
-    def test_creation(self) -> None:
-        """Test basic creation of Action."""
-        action = Action(steering=0.1, acceleration=1.0)
-        assert action.steering == 0.1
-        assert action.acceleration == 1.0
-
-    def test_to_array(self) -> None:
-        """Test conversion to numpy array."""
-        action = Action(steering=0.1, acceleration=1.0)
-        arr = action.to_array()
-        expected = np.array([0.1, 1.0])
-        np.testing.assert_array_equal(arr, expected)
-
-    def test_from_array(self) -> None:
-        """Test creation from numpy array."""
-        arr = np.array([0.1, 1.0])
-        action = Action.from_array(arr)
-        assert action.steering == 0.1
-        assert action.acceleration == 1.0
 
 
 class TestTrajectory:

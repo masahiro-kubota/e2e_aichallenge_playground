@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from core.data import Action, LidarConfig, LidarScan, VehicleParameters
+from core.data import LidarConfig, LidarScan, VehicleParameters
 from core.data.frame_data import FrameData
 from core.interfaces.node import NodeExecutionResult
 from tiny_lidar_net.config import TinyLidarNetConfig
@@ -170,10 +170,10 @@ class TestTinyLidarNetNode:
         """Test node IO specification."""
         node_io = node.get_node_io()
 
-        assert "lidar_scan" in node_io.inputs
-        assert node_io.inputs["lidar_scan"] == LidarScan
-        assert "action" in node_io.outputs
-        assert node_io.outputs["action"] == Action
+        assert "control_cmd" in node_io.outputs
+        from core.data.ros import AckermannDriveStamped
+
+        assert node_io.outputs["control_cmd"] == AckermannDriveStamped
 
     def test_on_run_success(self, node: TinyLidarNetNode) -> None:
         """Test successful execution."""
@@ -192,10 +192,12 @@ class TestTinyLidarNetNode:
         result = node.on_run(0.0)
 
         assert result == NodeExecutionResult.SUCCESS
-        assert hasattr(frame_data, "action")
-        assert isinstance(frame_data.action, Action)
-        assert -1.0 <= frame_data.action.acceleration <= 1.0
-        assert -1.0 <= frame_data.action.steering <= 1.0
+        assert hasattr(frame_data, "control_cmd")
+        from core.data.ros import AckermannDriveStamped
+
+        assert isinstance(frame_data.control_cmd, AckermannDriveStamped)
+        assert -1.0 <= frame_data.control_cmd.drive.acceleration <= 1.0
+        assert -1.0 <= frame_data.control_cmd.drive.steering_angle <= 1.0
 
     def test_on_run_no_lidar_scan(self, node: TinyLidarNetNode) -> None:
         """Test execution when LiDAR scan is missing."""

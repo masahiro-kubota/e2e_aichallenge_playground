@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from typing import Any
 
-from core.data.ad_components.action import Action
 from core.data.ad_components.state import VehicleState
+from core.data.ros import AckermannDrive
 
 
 @dataclass
@@ -20,7 +20,7 @@ class SimulationStep:
 
     timestamp: float
     vehicle_state: VehicleState
-    action: Action
+    action: AckermannDrive
     info: dict[str, Any] | None = None
     ad_component_log: Any | None = None  # Legacy support
 
@@ -65,6 +65,18 @@ class SimulationLog:
         path_obj = Path(path)
         path_obj.parent.mkdir(parents=True, exist_ok=True)
 
-        data = dataclasses.asdict(self)
+        # Manually construct dict since asdict() fails on Pydantic models
+        data = {
+            "metadata": self.metadata,
+            "steps": [
+                {
+                    "timestamp": s.timestamp,
+                    "vehicle_state": dataclasses.asdict(s.vehicle_state),
+                    "action": s.action.model_dump(),
+                    "info": s.info,
+                }
+                for s in self.steps
+            ],
+        }
         with path_obj.open("w") as f:
             json.dump(data, f, cls=NormalizedEncoder, indent=2)

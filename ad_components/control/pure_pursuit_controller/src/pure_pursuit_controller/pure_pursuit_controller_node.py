@@ -3,7 +3,7 @@
 import math
 from typing import Any
 
-from core.data import Action, ComponentConfig, VehicleParameters, VehicleState
+from core.data import ComponentConfig, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory, TrajectoryPoint
 from core.data.node_io import NodeIO
 from core.data.ros import ColorRGBA, MarkerArray
@@ -43,9 +43,14 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
         self.prev_error = 0.0
 
     def get_node_io(self) -> NodeIO:
+        from core.data.ros import AckermannDriveStamped
+
         return NodeIO(
             inputs={"trajectory": Trajectory, "vehicle_state": VehicleState},
-            outputs={"action": Action, "lookahead_marker": MarkerArray},
+            outputs={
+                "control_cmd": AckermannDriveStamped,
+                "lookahead_marker": MarkerArray,
+            },
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -59,11 +64,29 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
             return NodeExecutionResult.SKIPPED
 
         if not trajectory or len(trajectory) == 0:
-            self.frame_data.action = Action(steering=0.0, acceleration=0.0)
+            # Output zero control command
+            from core.data.ros import AckermannDrive, AckermannDriveStamped, Header
+            from core.utils.ros_message_builder import to_ros_time
+
+            self.frame_data.control_cmd = AckermannDriveStamped(
+                header=Header(stamp=to_ros_time(_current_time), frame_id="base_link"),
+                drive=AckermannDrive(steering_angle=0.0, acceleration=0.0),
+            )
             return NodeExecutionResult.SUCCESS
 
-        action, target_point = self._compute_control(trajectory, vehicle_state)
-        self.frame_data.action = action
+        steering, acceleration, target_point = self._compute_control(trajectory, vehicle_state)
+
+        # Output AckermannDriveStamped
+        from core.data.ros import AckermannDrive, AckermannDriveStamped, Header
+        from core.utils.ros_message_builder import to_ros_time
+
+        self.frame_data.control_cmd = AckermannDriveStamped(
+            header=Header(stamp=to_ros_time(_current_time), frame_id="base_link"),
+            drive=AckermannDrive(
+                steering_angle=steering,
+                acceleration=acceleration,
+            ),
+        )
 
         # Output Visualization Marker
         marker = create_trajectory_marker(
@@ -78,8 +101,12 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
 
     def _compute_control(
         self, trajectory: Trajectory, vehicle_state: VehicleState
-    ) -> tuple[Action, Any]:
-        """Compute steering and acceleration using Pure Pursuit + PID."""
+    ) -> tuple[float, float, Any]:
+        """Compute steering and acceleration using Pure Pursuit + PID.
+
+        Returns:
+            tuple: (steering, acceleration, target_point)
+        """
 
         # 1. Calculate dynamic lookahead distance
         current_speed = vehicle_state.velocity
@@ -131,7 +158,7 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
 
         self.prev_error = error
 
-        return Action(steering=steering, acceleration=acceleration), target_point
+        return steering, acceleration, target_point
 
     def _find_lookahead_point(
         self, trajectory: Trajectory, vehicle_state: VehicleState, lookahead: float

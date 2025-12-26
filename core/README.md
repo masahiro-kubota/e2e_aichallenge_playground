@@ -24,7 +24,8 @@
 #### AD Components (`core.data.ad_components`)
 コンポーネント間で共有されるデータ型：
 - **`VehicleState`**: 車両状態（位置、速度、姿勢など）
-- **`Action`**: 制御指令（ステアリング、加速度）
+- **`AckermannDriveStamped`**: 制御指令（ステアリング、加速度）のROSメッセージ
+- **`AckermannDrive`**: 制御指令の内容（ステアリング、加速度）
 - **`Trajectory`**: 軌道（経路点の列）
 - **`TrajectoryPoint`**: 軌道上の1点
 - **`Sensing`**: センサーデータ基底クラス
@@ -99,16 +100,17 @@ class MyPlanner(Planner):
 ### データ構造の使用
 
 ```python
-from core.data import VehicleState, Action
+from core.data.ros import AckermannDrive, AckermannDriveStamped, Header
+from core.utils.ros_message_builder import to_ros_time
 
 # 車両状態の作成
 state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=5.0)
 
-# numpy配列に変換
-state_array = state.to_array()  # [0.0, 0.0, 0.0, 5.0]
-
-# 制御指令の作成
-action = Action(steering=0.1, acceleration=1.0)
+# 制御指令の作成 (ROS compatible)
+action = AckermannDriveStamped(
+    header=Header(stamp=to_ros_time(0.0), frame_id="base_link"),
+    drive=AckermannDrive(steering_angle=0.1, acceleration=1.0)
+)
 ```
 
 ### ユーティリティの使用

@@ -5,7 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from core.data import Action, VehicleParameters, VehicleState
+from core.data import VehicleParameters, VehicleState
 from core.data.node_io import NodeIO
 from core.interfaces.node import NodeExecutionResult
 from simulator.simulator import Simulator, SimulatorConfig
@@ -53,6 +53,7 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=VehicleState(x=10.0, y=5.0, yaw=1.0, velocity=2.0, timestamp=0.0),
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
 
         sim = Simulator(config=config, rate_hz=10.0)
@@ -69,13 +70,14 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
 
         node_io = sim.get_node_io()
 
         assert isinstance(node_io, NodeIO)
-        assert "action" in node_io.inputs
+        assert "control_cmd" in node_io.inputs
         assert "sim_state" in node_io.outputs
 
     def test_on_init(self, _mock_map) -> None:
@@ -84,6 +86,7 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=VehicleState(x=5.0, y=3.0, yaw=0.5, velocity=1.0, timestamp=0.0),
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
 
         sim = Simulator(config=config, rate_hz=10.0)
@@ -102,13 +105,18 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
         # Create frame data manually
+        from core.data.ros import AckermannDrive, AckermannDriveStamped
+
         frame_data = SimpleNamespace()
-        frame_data.action = Action(steering=0.1, acceleration=1.0)
+        frame_data.control_cmd = AckermannDriveStamped(
+            drive=AckermannDrive(steering_angle=0.1, acceleration=1.0)
+        )
         frame_data.termination_signal = False
         sim.set_frame_data(frame_data)
 
@@ -126,12 +134,17 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0),
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
+        from core.data.ros import AckermannDrive, AckermannDriveStamped
+
         frame_data = SimpleNamespace()
-        frame_data.action = Action(steering=0.0, acceleration=1.0)
+        frame_data.control_cmd = AckermannDriveStamped(
+            drive=AckermannDrive(steering_angle=0.0, acceleration=1.0)
+        )
         frame_data.termination_signal = False
         sim.set_frame_data(frame_data)
 
@@ -150,6 +163,7 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
@@ -171,6 +185,7 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
@@ -190,12 +205,17 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
+        from core.data.ros import AckermannDrive, AckermannDriveStamped
+
         frame_data = SimpleNamespace()
-        frame_data.action = Action(steering=0.1, acceleration=0.5)
+        frame_data.control_cmd = AckermannDriveStamped(
+            drive=AckermannDrive(steering_angle=0.1, acceleration=0.5)
+        )
         frame_data.termination_signal = False
         sim.set_frame_data(frame_data)
 
@@ -218,12 +238,17 @@ class TestSimulatorNode:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=Path("dummy_map.osm"),
+            obstacle_color="#FF5252B3",
         )
         sim = Simulator(config=config, rate_hz=10.0)
         sim.on_init()
 
+        from core.data.ros import AckermannDrive, AckermannDriveStamped
+
         frame_data = SimpleNamespace()
-        frame_data.action = Action(steering=0.0, acceleration=1.0)
+        frame_data.control_cmd = AckermannDriveStamped(
+            drive=AckermannDrive(steering_angle=0.0, acceleration=1.0)
+        )
         frame_data.termination_signal = False
         sim.set_frame_data(frame_data)
 
@@ -288,6 +313,7 @@ class TestSimulatorWithMap:
             vehicle_params=DUMMY_VP,
             initial_state=DUMMY_INITIAL_STATE,
             map_path=map_file,
+            obstacle_color="#FF5252B3",
         )
 
         sim = Simulator(config=config, rate_hz=10.0)

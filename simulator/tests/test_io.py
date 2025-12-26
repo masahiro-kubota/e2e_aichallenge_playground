@@ -4,7 +4,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from core.data import Action, SimulationLog, SimulationStep, VehicleState
+from core.data import SimulationLog, SimulationStep, VehicleState
+from core.data.ros import AckermannDrive
 
 from simulator import JsonSimulationLogRepository
 
@@ -19,12 +20,12 @@ class TestJsonSimulationLogRepository:
             SimulationStep(
                 timestamp=0.0,
                 vehicle_state=VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0),
-                action=Action(steering=0.0, acceleration=0.0),
+                action=AckermannDrive(steering_angle=0.0, acceleration=0.0),
             ),
             SimulationStep(
                 timestamp=0.1,
                 vehicle_state=VehicleState(x=1.0, y=0.0, yaw=0.0, velocity=1.0),
-                action=Action(steering=0.1, acceleration=0.5),
+                action=AckermannDrive(steering_angle=0.1, acceleration=0.5),
             ),
         ]
         return SimulationLog(steps=steps, metadata={"track": "test_track", "version": "1.0"})
@@ -70,7 +71,10 @@ class TestJsonSimulationLogRepository:
             # Verify first step
             assert loaded_log.steps[0].timestamp == sample_log.steps[0].timestamp
             assert loaded_log.steps[0].vehicle_state.x == sample_log.steps[0].vehicle_state.x
-            assert loaded_log.steps[0].action.steering == sample_log.steps[0].action.steering
+            assert (
+                loaded_log.steps[0].action.steering_angle
+                == sample_log.steps[0].action.steering_angle
+            )
 
     def test_round_trip(self, sample_log: SimulationLog) -> None:
         """Test save and load round trip."""
@@ -89,7 +93,7 @@ class TestJsonSimulationLogRepository:
                 assert original.timestamp == loaded.timestamp
                 assert original.vehicle_state.x == loaded.vehicle_state.x
                 assert original.vehicle_state.y == loaded.vehicle_state.y
-                assert original.action.steering == loaded.action.steering
+                assert original.action.steering_angle == loaded.action.steering_angle
                 assert original.action.acceleration == loaded.action.acceleration
 
     def test_load_nonexistent_file(self) -> None:
@@ -153,7 +157,7 @@ class TestJsonSimulationLogRepositoryDataIntegrity:
             SimulationStep(
                 timestamp=float(i) * 0.1,
                 vehicle_state=VehicleState(x=float(i), y=float(i), yaw=0.0, velocity=5.0),
-                action=Action(steering=0.0, acceleration=0.0),
+                action=AckermannDrive(steering_angle=0.0, acceleration=0.0),
             )
             for i in range(1000)
         ]
@@ -200,7 +204,7 @@ class TestJsonSimulationLogRepositoryDataIntegrity:
                 vehicle_state=VehicleState(
                     x=0.0, y=0.0, yaw=0.0, velocity=0.0, acceleration=None, steering=None
                 ),
-                action=Action(steering=0.0, acceleration=0.0),
+                action=AckermannDrive(steering_angle=0.0, acceleration=0.0),
             )
         ]
         log = SimulationLog(steps=steps, metadata={})

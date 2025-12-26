@@ -20,7 +20,7 @@
   `Simulator`クラスは継承ではなく、関数注入（`step_update_func`, `get_vehicle_polygon_func`）によって振る舞いを変更できる構成になっています。
 
 - **外部インターフェース**:
-  外部（プランナーやコントローラー）とのやり取りには、標準の `VehicleState` と `Action` データクラスが使用されます。
+  外部（プランナーやコントローラー）とのやり取りには、標準の `VehicleState` と `AckermannDriveStamped` データクラスが使用されます。内部的な指令管理には `AckermannDrive` が使用されます。
 
 ## 依存関係
 

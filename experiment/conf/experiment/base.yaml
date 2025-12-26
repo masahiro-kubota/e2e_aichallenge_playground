@@ -25,6 +25,7 @@ system:
         vehicle_params: ${vehicle}
         initial_state: ${env.initial_state}
         obstacles: ${env.obstacles}
+        obstacle_color: ${visualization.colors.obstacle}
     sensor:
       type: "ideal_sensor.sensor_node.IdealSensorNode"
       rate_hz: 50.0
@@ -41,12 +42,10 @@ system:
         map_path: ${env.map_path}
         track_path: ${env.track_path}
         vehicle_params: ${vehicle}
-        obstacle_color: ${visualization.colors.obstacle}
-
-        path_color: ${visualization.colors.path}
         map_left_color: ${visualization.colors.map_left}
         map_right_color: ${visualization.colors.map_right}
         global_track_color: ${visualization.colors.global_track}
+        path_color: ${visualization.colors.path}
     supervisor:
       type: "SupervisorNode"
       rate_hz: 10.0

@@ -111,6 +111,8 @@ class EvaluatorEngine(BaseEngine):
 
         import numpy as np
 
+        artifacts: list[Artifact] = []
+
         if "seed" not in cfg:
             raise ValueError("Configuration must include 'seed' parameter.")
 
@@ -147,6 +149,36 @@ class EvaluatorEngine(BaseEngine):
                 f"\n{banner}\nEPISODE {i + 1}/{num_episodes}: {result_str}\nCheckpoints: {checkpoint_count}\nGoals: {goal_count}\n{banner}"
             )
 
+            # Record artifact if MCAP was generated
+            # CollectorEngine enforces a specific path structure: episode_XXXX/simulation.mcap
+            episode_dir = output_dir / f"episode_{i:04d}"
+            mcap_path = episode_dir / "simulation.mcap"
+
+            if mcap_path.exists():
+                artifacts.append(Artifact(local_path=mcap_path))
+                # Also generate dashboard for this episode if enabled
+                if cfg.postprocess.dashboard.enabled:
+                    from dashboard.generator import HTMLDashboardGenerator
+                    from dashboard.reader import load_simulation_data
+
+                    generator = HTMLDashboardGenerator()
+                    dashboard_path = episode_dir / "dashboard.html"
+
+                    try:
+                        # Load data explicitly
+                        dashboard_data = load_simulation_data(mcap_path, vehicle_params=cfg.vehicle)
+
+                        # Generate dashboard
+                        generator.generate(
+                            data=dashboard_data,
+                            output_path=dashboard_path,
+                            osm_path=Path(cfg.env.map_path),
+                        )
+                        artifacts.append(Artifact(local_path=dashboard_path))
+                        mlflow.log_artifact(str(dashboard_path))
+                    except Exception as e:
+                        logger.warning(f"Failed to generate dashboard for episode {i}: {e}")
+
         # Calculate Aggregate Metrics
         success_count = sum(1 for r in results if r.success)
         success_rate = success_count / num_episodes
@@ -165,43 +197,8 @@ class EvaluatorEngine(BaseEngine):
         mlflow.log_metric("goal_count", metrics.goal_count)
         mlflow.log_metric("checkpoint_count", metrics.checkpoint_count)
 
-        # Artifacts (Dashboard HTML)
-        artifacts = []
-        if cfg.postprocess.dashboard.enabled:
-            from dashboard.generator import HTMLDashboardGenerator
-            from experiment.core.structures import Experiment
-
-            generator = HTMLDashboardGenerator()
-            dashboard_path = output_dir / "dashboard.html"
-
-            try:
-                # Provide a dummy experiment container for the dashboard generator
-                dummy_exp = Experiment(
-                    id=cfg.experiment.get("id", "unnamed"),
-                    type=cfg.experiment.type,
-                    config=cfg,
-                    nodes=[],
-                )
-                eval_result = ExperimentResult(
-                    experiment=dummy_exp,
-                    simulation_results=results,
-                    metrics=metrics,
-                    execution_time=datetime.now(),
-                    artifacts=[],
-                )
-                generator.generate(
-                    result=eval_result,
-                    output_path=dashboard_path,
-                    osm_path=Path(cfg.env.map_path),
-                    vehicle_params=cfg.vehicle,
-                )
-                artifacts.append(Artifact(local_path=dashboard_path))
-                mlflow.log_artifact(str(dashboard_path))
-            except Exception as e:
-                logger.warning(f"Failed to generate dashboard: {e}")
-
         return ExperimentResult(
-            experiment=dummy_exp if "dummy_exp" in locals() else None,
+            experiment=None,  # No longer needed for result processing
             simulation_results=results,
             metrics=metrics,
             execution_time=datetime.now(),

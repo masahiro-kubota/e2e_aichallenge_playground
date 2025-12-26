@@ -3,8 +3,7 @@
 from typing import Any
 
 from core.data.ros import ColorRGBA, Header, Marker, MarkerArray, Point, Pose, Vector3
-
-from logger.ros_message_builder import quaternion_from_yaw, to_ros_time
+from core.utils.ros_message_builder import quaternion_from_yaw, to_ros_time
 
 
 class ObstacleVisualizer:
@@ -48,7 +47,7 @@ class ObstacleVisualizer:
         Returns:
             Marker for the obstacle, or None if shape is unsupported.
         """
-        from simulator.obstacle import get_obstacle_state
+        from core.utils.obstacle_utils import get_obstacle_state
 
         obs_state = get_obstacle_state(obstacle, timestamp)
         ros_time = to_ros_time(timestamp)

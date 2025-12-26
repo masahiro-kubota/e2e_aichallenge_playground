@@ -1,6 +1,6 @@
 import math
 
-from core.data import Action, ComponentConfig, VehicleParameters, VehicleState
+from core.data import ComponentConfig, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory
 from core.data.node_io import NodeIO
 from core.interfaces.node import Node, NodeExecutionResult
@@ -32,9 +32,11 @@ class PIDControllerNode(Node[PIDConfig]):
         self.prev_error = 0.0
 
     def get_node_io(self) -> NodeIO:
+        from core.data.ros import AckermannDriveStamped
+
         return NodeIO(
             inputs={"trajectory": Trajectory, "vehicle_state": VehicleState},
-            outputs={"action": Action},
+            outputs={"control_cmd": AckermannDriveStamped},
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -47,13 +49,30 @@ class PIDControllerNode(Node[PIDConfig]):
         if trajectory is None or vehicle_state is None:
             return NodeExecutionResult.SKIPPED
 
-        action = self._process(trajectory, vehicle_state)
-        self.frame_data.action = action
+        steering, acceleration = self._process(trajectory, vehicle_state)
+
+        # Output AckermannDriveStamped
+        from core.data.ros import AckermannDrive, AckermannDriveStamped, Header
+        from core.utils.ros_message_builder import to_ros_time
+
+        self.frame_data.control_cmd = AckermannDriveStamped(
+            header=Header(stamp=to_ros_time(_current_time), frame_id="base_link"),
+            drive=AckermannDrive(
+                steering_angle=steering,
+                acceleration=acceleration,
+            ),
+        )
+
         return NodeExecutionResult.SUCCESS
 
-    def _process(self, trajectory: Trajectory, vehicle_state: VehicleState) -> Action:
+    def _process(self, trajectory: Trajectory, vehicle_state: VehicleState) -> tuple[float, float]:
+        """Process trajectory and vehicle state to compute control commands.
+
+        Returns:
+            tuple: (steering, acceleration)
+        """
         if not trajectory:
-            return Action(steering=0.0, acceleration=0.0)
+            return 0.0, 0.0
 
         # 1. Steering Control (Pure Pursuit logic repeated here as per original controller.py)
         # Note: Ideally this logic should be distinct? But original PIDController did steering too.
@@ -92,4 +111,4 @@ class PIDControllerNode(Node[PIDConfig]):
 
         self.prev_error = error
 
-        return Action(steering=steering, acceleration=acceleration)
+        return steering, acceleration

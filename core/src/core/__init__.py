@@ -1,7 +1,6 @@
 """Core package for shared types and interfaces."""
 
 from core.data import (
-    Action,
     ADComponentConfig,
     ADComponentLog,
     ADComponentSpec,
@@ -29,7 +28,6 @@ __all__ = [
     "ADComponentLog",
     "ADComponentSpec",
     "ADComponentType",
-    "Action",
     "Artifact",
     "DashboardGenerator",
     "EvaluationMetrics",

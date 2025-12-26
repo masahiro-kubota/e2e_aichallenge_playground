@@ -1,8 +1,7 @@
 """Path visualizer for creating vehicle trajectory markers."""
 
 from core.data.ros import ColorRGBA, Header, Marker, Point, Pose, Quaternion, Vector3
-
-from logger.ros_message_builder import to_ros_time
+from core.utils.ros_message_builder import to_ros_time
 
 
 class PathVisualizer:

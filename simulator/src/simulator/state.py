@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from core.data import Action, VehicleState
+    from core.data import VehicleState
 
 
 @dataclass
@@ -110,30 +110,29 @@ class SimulationVehicleState:
             timestamp=state.timestamp,
         )
 
-    def to_vehicle_state(self, action: "Action | None" = None) -> "VehicleState":
+    def to_vehicle_state(
+        self, steering: float | None = None, acceleration: float | None = None
+    ) -> "VehicleState":
         """VehicleStateに変換.
 
         Args:
-            action: 実行されたアクション（指定された場合、加速度とステアリングを上書き）
+            steering: ステアリング角 [rad] (指定された場合、現在の値を上書き)
+            acceleration: 加速度 [m/s^2] (指定された場合、現在の値を上書き)
 
         Returns:
             VehicleState
         """
         from core.data import VehicleState
 
-        acceleration = self.ax
-        steering = self.steering
-
-        if action is not None:
-            acceleration = action.acceleration
-            steering = action.steering
+        final_acceleration = acceleration if acceleration is not None else self.ax
+        final_steering = steering if steering is not None else self.steering
 
         return VehicleState(
             x=self.x,
             y=self.y,
             yaw=self.yaw,
             velocity=self.velocity_2d,
-            acceleration=acceleration,
-            steering=steering,
+            acceleration=final_acceleration,
+            steering=final_steering,
             timestamp=self.timestamp,
         )

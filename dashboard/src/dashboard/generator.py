@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from core.data.experiment import ExperimentResult
+from core.data.dashboard import DashboardData
 from core.interfaces import DashboardGenerator
 
 from dashboard.injector import inject_simulation_data
@@ -12,28 +12,27 @@ from dashboard.injector import inject_simulation_data
 logger = logging.getLogger(__name__)
 
 
-def downsample_steps(steps_data: list[dict], max_steps: int = 1000) -> list[dict]:
-    """Downsample step data to reduce dashboard file size.
+def downsample_indices(total_count: int, max_steps: int = 1000) -> list[int]:
+    """Calculate indices for uniform downsampling.
 
     Args:
-        steps_data: Full step data
+        total_count: Total number of data points
         max_steps: Maximum number of steps to keep (default: 1000)
 
     Returns:
-        Downsampled step data with uniform sampling
+        List of indices to selected
     """
-    if len(steps_data) <= max_steps:
-        return steps_data
+    if total_count <= max_steps:
+        return list(range(total_count))
 
-    # Uniform sampling
-    step_size = len(steps_data) / max_steps
+    step_size = total_count / max_steps
     indices = [int(i * step_size) for i in range(max_steps)]
 
     # Always include the last step
-    if indices[-1] != len(steps_data) - 1:
-        indices[-1] = len(steps_data) - 1
+    if indices[-1] != total_count - 1:
+        indices[-1] = total_count - 1
 
-    return [steps_data[i] for i in indices]
+    return indices
 
 
 class HTMLDashboardGenerator(DashboardGenerator):
@@ -46,203 +45,105 @@ class HTMLDashboardGenerator(DashboardGenerator):
 
     def generate(
         self,
-        result: ExperimentResult,
+        data: "DashboardData",
         output_path: Path,
         osm_path: Path,
-        vehicle_params: dict[str, Any] | Any,  # Any to support VehicleParameters
     ) -> Path:
         """Generate interactive HTML dashboard.
 
         Args:
-            result: Experiment result containing simulation results and metadata
+            data: Structured simulation data (column-oriented)
             output_path: Path where the generated HTML dashboard will be saved
             osm_path: Optional path to OSM map file for map visualization
-            vehicle_params: Optional vehicle parameters dict with keys: width, wheelbase,
-                          front_overhang, rear_overhang. If provided, these will be used
-                          instead of extracting from metadata.
 
         Returns:
             Path: Path to the generated dashboard file
 
         Raises:
             FileNotFoundError: If template file not found
-            ValueError: If result data is invalid or contains no simulation results
         """
-        # For now, use the first simulation result
-        # TODO: Support multiple simulation results display
-        if not result.simulation_results:
-            raise ValueError("ExperimentResult contains no simulation results")
+        vehicle_params = data["vehicle_params"]
 
-        log = result.simulation_results[0].log
-
-        # Prepare data in the format expected by the dashboard
-        # Sanitize metadata to avoid React rendering errors with nested objects
-        metadata = log.metadata.copy()
-
-        # Special handling for controller if it is a config dict
-        if (
-            "controller" in metadata
-            and isinstance(metadata["controller"], dict)
-            and "type" in metadata["controller"]
-        ):
-            metadata["controller"] = metadata["controller"]["type"]
-
-        # Generic sanitization: convert dicts/lists to strings
-        # Exclude obstacles from sanitized_metadata (will be added separately to data)
-        sanitized_metadata = {}
-        for k, v in metadata.items():
-            if k == "obstacles":
-                # Skip obstacles - will be added directly to data["obstacles"]
-                continue
-            if isinstance(v, dict | list):
-                sanitized_metadata[k] = str(v)
-            else:
-                sanitized_metadata[k] = v
-
-        # Extract vehicle parameters for dashboard visualization
+        # Prepare vehicle params for injection (ensure clean dict)
         if hasattr(vehicle_params, "model_dump"):
-            # Pydantic model
-            dashboard_vehicle_params = {
-                "width": vehicle_params.width,
-                "wheelbase": vehicle_params.wheelbase,
-                "front_overhang": vehicle_params.front_overhang,
-                "rear_overhang": vehicle_params.rear_overhang,
-            }
+            v_params = vehicle_params.model_dump()
+        elif isinstance(vehicle_params, dict):
+            v_params = vehicle_params
         else:
-            # Strictly expect dict with all keys if no model provided
-            required_keys = ["width", "wheelbase", "front_overhang", "rear_overhang"]
-            missing = [k for k in required_keys if k not in vehicle_params]
-            if missing:
-                raise ValueError(f"Missing required vehicle parameters: {missing}")
-
-            # Create explicit dict to ensure JSON serializability (handle DictConfig)
-            dashboard_vehicle_params = {
-                "width": float(vehicle_params["width"]),
-                "wheelbase": float(vehicle_params["wheelbase"]),
-                "front_overhang": float(vehicle_params["front_overhang"]),
-                "rear_overhang": float(vehicle_params["rear_overhang"]),
+            # Fallback wrapper
+            v_params = {
+                k: getattr(vehicle_params, k)
+                for k in ["width", "wheelbase", "front_overhang", "rear_overhang"]
             }
 
-        # Calculate length from components
-        length = (
-            dashboard_vehicle_params["wheelbase"]
-            + dashboard_vehicle_params["front_overhang"]
-            + dashboard_vehicle_params["rear_overhang"]
-        )
-        dashboard_vehicle_params["length"] = length
+        # Calculate logical length if missing
+        if "length" not in v_params:
+            v_params["length"] = (
+                v_params.get("wheelbase", 0)
+                + v_params.get("front_overhang", 0)
+                + v_params.get("rear_overhang", 0)
+            )
 
-        data: dict[str, Any] = {
+        # Prepare injection data
+        injection_data: dict[str, Any] = {
             "metadata": {
-                "experiment_name": result.experiment_name,
-                "experiment_type": result.experiment_type,
-                "execution_time": result.execution_time.isoformat(),
-                "controller": sanitized_metadata.get("controller", "Unknown Controller"),
-                **sanitized_metadata,
+                "controller": "Unknown",
             },
-            "vehicle_params": dashboard_vehicle_params,
+            "vehicle_params": v_params,
             "steps": [],
+            "obstacles": [],
         }
 
-        # Try to read steps from MCAP artifact first
-        mcap_artifact = next(
-            (a for a in result.artifacts if a.local_path and a.local_path.suffix == ".mcap"), None
-        )
+        # Merge metadata
+        if "metadata" in data:
+            injection_data["metadata"].update(data["metadata"])
+            for k, v in injection_data["metadata"].items():
+                if isinstance(v, (dict, list)) and k != "obstacles":
+                    injection_data["metadata"][k] = str(v)
 
-        steps_data = []
-        if mcap_artifact and mcap_artifact.local_path and mcap_artifact.local_path.exists():
-            logger.info("Reading steps from MCAP artifact: %s", mcap_artifact.local_path)
-            try:
-                import json
+        # Merge obstacles
+        if data.get("obstacles"):
+            injection_data["obstacles"] = data["obstacles"]
 
-                from mcap.reader import make_reader
+        # Downsample and Convert to Legacy Row-Oriented format for Frontend
+        timestamps = data["timestamps"]
+        vehicle = data["vehicle"]
+        ackermann_drive = data.get("ackermann_drive", {})
+        ad_logs = data.get("ad_logs", [])
 
-                with open(mcap_artifact.local_path, "rb") as f:
-                    reader = make_reader(f)
-                    for schema, channel, message in reader.iter_messages(
-                        topics=["/simulation/step"]
-                    ):
-                        # The message is a String(data=JSON) from LoggerNode
-                        wrapper = json.loads(message.data)
-                        if "data" not in wrapper:
-                            continue
+        total_steps = len(timestamps)
+        logger.info("Original steps count: %d", total_steps)
 
-                        step_dict = json.loads(wrapper["data"])
+        indices = downsample_indices(total_steps, max_steps=1000)
+        logger.info("Downsampled steps count: %d", len(indices))
 
-                        # LiDAR data is not needed for dashboard visualization
-                        steps_data.append(
-                            {
-                                "timestamp": step_dict["timestamp"],
-                                "x": step_dict["vehicle_state"]["x"]
-                                if "vehicle_state" in step_dict
-                                else 0.0,
-                                "y": step_dict["vehicle_state"]["y"]
-                                if "vehicle_state" in step_dict
-                                else 0.0,
-                                "z": step_dict["vehicle_state"].get("z", 0.0)
-                                if "vehicle_state" in step_dict
-                                else 0.0,
-                                "yaw": step_dict["vehicle_state"]["yaw"]
-                                if "vehicle_state" in step_dict
-                                else 0.0,
-                                "velocity": step_dict["vehicle_state"]["velocity"]
-                                if "vehicle_state" in step_dict
-                                else 0.0,
-                                "acceleration": step_dict["action"]["acceleration"]
-                                if "action" in step_dict
-                                else 0.0,
-                                "steering": step_dict["action"]["steering"]
-                                if "action" in step_dict
-                                else 0.0,
-                                "lidar_scan": None,
-                                "ad_component_log": step_dict.get("ad_component_log"),
-                            }
-                        )
-                logger.info("Loaded %d steps from MCAP", len(steps_data))
-            except Exception as e:
-                logger.warning("Failed to read MCAP file: %s. Fallback to memory.", e)
-                steps_data = []
+        steps = []
+        for i in indices:
+            step = {
+                "timestamp": timestamps[i],
+                # Vehicle State
+                "x": vehicle["x"][i],
+                "y": vehicle["y"][i],
+                "z": vehicle["z"][i] if "z" in vehicle and i < len(vehicle["z"]) else 0.0,
+                "yaw": vehicle["yaw"][i],
+                "velocity": vehicle["velocity"][i],
+                # AckermannDrive (ROS message compatible)
+                "acceleration": ackermann_drive["acceleration"][i]
+                if "acceleration" in ackermann_drive
+                else 0.0,
+                "steering": ackermann_drive["steering"][i]
+                if "steering" in ackermann_drive
+                else 0.0,
+                # AD Logs
+                "ad_component_log": ad_logs[i] if i < len(ad_logs) else None,
+                # placeholders for legacy frontend expectations if any
+                "lidar_scan": None,
+            }
+            steps.append(step)
 
-        # Fallback to in-memory log if MCAP failed or was not found
-        if not steps_data:
-            logger.info("Using in-memory simulation log for steps")
-            for step in log.steps:
-                steps_data.append(
-                    {
-                        "timestamp": step.timestamp,
-                        "x": step.vehicle_state.x,
-                        "y": step.vehicle_state.y,
-                        "z": getattr(step.vehicle_state, "z", 0.0),
-                        "yaw": step.vehicle_state.yaw,
-                        "velocity": step.vehicle_state.velocity,
-                        "acceleration": step.action.acceleration,
-                        "steering": step.action.steering,
-                        "ad_component_log": {
-                            "component_type": step.ad_component_log.component_type,
-                            "data": step.ad_component_log.data,
-                        }
-                        if step.ad_component_log
-                        else None,
-                        "lidar_scan": None,  # LiDAR data not needed for dashboard
-                    }
-                )
-
-        # Downsample step data to reduce file size
-        logger.info("Original steps count: %d", len(steps_data))
-        steps_data = downsample_steps(steps_data, max_steps=1000)
-        logger.info("Downsampled steps count: %d", len(steps_data))
-
-        data["steps"] = steps_data
-
-        # Extract obstacles from metadata if available
-        if "obstacles" in metadata and isinstance(metadata["obstacles"], list):
-            data["obstacles"] = metadata["obstacles"]
-            logger.info("Added %d obstacles to dashboard data", len(metadata["obstacles"]))
-        else:
-            logger.warning("No obstacles found in metadata")
+        injection_data["steps"] = steps
 
         # Find template path
-        # __file__ is dashboard/src/dashboard/generator.py
-        # Go up to dashboard/ root
         package_root = Path(__file__).parent.parent.parent
         template_path = package_root / "frontend" / "dist" / "index.html"
 
@@ -255,9 +156,6 @@ class HTMLDashboardGenerator(DashboardGenerator):
             raise FileNotFoundError(msg)
 
         # Inject data into template
-        inject_simulation_data(template_path, data, output_path, osm_path)
+        inject_simulation_data(template_path, injection_data, output_path, osm_path)
         logger.info("Dashboard saved to %s", output_path)
         return output_path
-
-
-__all__ = ["HTMLDashboardGenerator"]

@@ -1,12 +1,10 @@
 """Trajectory data structures."""
 
-from dataclasses import dataclass
-
 import numpy as np
+from pydantic import BaseModel
 
 
-@dataclass
-class TrajectoryPoint:
+class TrajectoryPoint(BaseModel):
     """軌道上の1点を表すデータクラス."""
 
     x: float  # X座標 [m]
@@ -15,8 +13,7 @@ class TrajectoryPoint:
     velocity: float  # 速度 [m/s]
 
 
-@dataclass
-class Trajectory:
+class Trajectory(BaseModel):
     """軌道を表すデータクラス."""
 
     points: list[TrajectoryPoint]  # 軌道点のリスト
@@ -28,6 +25,10 @@ class Trajectory:
     def __getitem__(self, idx: int) -> TrajectoryPoint:
         """インデックスで軌道点を取得."""
         return self.points[idx]
+
+    def __iter__(self):
+        """反復子を返す."""
+        return iter(self.points)
 
     def to_arrays(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """numpy配列に変換 (x, y, yaw, velocity)."""

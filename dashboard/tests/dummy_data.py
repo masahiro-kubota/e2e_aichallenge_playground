@@ -6,8 +6,9 @@ This module provides utilities to generate test simulation data.
 import math
 from datetime import datetime
 
-from core.data import Action, SimulationLog, SimulationStep, VehicleState
+from core.data import SimulationLog, SimulationStep, VehicleState
 from core.data.experiment import ExperimentResult
+from core.data.ros import AckermannDrive
 from core.data.simulator import SimulationResult
 
 
@@ -52,9 +53,9 @@ def generate_circular_trajectory(
             velocity=10.0 + 2 * math.sin(angle * 3),
         )
 
-        action = Action(
+        action = AckermannDrive(
             acceleration=0.5 * math.sin(angle * 2),
-            steering=0.2 * math.cos(angle),
+            steering_angle=0.2 * math.cos(angle),
         )
 
         step = SimulationStep(
@@ -116,9 +117,9 @@ def generate_figure_eight_trajectory(
             velocity=8.0 + 3 * math.cos(angle * 2),
         )
 
-        action = Action(
+        action = AckermannDrive(
             acceleration=0.3 * math.cos(angle),
-            steering=0.3 * math.sin(angle),
+            steering_angle=0.3 * math.sin(angle),
         )
 
         step = SimulationStep(

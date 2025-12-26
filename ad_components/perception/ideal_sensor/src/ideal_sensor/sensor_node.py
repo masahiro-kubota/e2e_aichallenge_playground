@@ -16,21 +16,28 @@ class IdealSensorNode(Node[IdealSensorConfig]):
         super().__init__("Sensor", rate_hz, config)
 
         from core.data.ros import ColorRGBA
-        from logger.visualization.vehicle_visualizer import VehicleVisualizer
+        from core.visualization.vehicle_visualizer import VehicleVisualizer
 
         self.vehicle_visualizer = VehicleVisualizer(
             config.vehicle_params, color=ColorRGBA.from_hex(config.vehicle_color)
         )
 
+        from core.utils.ros_message_builder import build_odometry_message, build_tf_message
+
+        self.build_odometry_message = build_odometry_message
+        self.build_tf_message = build_tf_message
+
     def get_node_io(self) -> NodeIO:
         from core.data import VehicleState
-        from core.data.ros import MarkerArray
+        from core.data.ros import MarkerArray, Odometry, TFMessage
 
         return NodeIO(
             inputs={"sim_state": VehicleState},
             outputs={
                 "vehicle_state": VehicleState,
                 "vehicle_marker": MarkerArray,
+                "localization_kinematic_state": Odometry,
+                "tf_kinematic": TFMessage,
             },
         )
 
@@ -48,5 +55,13 @@ class IdealSensorNode(Node[IdealSensorConfig]):
             marker = self.vehicle_visualizer.create_marker(sim_state, _current_time)
             # Directly set the attribute with the topic name expected by Foxglove/Logger
             setattr(self.frame_data, "vehicle/marker", MarkerArray(markers=[marker]))
+
+            # Odometry
+            odom_msg = self.build_odometry_message(sim_state, _current_time)
+            setattr(self.frame_data, "localization_kinematic_state", odom_msg)
+
+            # TF (map -> base_link)
+            tf_msg = self.build_tf_message(sim_state, _current_time)
+            setattr(self.frame_data, "tf_kinematic", tf_msg)
 
         return NodeExecutionResult.SUCCESS

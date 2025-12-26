@@ -1,9 +1,8 @@
 """Map visualizer for creating map markers from Lanelet2 data."""
 
 from core.data.ros import ColorRGBA, Header, Marker, MarkerArray, Point, Pose, Quaternion, Vector3
-
-from logger.parsers.lanelet2_parser import Lanelet2Map, Lanelet2Parser
-from logger.ros_message_builder import to_ros_time
+from core.utils.lanelet2_parser import Lanelet2Map, Lanelet2Parser
+from core.utils.ros_message_builder import to_ros_time
 
 
 class MapVisualizer:

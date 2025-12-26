@@ -2,10 +2,8 @@
 
 import math
 
-from core.data import Action, VehicleState
+from core.data import VehicleState
 from core.data.ros import (
-    AckermannDrive,
-    AckermannDriveStamped,
     Header,
     LaserScan,
     Odometry,
@@ -165,26 +163,4 @@ def build_laser_scan_message(lidar_scan: LidarScan) -> LaserScan:
             for r in lidar_scan.ranges
         ],
         intensities=lidar_scan.intensities or [],
-    )
-
-
-def build_ackermann_drive_message(action: Action, timestamp: float) -> AckermannDriveStamped:
-    """Build AckermannDriveStamped message from action.
-
-    Args:
-        action: Control action.
-        timestamp: Current timestamp.
-
-    Returns:
-        AckermannDriveStamped message.
-    """
-    ros_time = to_ros_time(timestamp)
-
-    return AckermannDriveStamped(
-        header=Header(stamp=ros_time, frame_id="base_link"),
-        drive=AckermannDrive(
-            steering_angle=action.steering,
-            acceleration=action.acceleration,
-            speed=action.acceleration * 0.1,  # Dummy speed if not available directly
-        ),
     )

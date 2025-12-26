@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from core.data import (
-    Action,
     ADComponentLog,
     ComponentConfig,  # Added ComponentConfig
     SimulationLog,
@@ -31,6 +30,7 @@ class SimulatorConfig(ComponentConfig):
     initial_state: VehicleState = Field(..., description="Initial vehicle state")
     map_path: Path = Field(..., description="Path to Lanelet2 map file")
     obstacles: list = Field(default_factory=list, description="List of obstacles")
+    obstacle_color: str = Field(..., description="Obstacle marker color")
 
 
 class Simulator(Node[SimulatorConfig]):
@@ -62,15 +62,19 @@ class Simulator(Node[SimulatorConfig]):
         # Use lazy import for LidarScan because it might be circular if imported at top-level
         # (Though currently it's safe as it's in core.data)
         from core.data import LidarScan
+        from core.data.ros import AckermannDriveStamped, LaserScan, MarkerArray, TFMessage
 
         return NodeIO(
             inputs={
-                "action": Action,
+                "control_cmd": AckermannDriveStamped,
             },
             outputs={
                 "sim_state": VehicleState,
                 "obstacles": list[SimulatorObstacle],
-                "lidar_scan": LidarScan,  # Declare output
+                "obstacle_markers": MarkerArray,
+                "lidar_scan": LidarScan,
+                "perception_lidar_scan": LaserScan,
+                "tf_lidar": TFMessage,
             },
         )
 
@@ -129,6 +133,14 @@ class Simulator(Node[SimulatorConfig]):
                 config=lidar_config, map_instance=self.map, obstacle_manager=self.obstacle_manager
             )
 
+        # Initialize ObstacleVisualizer
+        from core.data.ros import ColorRGBA
+        from core.visualization.obstacle_visualizer import ObstacleVisualizer
+
+        self.obstacle_visualizer = ObstacleVisualizer(
+            color=ColorRGBA.from_hex(self.config.obstacle_color)
+        )
+
     def on_run(self, _current_time: float) -> NodeExecutionResult:
         """Execute physics simulation step.
 
@@ -145,18 +157,27 @@ class Simulator(Node[SimulatorConfig]):
         if hasattr(self.frame_data, "termination_signal") and self.frame_data.termination_signal:
             return NodeExecutionResult.SUCCESS
 
-        # Get action from frame_data
-        action = getattr(self.frame_data, "action", None)
-        if action is None:
-            action = Action(steering=0.0, acceleration=0.0)
+        # Expose Lidar data to frame_data (NodeIO) if needed
+        # Currently NodeIO doesn't explicitly define 'scan' output, but we can add it to info or frame_data dynamic
+        from core.data.ros import AckermannDrive, MarkerArray
+
+        # Get control command from frame_data
+        control_cmd = getattr(self.frame_data, "control_cmd", None)
+        if control_cmd is None:
+            # Default to zero control
+            steering = 0.0
+            acceleration = 0.0
+        else:
+            steering = control_cmd.drive.steering_angle
+            acceleration = control_cmd.drive.acceleration
 
         # Update state using bicycle model
         from simulator.dynamics import update_bicycle_model
 
         self._current_state = update_bicycle_model(
             self._current_state,
-            action.steering,
-            action.acceleration,
+            steering,
+            acceleration,
             self.dt,
             self.config.vehicle_params.wheelbase,
         )
@@ -164,7 +185,9 @@ class Simulator(Node[SimulatorConfig]):
         self._current_state.timestamp = self.current_time
 
         # Convert to VehicleState
-        vehicle_state = self._current_state.to_vehicle_state(action)
+        vehicle_state = self._current_state.to_vehicle_state(
+            steering=steering, acceleration=acceleration
+        )
 
         # Map validation (if map is loaded)
         if self.map is not None:
@@ -201,15 +224,17 @@ class Simulator(Node[SimulatorConfig]):
                 # If polygon check fails, skip collision detection
                 pass
 
-        # Logging
+        # Scan Lidar if available
         lidar_scan = None
         if self.lidar_sensor:
             lidar_scan = self.lidar_sensor.scan(vehicle_state)
 
+        # Logging
+        drive_action = AckermannDrive(steering_angle=steering, acceleration=acceleration)
         step_log = SimulationStep(
             timestamp=self.current_time,
             vehicle_state=vehicle_state,
-            action=action,
+            action=drive_action,
             ad_component_log=self._create_ad_component_log(),
             info={"lidar_scan": lidar_scan} if lidar_scan else {},
         )
@@ -219,14 +244,34 @@ class Simulator(Node[SimulatorConfig]):
         self.frame_data.sim_state = vehicle_state
         if self.obstacle_manager:
             self.frame_data.obstacles = self.obstacle_manager.obstacles
+
+            # Generate obstacle markers
+            obstacle_marker_array = self.obstacle_visualizer.create_marker_array(
+                self.obstacle_manager.obstacles, self.current_time
+            )
+            self.frame_data.obstacle_markers = obstacle_marker_array
         else:
             self.frame_data.obstacles = []
+            self.frame_data.obstacle_markers = MarkerArray(markers=[])
         self.frame_data.obstacle_states = obstacle_states
 
         # Expose Lidar data to frame_data (NodeIO) if needed
         # Currently NodeIO doesn't explicitly define 'scan' output, but we can add it to info or frame_data dynamic
         if lidar_scan:
             self.frame_data.lidar_scan = lidar_scan
+
+            from core.utils.ros_message_builder import (
+                build_laser_scan_message,
+                build_lidar_tf_message,
+            )
+
+            # LaserScan message
+            scan_msg = build_laser_scan_message(lidar_scan)
+            self.frame_data.perception_lidar_scan = scan_msg
+
+            # TF (base_link -> lidar_link)
+            tf_msg = build_lidar_tf_message(lidar_scan, self.current_time)
+            self.frame_data.tf_lidar = tf_msg
 
         return NodeExecutionResult.SUCCESS
 

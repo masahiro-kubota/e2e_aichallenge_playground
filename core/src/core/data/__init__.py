@@ -1,7 +1,6 @@
 """Core data structures."""
 
 from core.data.ad_components import (
-    Action,
     ADComponentConfig,
     ADComponentLog,
     ADComponentSpec,
@@ -10,6 +9,7 @@ from core.data.ad_components import (
     TrajectoryPoint,
     VehicleState,
 )
+from core.data.dashboard import DashboardData
 from core.data.environment import (
     CsvPathTrajectory,
     Obstacle,
@@ -34,10 +34,10 @@ __all__ = [
     "ADComponentLog",
     "ADComponentSpec",
     "ADComponentType",
-    "Action",
     "Artifact",
     "ComponentConfig",
     "CsvPathTrajectory",
+    "DashboardData",
     "EvaluationMetrics",
     "ExperimentResult",
     "LidarConfig",

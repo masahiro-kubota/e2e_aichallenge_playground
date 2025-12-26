@@ -3,7 +3,7 @@
 import logging
 
 import numpy as np
-from core.data import Action, LidarScan
+from core.data import LidarScan
 from core.data.node_io import NodeIO
 from core.interfaces.node import Node, NodeExecutionResult
 
@@ -15,7 +15,7 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
     """Tiny LiDAR Net node for end-to-end autonomous driving control.
 
     This node subscribes to LiDAR scan data, processes it using the
-    TinyLidarNetCore logic, and publishes control commands (Action).
+    TinyLidarNetCore logic, and publishes control commands (AckermannDriveStamped).
     """
 
     def __init__(self, config: TinyLidarNetConfig, rate_hz: float) -> None:
@@ -54,9 +54,11 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
         Returns:
             NodeIO specification
         """
+        from core.data.ros import AckermannDriveStamped
+
         return NodeIO(
             inputs={"lidar_scan": LidarScan},
-            outputs={"action": Action},
+            outputs={"control_cmd": AckermannDriveStamped},
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -83,8 +85,16 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
         # Process via Core Logic
         accel, steer = self.core.process(ranges)
 
-        # Create and publish Action
-        action = Action(steering=steer, acceleration=accel)
-        self.frame_data.action = action
+        # Create and publish AckermannDriveStamped
+        from core.data.ros import AckermannDrive, AckermannDriveStamped, Header
+        from core.utils.ros_message_builder import to_ros_time
+
+        self.frame_data.control_cmd = AckermannDriveStamped(
+            header=Header(stamp=to_ros_time(_current_time), frame_id="base_link"),
+            drive=AckermannDrive(
+                steering_angle=steer,
+                acceleration=accel,
+            ),
+        )
 
         return NodeExecutionResult.SUCCESS

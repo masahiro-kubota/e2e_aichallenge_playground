@@ -64,6 +64,32 @@ class CollectorEngine(BaseEngine):
             else:
                 logger.warning(f"Episode failed: {result.reason}")
 
+            # Generate dashboard if enabled
+            if cfg.postprocess.dashboard.enabled:
+                try:
+                    episode_dir = output_dir / f"episode_{i:04d}"
+
+                    from dashboard.generator import HTMLDashboardGenerator
+                    from dashboard.reader import load_simulation_data
+
+                    mcap_path = episode_dir / "simulation.mcap"
+                    dashboard_path = episode_dir / "dashboard.html"
+
+                    if mcap_path.exists():
+                        # Load data explicitly
+                        dashboard_data = load_simulation_data(mcap_path, vehicle_params=cfg.vehicle)
+
+                        # Generate dashboard
+                        generator = HTMLDashboardGenerator()
+                        generator.generate(
+                            data=dashboard_data,
+                            output_path=dashboard_path,
+                            osm_path=Path(cfg.env.map_path),
+                        )
+                        logger.info(f"Generated dashboard: {dashboard_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to generate dashboard for episode {i}: {e}")
+
         # Create convenience symlink to this run
         try:
             project_root = Path.cwd()
