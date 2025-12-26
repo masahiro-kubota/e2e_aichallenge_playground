@@ -1,5 +1,7 @@
 """ROS 2 standard message definitions using Pydantic."""
 
+import struct
+
 from pydantic import BaseModel, Field
 
 
@@ -141,6 +143,19 @@ class ColorRGBA(BaseModel):
     g: float = 0.0
     b: float = 0.0
     a: float = 1.0
+
+    @classmethod
+    def from_hex(cls, hex_str: str) -> "ColorRGBA":
+        """Create ColorRGBA from hex string (e.g. #RRGGBB or #RRGGBBAA)."""
+        hex_str = hex_str.lstrip("#")
+        if len(hex_str) == 6:
+            r, g, b = struct.unpack("BBB", bytes.fromhex(hex_str))
+            return cls(r=r / 255.0, g=g / 255.0, b=b / 255.0, a=1.0)
+        elif len(hex_str) == 8:
+            r, g, b, a = struct.unpack("BBBB", bytes.fromhex(hex_str))
+            return cls(r=r / 255.0, g=g / 255.0, b=b / 255.0, a=a / 255.0)
+        else:
+            raise ValueError(f"Invalid hex color string: {hex_str}")
 
 
 class Marker(BaseModel):

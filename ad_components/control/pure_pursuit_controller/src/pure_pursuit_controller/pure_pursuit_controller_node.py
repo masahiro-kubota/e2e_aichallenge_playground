@@ -1,12 +1,15 @@
 """Pure Pursuit Controller Node."""
 
 import math
+from typing import Any
 
+from planning_utils.visualization import create_trajectory_marker
 from pydantic import Field
 
 from core.data import Action, ComponentConfig, VehicleParameters, VehicleState
-from core.data.ad_components import Trajectory
+from core.data.ad_components import Trajectory, TrajectoryPoint
 from core.data.node_io import NodeIO
+from core.data.ros import ColorRGBA, MarkerArray
 from core.interfaces.node import Node, NodeExecutionResult
 from core.utils.geometry import distance, normalize_angle
 
@@ -25,6 +28,7 @@ class PurePursuitControllerConfig(ComponentConfig):
     kd: float = Field(..., description="Derivative gain for velocity control")
     u_min: float = Field(..., description="Minimum acceleration [m/s^2]")
     u_max: float = Field(..., description="Maximum acceleration [m/s^2]")
+    lookahead_marker_color: str = Field("#FF00FFCC", description="Lookahead marker color")
 
 
 class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
@@ -42,7 +46,7 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
     def get_node_io(self) -> NodeIO:
         return NodeIO(
             inputs={"trajectory": Trajectory, "vehicle_state": VehicleState},
-            outputs={"action": Action},
+            outputs={"action": Action, "lookahead_marker": MarkerArray},
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -59,11 +63,23 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
             self.frame_data.action = Action(steering=0.0, acceleration=0.0)
             return NodeExecutionResult.SUCCESS
 
-        action = self._compute_control(trajectory, vehicle_state)
+        action, target_point = self._compute_control(trajectory, vehicle_state)
         self.frame_data.action = action
+
+        # Output Visualization Marker
+        marker = create_trajectory_marker(
+            trajectory=Trajectory(points=[target_point]),
+            timestamp=_current_time,
+            ns="pure_pursuit_lookahead",
+            color=ColorRGBA.from_hex(self.config.lookahead_marker_color),
+        )
+        self.frame_data.lookahead_marker = MarkerArray(markers=[marker])
+
         return NodeExecutionResult.SUCCESS
 
-    def _compute_control(self, trajectory: Trajectory, vehicle_state: VehicleState) -> Action:
+    def _compute_control(
+        self, trajectory: Trajectory, vehicle_state: VehicleState
+    ) -> tuple[Action, Any]:
         """Compute steering and acceleration using Pure Pursuit + PID."""
 
         # 1. Calculate dynamic lookahead distance
@@ -116,7 +132,7 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
 
         self.prev_error = error
 
-        return Action(steering=steering, acceleration=acceleration)
+        return Action(steering=steering, acceleration=acceleration), target_point
 
     def _find_lookahead_point(
         self, trajectory: Trajectory, vehicle_state: VehicleState, lookahead: float
@@ -151,8 +167,6 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
                 # Interpolate
                 remaining = lookahead - accumulated_dist
                 ratio = remaining / d if d > 1e-6 else 0.0
-
-                from core.data.ad_components import TrajectoryPoint
 
                 target_point = TrajectoryPoint(
                     x=p1.x + (p2.x - p1.x) * ratio,

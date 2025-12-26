@@ -27,6 +27,7 @@ class MPPIController:
         collision_threshold: float = 0.5,
         lanelet_map=None,
         off_track_cost_weight: float = 10000.0,
+        position_weight: float = 20.0,
     ):
         self.vp = vehicle_params
         self.K = num_samples
@@ -58,6 +59,9 @@ class MPPIController:
         # Map boundary parameters
         self.lanelet_map = lanelet_map
         self.off_track_cost_weight = off_track_cost_weight
+
+        # Cost weights
+        self.position_weight = position_weight
 
     def solve(
         self,
@@ -254,7 +258,7 @@ class MPPIController:
         sq_dists = np.sum(diff**2, axis=-1)  # (K, T, M)
         min_sq_dists = np.min(sq_dists, axis=-1)  # (K, T)
 
-        costs += np.sum(min_sq_dists * 20.0, axis=1)  # Position Weight (Increased)
+        costs += np.sum(min_sq_dists * self.position_weight, axis=1)  # Position Weight
 
         # Heading & Velocity Cost
         # Find index of nearest point

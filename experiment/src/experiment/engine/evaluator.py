@@ -130,11 +130,18 @@ class EvaluatorEngine(BaseEngine):
             res = runner.run_simulation(experiment_structure)
             results.append(res)
 
-            reason = res.reason or "unknown"
+            reason = res.reason or "timeout"
             goal_count = res.metrics.get("goal_count", 0)
             checkpoint_count = res.metrics.get("checkpoint_count", 0)
+
             # Enhanced Logging for AI Visibility
-            result_str = "SUCCESS" if res.success else f"FAILED ({reason})"
+            if res.success:
+                result_str = "SUCCESS"
+            elif reason == "timeout":
+                result_str = "TIMEOUT"
+            else:
+                result_str = f"FAILED ({reason})"
+
             banner = "=" * 40
             logger.info(
                 f"\n{banner}\nEPISODE {i+1}/{num_episodes}: {result_str}\nCheckpoints: {checkpoint_count}\nGoals: {goal_count}\n{banner}"

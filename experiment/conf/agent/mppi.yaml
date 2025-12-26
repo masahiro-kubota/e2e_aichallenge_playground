@@ -10,19 +10,24 @@ nodes:
       map_path: ${env.map_path}
 
       # MPPI Parameters
-      horizon: 50
+      horizon: 30
       dt: 0.1
-      num_samples: 50
-      temperature: 1000.0   # Higher temperature for better averaging
-      noise_sigma_steering: 0.4 # Reduced noise for stability
-      seed: 43  # Random seed for reproducible results
+      num_samples: 100
+      temperature: 10.0     # Increased for better averaging (smoothness)
+      noise_sigma_steering: 0.3 # Increased for better exploration
+      seed: 43
 
       # Obstacle avoidance
-      obstacle_cost_weight: 1000.0  # High penalty for collision risk
-      collision_threshold: 0.5  # Safety margin [m]
+      obstacle_cost_weight: 1000.0
+      collision_threshold: 0.5
 
       # Map boundary
-      off_track_cost_weight: 10000.0  # Very high penalty for off-track
+      off_track_cost_weight: 10000.0
+      position_weight: 50.0  # Increased to keep lane tightly
 
       # Velocity control
       target_velocity: 5.0  # Target velocity [m/s]
+
+      # Visualization colors
+      candidate_color: "#80DEEA26" # Light Cyan (Ethereal light trails)
+      optimal_color: "#FFF176FF"   # Solid Yellow (The definitive decision)

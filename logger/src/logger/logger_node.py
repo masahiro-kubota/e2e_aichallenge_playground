@@ -42,6 +42,16 @@ class LoggerConfig(ComponentConfig):
     track_path: str = Field(..., description="Path to track file")
     vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
 
+    # Visualization colors (Hex strings #RRGGBB or #RRGGBBAA)
+    vehicle_color: str = Field("#0080FFCC", description="Vehicle color")
+    obstacle_color: str = Field("#FF0000B2", description="Obstacle color")
+    trajectory_color: str = Field("#00FF00CC", description="Trajectory color")
+    lookahead_point_color: str = Field("#FF00FFCC", description="Lookahead point color")
+    path_color: str = Field("#00CCFFCC", description="Vehicle path history color")
+    map_left_color: str = Field("#FFFFFFCC", description="Map left boundary color")
+    map_right_color: str = Field("#CCCCCCB2", description="Map right boundary color")
+    global_track_color: str = Field("#FFFF00FF", description="Global track color")
+
 
 class LoggerNode(Node[LoggerConfig]):
     """Node responsible for recording FrameData to simulation log."""
@@ -55,11 +65,22 @@ class LoggerNode(Node[LoggerConfig]):
         self.map_published = False
         self.track_published = False
 
-        # Initialize visualizers
-        self.vehicle_visualizer = VehicleVisualizer(config.vehicle_params)
-        self.obstacle_visualizer = ObstacleVisualizer()
-        self.trajectory_visualizer = TrajectoryVisualizer()
-        self.path_visualizer = PathVisualizer(max_history=0)  # Unlimited for batch processing
+        from core.data.ros import ColorRGBA
+
+        # Initialize visualizers with configured colors
+        self.vehicle_visualizer = VehicleVisualizer(
+            config.vehicle_params, color=ColorRGBA.from_hex(config.vehicle_color)
+        )
+        self.obstacle_visualizer = ObstacleVisualizer(
+            color=ColorRGBA.from_hex(config.obstacle_color)
+        )
+        self.trajectory_visualizer = TrajectoryVisualizer(
+            lookahead_color=ColorRGBA.from_hex(config.lookahead_point_color),
+            trajectory_color=ColorRGBA.from_hex(config.trajectory_color),
+        )
+        self.path_visualizer = PathVisualizer(
+            max_history=0, color=ColorRGBA.from_hex(config.path_color)
+        )  # Unlimited for batch processing
         self.map_visualizer: MapVisualizer | None = None
 
         # Data accumulation for path visualization only
@@ -77,7 +98,13 @@ class LoggerNode(Node[LoggerConfig]):
 
         # Initialize map visualizer and publish map once
         parser = Lanelet2Parser(self.config.map_path)
-        self.map_visualizer = MapVisualizer(parser)
+        from core.data.ros import ColorRGBA
+
+        self.map_visualizer = MapVisualizer(
+            parser,
+            left_color=ColorRGBA.from_hex(self.config.map_left_color),
+            right_color=ColorRGBA.from_hex(self.config.map_right_color),
+        )
         self._publish_map()
         self.map_published = True
 
@@ -281,9 +308,9 @@ class LoggerNode(Node[LoggerConfig]):
                 # Override namespace/color for global track
                 marker.ns = "global_track"
                 marker.id = 999
-                marker.color.r = 1.0
-                marker.color.g = 1.0
-                marker.color.b = 0.0  # Yellow
+                from core.data.ros import ColorRGBA
+
+                marker.color = ColorRGBA.from_hex(self.config.global_track_color)
                 self.mcap_logger.log("/map/track", MarkerArray(markers=[marker]), self.current_time)
         except Exception as e:
             print(f"Failed to load/publish track: {e}")

@@ -21,3 +21,4 @@ nodes:
       kd: 0.05
       u_min: -3.0
       u_max: 3.0
+      lookahead_marker_color: "#D1C4E9CC" # MD3 Deep Purple 100

@@ -20,6 +20,7 @@ class PurePursuitConfig(ComponentConfig):
     max_lookahead_distance: float = Field(..., description="Maximum lookahead distance [m]")
     lookahead_speed_ratio: float = Field(..., description="Lookahead distance speed ratio [s]")
     vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
+    lookahead_marker_color: str = Field("#FF00FFCC", description="Lookahead marker color")
 
 
 class PurePursuitNode(Node[PurePursuitConfig]):
@@ -76,16 +77,13 @@ class PurePursuitNode(Node[PurePursuitConfig]):
         from planning_utils.visualization import create_trajectory_marker
 
         from core.data.ad_components.log import ADComponentLog
-        from core.data.ros import MarkerArray
+        from core.data.ros import ColorRGBA, MarkerArray
 
         marker = create_trajectory_marker(
             trajectory=trajectory,
             timestamp=current_time,
             ns="pure_pursuit_lookahead",
-            r=1.0,
-            g=0.0,
-            b=1.0,
-            a=0.8,
+            color=ColorRGBA.from_hex(self.config.lookahead_marker_color),
         )
 
         self.frame_data.ad_component_log = ADComponentLog(

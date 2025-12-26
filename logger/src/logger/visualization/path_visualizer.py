@@ -7,14 +7,16 @@ from logger.ros_message_builder import to_ros_time
 class PathVisualizer:
     """Creates visualization markers for vehicle path history."""
 
-    def __init__(self, max_history: int = 10000) -> None:
+    def __init__(self, max_history: int = 10000, color: ColorRGBA | None = None) -> None:
         """Initialize path visualizer.
 
         Args:
             max_history: Maximum number of positions to keep in history.
                          Set to 0 for unlimited history.
+            color: Color for the path line.
         """
         self.max_history = max_history
+        self.color = color or ColorRGBA(r=0.0, g=0.8, b=1.0, a=0.9)
         self.positions: list[tuple[float, float]] = []
 
     def add_position(self, x: float, y: float) -> None:
@@ -67,7 +69,7 @@ class PathVisualizer:
                 orientation=identity_quat,
             ),
             scale=Vector3(x=0.15, y=0.0, z=0.0),  # x is line width
-            color=ColorRGBA(r=0.0, g=0.8, b=1.0, a=0.9),  # Cyan
+            color=self.color,
             points=points,
             frame_locked=True,
         )

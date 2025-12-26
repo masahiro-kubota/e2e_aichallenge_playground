@@ -32,6 +32,9 @@ class MPPIPlannerConfig(ComponentConfig):
     # Map boundary parameters
     off_track_cost_weight: float = Field(..., description="Off-track penalty weight")
 
+    # Cost weights
+    position_weight: float = Field(..., description="Tracking cost weight")
+
 
 class MPPIPlannerNode(Node[MPPIPlannerConfig]):
     """MPPI Path Planner Node."""
@@ -74,6 +77,7 @@ class MPPIPlannerNode(Node[MPPIPlannerConfig]):
             collision_threshold=config.collision_threshold,
             lanelet_map=self.lanelet_map,
             off_track_cost_weight=config.off_track_cost_weight,
+            position_weight=config.position_weight,
         )
 
     def get_node_io(self) -> NodeIO:

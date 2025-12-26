@@ -38,6 +38,14 @@ system:
         map_path: ${env.map_path}
         track_path: ${env.track_path}
         vehicle_params: ${vehicle}
+        vehicle_color: ${visualization.colors.vehicle}
+        obstacle_color: ${visualization.colors.obstacle}
+        trajectory_color: ${visualization.colors.trajectory}
+        lookahead_point_color: ${visualization.colors.lookahead}
+        path_color: ${visualization.colors.path}
+        map_left_color: ${visualization.colors.map_left}
+        map_right_color: ${visualization.colors.map_right}
+        global_track_color: ${visualization.colors.global_track}
     supervisor:
       type: "SupervisorNode"
       rate_hz: 10.0
@@ -53,6 +61,18 @@ system:
           enabled: true
         off_track:
           enabled: true
+
+# Default visualization configuration
+visualization:
+  colors:
+    vehicle: "#3B99DDCC"    # Pure Ice Blue (Brightest focal point)
+    obstacle: "#FF5252B3"   # Clear Red
+    trajectory: "#4DB6ACCC" # Teal (The active plan)
+    lookahead: "#D1C4E9CC"  # Light Purple (Lookahead)
+    path: "#3B99DDCC"       # Muted Blue Grey Trail (Actual History)
+    map_left: "#B0BEC533"   # Subtle Boundary
+    map_right: "#B0BEC51A"  # Very Faint Boundary
+    global_track: "#E0E0E026" # Very Faint White (Reference track, like a road marking)
 
 # Default postprocessing configuration
 postprocess:

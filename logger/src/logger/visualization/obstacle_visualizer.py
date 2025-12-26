@@ -9,6 +9,14 @@ from logger.ros_message_builder import quaternion_from_yaw, to_ros_time
 class ObstacleVisualizer:
     """Creates visualization markers for obstacles."""
 
+    def __init__(self, color: ColorRGBA | None = None) -> None:
+        """Initialize obstacle visualizer.
+
+        Args:
+            color: Obstacle marker color.
+        """
+        self.color = color or ColorRGBA(r=1.0, g=0.0, b=0.0, a=0.7)
+
     def create_marker_array(self, obstacles: list, timestamp: float) -> MarkerArray:
         """Create marker array for all obstacles.
 
@@ -61,7 +69,7 @@ class ObstacleVisualizer:
                 orientation=obs_q,
             ),
             scale=scale,
-            color=ColorRGBA(r=1.0, g=0.0, b=0.0, a=0.7),  # Red for obstacles
+            color=self.color,  # Red for obstacles
             frame_locked=True,
         )
 

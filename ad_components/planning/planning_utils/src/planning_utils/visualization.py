@@ -20,6 +20,7 @@ def create_trajectory_marker(
     g: float = 1.0,
     b: float = 0.0,
     a: float = 0.8,
+    color: ColorRGBA | None = None,
 ) -> Marker:
     """Create a marker for the trajectory or lookahead point.
 
@@ -28,7 +29,8 @@ def create_trajectory_marker(
         timestamp: Current timestamp.
         ns: Namespace for the marker.
         id: Marker ID.
-        r, g, b, a: Color components.
+        r, g, b, a: Color components (fallback if color is None).
+        color: ColorRGBA object to use.
 
     Returns:
         Marker representing the trajectory.
@@ -51,7 +53,8 @@ def create_trajectory_marker(
                 orientation=identity_quat,
             ),
             scale=Vector3(x=0.5, y=0.5, z=0.5),
-            color=ColorRGBA(r=1.0, g=0.0, b=1.0, a=0.8),  # Magenta for single point (target)
+            color=color
+            or ColorRGBA(r=1.0, g=0.0, b=1.0, a=0.8),  # Magenta for single point (target)
             frame_locked=True,
         )
 
@@ -68,7 +71,7 @@ def create_trajectory_marker(
             orientation=identity_quat,
         ),
         scale=Vector3(x=0.2, y=0.0, z=0.0),  # x is line width
-        color=ColorRGBA(r=r, g=g, b=b, a=a),
+        color=color or ColorRGBA(r=r, g=g, b=b, a=a),
         points=points,
         frame_locked=True,
     )

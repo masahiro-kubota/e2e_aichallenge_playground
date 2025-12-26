@@ -8,6 +8,20 @@ from logger.ros_message_builder import to_ros_time
 class TrajectoryVisualizer:
     """Creates visualization markers for trajectories."""
 
+    def __init__(
+        self,
+        lookahead_color: ColorRGBA | None = None,
+        trajectory_color: ColorRGBA | None = None,
+    ) -> None:
+        """Initialize trajectory visualizer.
+
+        Args:
+            lookahead_color: Color for the lookahead point (sphere).
+            trajectory_color: Color for the trajectory line.
+        """
+        self.lookahead_color = lookahead_color or ColorRGBA(r=1.0, g=0.0, b=1.0, a=0.8)
+        self.trajectory_color = trajectory_color or ColorRGBA(r=0.0, g=1.0, b=0.0, a=0.8)
+
     def create_marker(self, trajectory: Trajectory, timestamp: float) -> Marker:
         """Create a marker for the trajectory (lookahead point).
 
@@ -36,7 +50,7 @@ class TrajectoryVisualizer:
                     orientation=identity_quat,
                 ),
                 scale=Vector3(x=0.5, y=0.5, z=0.5),
-                color=ColorRGBA(r=1.0, g=0.0, b=1.0, a=0.8),  # Magenta
+                color=self.lookahead_color,
                 frame_locked=True,
             )
 
@@ -54,7 +68,7 @@ class TrajectoryVisualizer:
                 orientation=identity_quat,
             ),
             scale=Vector3(x=0.2, y=0.0, z=0.0),  # x is line width
-            color=ColorRGBA(r=0.0, g=1.0, b=0.0, a=0.8),  # Green
+            color=self.trajectory_color,
             points=points,
             frame_locked=True,
         )

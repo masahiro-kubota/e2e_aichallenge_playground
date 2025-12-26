@@ -8,13 +8,22 @@ from logger.ros_message_builder import to_ros_time
 class MapVisualizer:
     """Creates visualization markers for Lanelet2 maps."""
 
-    def __init__(self, parser: Lanelet2Parser) -> None:
+    def __init__(
+        self,
+        parser: Lanelet2Parser,
+        left_color: ColorRGBA | None = None,
+        right_color: ColorRGBA | None = None,
+    ) -> None:
         """Initialize map visualizer.
 
         Args:
             parser: Lanelet2 parser instance.
+            left_color: Color for the left lane boundaries.
+            right_color: Color for the right lane boundaries.
         """
         self.parser = parser
+        self.left_color = left_color or ColorRGBA(r=1.0, g=1.0, b=1.0, a=0.8)
+        self.right_color = right_color or ColorRGBA(r=0.8, g=0.8, b=0.8, a=0.8)
         self.map_data: Lanelet2Map | None = None
 
     def load_map(self) -> None:
@@ -44,7 +53,7 @@ class MapVisualizer:
                     namespace="lanelet_left",
                     marker_id=marker_id,
                     timestamp=timestamp,
-                    color=ColorRGBA(r=1.0, g=1.0, b=1.0, a=0.8),  # White
+                    color=self.left_color,  # White
                 )
                 if left_marker:
                     markers.append(left_marker)
@@ -57,7 +66,7 @@ class MapVisualizer:
                     namespace="lanelet_right",
                     marker_id=marker_id,
                     timestamp=timestamp,
-                    color=ColorRGBA(r=0.8, g=0.8, b=0.8, a=0.8),  # Light gray
+                    color=self.right_color,  # Light gray
                 )
                 if right_marker:
                     markers.append(right_marker)

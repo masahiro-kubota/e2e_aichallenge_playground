@@ -10,13 +10,15 @@ from logger.ros_message_builder import quaternion_from_yaw, to_ros_time
 class VehicleVisualizer:
     """Creates visualization markers for the vehicle."""
 
-    def __init__(self, vehicle_params: Any) -> None:
+    def __init__(self, vehicle_params: Any, color: ColorRGBA | None = None) -> None:
         """Initialize vehicle visualizer.
 
         Args:
             vehicle_params: Vehicle parameters (VehicleParameters object).
+            color: Vehicle marker color.
         """
         self.vehicle_params = vehicle_params
+        self.color = color or ColorRGBA(r=0.0, g=0.5, b=1.0, a=0.8)
         self._calculate_dimensions()
 
     def _calculate_dimensions(self) -> None:
@@ -71,6 +73,6 @@ class VehicleVisualizer:
                 orientation=q,
             ),
             scale=Vector3(x=self.length, y=self.width, z=self.height),
-            color=ColorRGBA(r=0.0, g=0.5, b=1.0, a=0.8),
+            color=self.color,
             frame_locked=True,
         )

@@ -31,8 +31,15 @@ class MPPIControllerConfig(ComponentConfig):
     # Map boundary parameters
     off_track_cost_weight: float = Field(..., description="Off-track penalty weight")
 
+    # Cost weights
+    position_weight: float = Field(20.0, description="Tracking cost weight")
+
     # Velocity control
     target_velocity: float = Field(5.0, description="Target velocity [m/s]")
+
+    # Visualization colors
+    candidate_color: str = Field("#00FFFF1A", description="Candidate trajectories color")
+    optimal_color: str = Field("#FF0000CC", description="Optimal trajectory color")
 
 
 class MPPIControllerNode(Node[MPPIControllerConfig]):
@@ -82,6 +89,7 @@ class MPPIControllerNode(Node[MPPIControllerConfig]):
             lanelet_map=self.lanelet_map,
             off_track_cost_weight=config.off_track_cost_weight,
             target_velocity=config.target_velocity,
+            position_weight=config.position_weight,
         )
 
     def get_node_io(self) -> NodeIO:
@@ -151,7 +159,7 @@ class MPPIControllerNode(Node[MPPIControllerConfig]):
                 type=4,  # LINE_STRIP
                 action=0,  # ADD
                 scale=Vector3(x=0.05, y=0.0, z=0.0),
-                color=ColorRGBA(r=0.0, g=1.0, b=1.0, a=0.1),
+                color=ColorRGBA.from_hex(self.config.candidate_color),
                 points=points,
                 lifetime=Time(sec=0, nanosec=0),
                 frame_locked=False,
@@ -172,7 +180,7 @@ class MPPIControllerNode(Node[MPPIControllerConfig]):
             type=4,  # LINE_STRIP
             action=0,  # ADD
             scale=Vector3(x=0.1, y=0.0, z=0.0),
-            color=ColorRGBA(r=1.0, g=0.0, b=0.0, a=0.8),
+            color=ColorRGBA.from_hex(self.config.optimal_color),
             points=optimal_points,
             lifetime=Time(sec=0, nanosec=0),
             frame_locked=False,
