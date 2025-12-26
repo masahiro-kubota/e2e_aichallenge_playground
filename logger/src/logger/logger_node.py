@@ -43,14 +43,14 @@ class LoggerConfig(ComponentConfig):
     vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
 
     # Visualization colors (Hex strings #RRGGBB or #RRGGBBAA)
-    vehicle_color: str = Field("#0080FFCC", description="Vehicle color")
-    obstacle_color: str = Field("#FF0000B2", description="Obstacle color")
-    trajectory_color: str = Field("#00FF00CC", description="Trajectory color")
-    lookahead_point_color: str = Field("#FF00FFCC", description="Lookahead point color")
-    path_color: str = Field("#00CCFFCC", description="Vehicle path history color")
-    map_left_color: str = Field("#FFFFFFCC", description="Map left boundary color")
-    map_right_color: str = Field("#CCCCCCB2", description="Map right boundary color")
-    global_track_color: str = Field("#FFFF00FF", description="Global track color")
+    vehicle_color: str = Field(..., description="Vehicle color")
+    obstacle_color: str = Field(..., description="Obstacle color")
+    trajectory_color: str = Field(..., description="Trajectory color")
+    lookahead_point_color: str = Field(..., description="Lookahead point color")
+    path_color: str = Field(..., description="Vehicle path history color")
+    map_left_color: str = Field(..., description="Map left boundary color")
+    map_right_color: str = Field(..., description="Map right boundary color")
+    global_track_color: str = Field(..., description="Global track color")
 
 
 class LoggerNode(Node[LoggerConfig]):
