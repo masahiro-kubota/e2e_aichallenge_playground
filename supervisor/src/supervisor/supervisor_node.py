@@ -142,7 +142,7 @@ class SupervisorNode(Node[SupervisorConfig]):
             # Checkpoint logic
             checkpoint = self.config.checkpoints[self.current_checkpoint_idx]
             dist = ((sim_state.x - checkpoint.x) ** 2 + (sim_state.y - checkpoint.y) ** 2) ** 0.5
-            
+
             if dist <= checkpoint.tolerance:
                 self.checkpoint_count += 1
                 self.frame_data.checkpoint_count = self.checkpoint_count

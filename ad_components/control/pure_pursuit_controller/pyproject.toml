@@ -1,0 +1,22 @@
+[project]
+name = "pure-pursuit-controller"
+version = "0.1.0"
+description = "Pure Pursuit path tracking controller"
+requires-python = ">=3.12"
+dependencies = [
+    "core",
+    "pydantic",
+]
+
+[project.entry-points."e2e_aichallenge.node"]
+PurePursuitControllerNode = "pure_pursuit_controller:PurePursuitControllerNode"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pure_pursuit_controller"]
+
+[tool.uv.sources]
+core = { workspace = true }

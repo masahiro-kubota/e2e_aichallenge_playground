@@ -1,0 +1,17 @@
+[project]
+name = "mppi-planner"
+version = "0.1.0"
+description = "MPPI Planner component"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "core",
+    "numpy",
+    "pydantic",
+    "scipy",
+    "numba",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

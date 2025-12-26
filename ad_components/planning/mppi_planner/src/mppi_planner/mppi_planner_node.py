@@ -1,0 +1,129 @@
+from pathlib import Path
+
+from pydantic import Field
+
+from core.data import ComponentConfig, Trajectory, VehicleParameters, VehicleState
+from core.data.ad_components.log import ADComponentLog
+from core.data.node_io import NodeIO
+from core.data.ros import ColorRGBA, Header, Marker, MarkerArray, Point, Time, Vector3
+from core.interfaces.node import Node, NodeExecutionResult
+from mppi_planner.mppi import MPPIController
+
+
+class MPPIPlannerConfig(ComponentConfig):
+    """Configuration for MPPIPlannerNode."""
+
+    track_path: Path = Field(..., description="Path to reference trajectory CSV")
+    vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
+
+    # MPPI Parameters
+    horizon: int = Field(30, description="Prediction horizon steps")
+    dt: float = Field(0.1, description="Time step [s]")
+    num_samples: int = Field(200, description="Number of samples")
+    temperature: float = Field(1.0, description="Temperature (lambda)")
+    noise_sigma_steering: float = Field(0.5, description="Steering noise sigma")
+
+
+class MPPIPlannerNode(Node[MPPIPlannerConfig]):
+    """MPPI Path Planner Node."""
+
+    def __init__(self, config: MPPIPlannerConfig, rate_hz: float):
+        super().__init__("MPPIPlanner", rate_hz, config)
+
+        # Load Reference Trajectory
+        from planning_utils import load_track_csv
+
+        from core.utils import get_project_root
+
+        track_path = self.config.track_path
+        if not track_path.is_absolute():
+            track_path = get_project_root() / track_path
+
+        self.reference_trajectory = load_track_csv(track_path)
+
+        # Initialize Controller
+        self.controller = MPPIController(
+            vehicle_params=config.vehicle_params,
+            horizon=config.horizon,
+            dt=config.dt,
+            num_samples=config.num_samples,
+            temperature=config.temperature,
+            noise_sigma_steering=config.noise_sigma_steering,
+            u_min_steering=-config.vehicle_params.max_steering_angle,
+            u_max_steering=config.vehicle_params.max_steering_angle,
+        )
+
+    def get_node_io(self) -> NodeIO:
+        return NodeIO(
+            inputs={
+                "vehicle_state": VehicleState,
+                "obstacles": list,  # List[SimulatorObstacle]
+            },
+            outputs={
+                "trajectory": Trajectory,
+                "ad_component_log": ADComponentLog,
+            },
+        )
+
+    def on_run(self, current_time: float) -> NodeExecutionResult:
+        if self.frame_data is None:
+            return NodeExecutionResult.FAILED
+
+        # Get Inputs
+        vehicle_state = getattr(self.frame_data, "vehicle_state", None)
+        obstacles = getattr(self.frame_data, "obstacles", [])
+
+        if vehicle_state is None:
+            return NodeExecutionResult.SKIPPED
+
+        # Run MPPI
+        trajectory, _, states = self.controller.solve(
+            initial_state=vehicle_state,
+            reference_trajectory=self.reference_trajectory,
+            obstacles=obstacles,
+        )
+
+        # Set Trajectory Output
+        self.frame_data.trajectory = trajectory
+
+        # Generate Debug Markers (Candidate Paths)
+        # states: (K, T+1, 4)
+        num_samples, horizon, _ = states.shape
+        markers = []
+
+        # Determine timestamp
+        sec = int(current_time)
+        nanosec = int((current_time - sec) * 1e9)
+        stamp = Time(sec=sec, nanosec=nanosec)
+
+        # Subsample for performance if needed, but "all paths" requested.
+        # Ensure imports are available
+
+        for k in range(num_samples):
+            points = []
+            for t in range(horizon):
+                # Use x, y from state
+                points.append(Point(x=float(states[k, t, 0]), y=float(states[k, t, 1]), z=0.0))
+
+            marker = Marker(
+                header=Header(stamp=stamp, frame_id="map"),
+                ns="mppi_candidates",
+                id=k,
+                type=4,  # LINE_STRIP
+                action=0,  # ADD
+                scale=Vector3(x=0.05, y=0.0, z=0.0),
+                color=ColorRGBA(r=0.0, g=1.0, b=1.0, a=0.1),
+                points=points,
+                lifetime=Time(sec=0, nanosec=0),
+                frame_locked=False,
+            )
+            markers.append(marker)
+
+        marker_array = MarkerArray(markers=markers)
+
+        # Set AD log output
+        self.frame_data.ad_component_log = ADComponentLog(
+            component_type="mppi_planner", data={"candidates": marker_array}
+        )
+
+        return NodeExecutionResult.SUCCESS

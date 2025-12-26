@@ -1,0 +1,30 @@
+# MPPI Agent Configuration
+
+nodes:
+  planning:
+    type: "mppi_planner.mppi_planner_node.MPPIPlannerNode"
+    rate_hz: 10.0
+    params:
+      vehicle_params: ${vehicle}
+      track_path: ${env.track_path}
+
+      # MPPI Parameters
+      horizon: 50
+      dt: 0.1
+      num_samples: 50
+      temperature: 1000.0   # Higher temperature for better averaging
+      noise_sigma_steering: 0.4 # Reduced noise for stability
+
+  control:
+    type: PurePursuitControllerNode
+    rate_hz: 30.0
+    params:
+      vehicle_params: ${vehicle}
+      min_lookahead_distance: 2.0
+      max_lookahead_distance: 15.0
+      lookahead_speed_ratio: 1.5
+      kp: 100.0
+      ki: 0.0
+      kd: 0.05
+      u_min: -3.0
+      u_max: 3.0

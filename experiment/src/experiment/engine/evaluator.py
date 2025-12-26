@@ -133,8 +133,11 @@ class EvaluatorEngine(BaseEngine):
             reason = res.reason or "unknown"
             goal_count = res.metrics.get("goal_count", 0)
             checkpoint_count = res.metrics.get("checkpoint_count", 0)
+            # Enhanced Logging for AI Visibility
+            result_str = "SUCCESS" if res.success else f"FAILED ({reason})"
+            banner = "=" * 40
             logger.info(
-                f"Episode {i+1}/{num_episodes}: {'Success' if res.success else 'Failed (' + reason + ')'} (Checkpoints: {checkpoint_count}, Goals: {goal_count})"
+                f"\n{banner}\nEPISODE {i+1}/{num_episodes}: {result_str}\nCheckpoints: {checkpoint_count}\nGoals: {goal_count}\n{banner}"
             )
 
         # Calculate Aggregate Metrics

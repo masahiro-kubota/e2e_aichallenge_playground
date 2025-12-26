@@ -5,6 +5,7 @@ from pydantic import Field
 
 from core.data import ComponentConfig, SimulatorObstacle, VehicleParameters, VehicleState
 from core.data.ad_components import Trajectory, TrajectoryPoint
+from core.data.ad_components.log import ADComponentLog
 from core.data.node_io import NodeIO
 from core.interfaces.node import Node, NodeExecutionResult
 from core.utils.geometry import distance
@@ -48,7 +49,10 @@ class PurePursuitNode(Node[PurePursuitConfig]):
     def get_node_io(self) -> NodeIO:
         return NodeIO(
             inputs={"vehicle_state": VehicleState, "obstacles": list},
-            outputs={"trajectory": Trajectory},
+            outputs={
+                "trajectory": Trajectory,
+                "ad_component_log": ADComponentLog,
+            },
         )
 
     def on_run(self, current_time: float) -> NodeExecutionResult:
@@ -67,6 +71,27 @@ class PurePursuitNode(Node[PurePursuitConfig]):
 
         # Set Output
         self.frame_data.trajectory = trajectory
+
+        # Output Debug Marker
+        from planning_utils.visualization import create_trajectory_marker
+
+        from core.data.ad_components.log import ADComponentLog
+        from core.data.ros import MarkerArray
+
+        marker = create_trajectory_marker(
+            trajectory=trajectory,
+            timestamp=current_time,
+            ns="pure_pursuit_lookahead",
+            r=1.0,
+            g=0.0,
+            b=1.0,
+            a=0.8,
+        )
+
+        self.frame_data.ad_component_log = ADComponentLog(
+            component_type="pure_pursuit", data={"lookahead_marker": MarkerArray(markers=[marker])}
+        )
+
         return NodeExecutionResult.SUCCESS
 
     def _plan(self, vehicle_state: VehicleState) -> Trajectory:

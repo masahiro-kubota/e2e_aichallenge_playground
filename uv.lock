@@ -10,15 +10,18 @@ resolution-markers = [
 [manifest]
 members = [
     "ad-component-core",
+    "centerline-planner",
     "core",
     "dashboard",
     "e2e-aichallenge-playground",
     "experiment",
     "ideal-sensor",
     "logger",
+    "mppi-planner",
     "pid-controller",
     "planning-utils",
     "pure-pursuit",
+    "pure-pursuit-controller",
     "simulator",
     "supervisor",
     "tiny-lidar-net",
@@ -381,6 +384,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ad/5f/b681ae3c89290d2ea6562ea96b40f5af6f6fc5f7743e2cd1a19e47721548/celery-5.6.0.tar.gz", hash = "sha256:641405206042d52ae460e4e9751a2e31b06cf80ab836fcf92e0b9311d7ea8113", size = 1712522 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/01/4e/53a125038d6a814491a0ae3457435c13cf8821eb602292cf9db37ce35f62/celery-5.6.0-py3-none-any.whl", hash = "sha256:33cf01477b175017fc8f22c5ee8a65157591043ba8ca78a443fe703aa910f581", size = 444561 },
+]
+
+[[package]]
+name = "centerline-planner"
+version = "0.1.0"
+source = { editable = "ad_components/planning/centerline_planner" }
+dependencies = [
+    { name = "core" },
+    { name = "planning-utils" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "planning-utils", editable = "ad_components/planning/planning_utils" },
 ]
 
 [[package]]
@@ -1153,6 +1171,7 @@ dependencies = [
     { name = "mcap" },
     { name = "mcap-ros2-support" },
     { name = "mlflow" },
+    { name = "mppi-planner" },
     { name = "numba" },
     { name = "onnxscript" },
     { name = "pid-controller" },
@@ -1193,6 +1212,7 @@ requires-dist = [
     { name = "mcap", specifier = ">=1.3.0" },
     { name = "mcap-ros2-support", specifier = ">=0.5.6" },
     { name = "mlflow", specifier = ">=3.7.0" },
+    { name = "mppi-planner", editable = "ad_components/planning/mppi_planner" },
     { name = "numba", specifier = ">=0.63.1" },
     { name = "onnxscript", specifier = ">=0.5.7" },
     { name = "pid-controller", editable = "ad_components/control/pid_controller" },
@@ -2422,6 +2442,27 @@ wheels = [
 ]
 
 [[package]]
+name = "mppi-planner"
+version = "0.1.0"
+source = { editable = "ad_components/planning/mppi_planner" }
+dependencies = [
+    { name = "core" },
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "pydantic" },
+    { name = "scipy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "pydantic" },
+    { name = "scipy" },
+]
+
+[[package]]
 name = "multidict"
 version = "6.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3317,6 +3358,21 @@ requires-dist = [
     { name = "pydantic" },
     { name = "shapely", specifier = ">=2.0.0" },
     { name = "simulator", editable = "simulator" },
+]
+
+[[package]]
+name = "pure-pursuit-controller"
+version = "0.1.0"
+source = { editable = "ad_components/control/pure_pursuit_controller" }
+dependencies = [
+    { name = "core" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "core", editable = "core" },
+    { name = "pydantic" },
 ]
 
 [[package]]

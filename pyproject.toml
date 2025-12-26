@@ -12,6 +12,7 @@ dependencies = [
     "lark>=1.0.0",
     "ruff>=0.8.0",
     "pure-pursuit",
+    "mppi-planner",
     "planning-utils",
     "pid-controller",
     "tiny-lidar-net",
@@ -40,6 +41,9 @@ experiment = { workspace = true }
 core = { workspace = true }
 ad-component-core = { workspace = true }
 pure-pursuit = { workspace = true }
+centerline-planner = { workspace = true }
+pure-pursuit-controller = { workspace = true }
+mppi-planner = { workspace = true }
 planning-utils = { workspace = true }
 pid-controller = { workspace = true }
 tiny-lidar-net = { workspace = true }
@@ -54,8 +58,11 @@ members = [
     "core",
     "ad_components/core",
     "ad_components/planning/pure_pursuit",
+    "ad_components/planning/centerline_planner",
     "ad_components/planning/planning_utils",
+    "ad_components/planning/mppi_planner",
     "ad_components/control/pid_controller",
+    "ad_components/control/pure_pursuit_controller",
     "ad_components/control/tiny_lidar_net",
     "simulator",
     "experiment",

@@ -32,6 +32,30 @@ def main(cfg: DictConfig) -> None:
     orchestrator = ExperimentOrchestrator()
     orchestrator.run_from_hydra(cfg)
 
+    # Update outputs/latest symlink
+    try:
+        from hydra.core.hydra_config import HydraConfig
+
+        hydra_cfg = HydraConfig.get()
+        run_dir = Path(hydra_cfg.run.dir).resolve()
+
+        # Assuming run_dir is inside an 'outputs' directory or equivalent root
+        # We try to find the 'outputs' directory
+        # Standard structure: outputs/YYYY-MM-DD/HH-MM-SS
+        output_base = run_dir.parent.parent
+
+        if output_base.exists():
+            latest_link = output_base / "latest"
+            if latest_link.is_symlink() or latest_link.exists():
+                latest_link.unlink()
+
+            # Create relative symlink
+            relative_target = run_dir.relative_to(output_base)
+            latest_link.symlink_to(relative_target)
+            print(f"Updated symlink: {latest_link} -> {relative_target}")
+    except Exception as e:
+        print(f"Warning: Could not update 'latest' symlink: {e}")
+
     print("Experiment completed successfully.")
 
 

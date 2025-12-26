@@ -95,7 +95,9 @@ def test_pure_pursuit_experiment_nodes(_mock_mlflow_eval, _mock_mlflow_base) -> 
     ), f"Termination code {metrics.termination_code} should not be 5 (Collision)"
     # Goal reached
     assert metrics.goal_count == 1, f"Goal count {metrics.goal_count} != 1 (Goal)"
-    assert metrics.checkpoint_count == 3, f"Checkpoint count {metrics.checkpoint_count} != 3 (Checkpoints)"
+    assert (
+        metrics.checkpoint_count == 3
+    ), f"Checkpoint count {metrics.checkpoint_count} != 3 (Checkpoints)"
     assert sim_result.metrics.get("goal_count") == 1, "Per-episode goal count mismatch"
     assert sim_result.metrics.get("checkpoint_count") == 3, "Per-episode checkpoint count mismatch"
 

@@ -38,8 +38,8 @@ obstacles:
     - type: static
       shape:
         type: rectangle
-        width: 2
-        length: 4
+        width: 1.30   # Vehicle width
+        length: 2.064 # Vehicle total length (wheelbase + front_overhang + rear_overhang)
       position:
         x: 89635.303
         y: 43148.381
@@ -47,8 +47,8 @@ obstacles:
     - type: static
       shape:
         type: rectangle
-        width: 2
-        length: 4
+        width: 1.30   # Vehicle width
+        length: 2.064 # Vehicle total length (wheelbase + front_overhang + rear_overhang)
       position:
         x: 89642.364
         y: 43156.666
@@ -56,8 +56,8 @@ obstacles:
     - type: static
       shape:
         type: rectangle
-        width: 2
-        length: 4
+        width: 1.30   # Vehicle width
+        length: 2.064 # Vehicle total length (wheelbase + front_overhang + rear_overhang)
       position:
         x: 89640.387
         y: 43139.626
@@ -65,8 +65,8 @@ obstacles:
     - type: static
       shape:
         type: rectangle
-        width: 2
-        length: 4
+        width: 1.30   # Vehicle width
+        length: 2.064 # Vehicle total length (wheelbase + front_overhang + rear_overhang)
       position:
         x: 89639.822
         y: 43149.417
@@ -74,8 +74,8 @@ obstacles:
     - type: static
       shape:
         type: rectangle
-        width: 2
-        length: 4
+        width: 1.30   # Vehicle width
+        length: 2.064 # Vehicle total length (wheelbase + front_overhang + rear_overhang)
       position:
         x: 89645.0
         y: 43132.0
