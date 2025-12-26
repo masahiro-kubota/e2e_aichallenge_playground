@@ -13,9 +13,9 @@ class VehicleState:
     y: float  # Y座標 [m]
     yaw: float  # ヨー角 [rad]
     velocity: float  # 速度 [m/s]
-    acceleration: float | None = None  # 加速度 [m/s^2]
-    steering: float | None = None  # ステアリング角 [rad]
-    timestamp: float | None = None  # タイムスタンプ [s]
+    acceleration: float = 0.0  # 加速度 [m/s^2]
+    steering: float = 0.0  # ステアリング角 [rad]
+    timestamp: float = 0.0  # タイムスタンプ [s]
     off_track: bool = False  # コース外判定フラグ
     collision: bool = False  # 障害物との衝突フラグ
 
@@ -26,6 +26,6 @@ class VehicleState:
         return np.array([self.x, self.y, self.yaw, self.velocity])
 
     @classmethod
-    def from_array(cls, arr: np.ndarray) -> "VehicleState":
+    def from_array(cls, arr: np.ndarray, timestamp: float = 0.0) -> "VehicleState":
         """numpy配列から生成."""
-        return cls(x=arr[0], y=arr[1], yaw=arr[2], velocity=arr[3])
+        return cls(x=arr[0], y=arr[1], yaw=arr[2], velocity=arr[3], timestamp=timestamp)

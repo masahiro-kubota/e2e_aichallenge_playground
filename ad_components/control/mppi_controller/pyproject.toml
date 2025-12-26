@@ -1,0 +1,17 @@
+[project]
+name = "mppi-controller"
+version = "0.1.0"
+description = "MPPI Controller component"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "core",
+    "numpy",
+    "pydantic",
+    "scipy",
+    "numba",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

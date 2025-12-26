@@ -160,19 +160,38 @@ class HTMLDashboardGenerator(DashboardGenerator):
                     for schema, channel, message in reader.iter_messages(
                         topics=["/simulation/step"]
                     ):
-                        step_dict = json.loads(message.data)
+                        # The message is a String(data=JSON) from LoggerNode
+                        wrapper = json.loads(message.data)
+                        if "data" not in wrapper:
+                            continue
+
+                        step_dict = json.loads(wrapper["data"])
 
                         # LiDAR data is not needed for dashboard visualization
                         steps_data.append(
                             {
                                 "timestamp": step_dict["timestamp"],
-                                "x": step_dict["vehicle_state"]["x"],
-                                "y": step_dict["vehicle_state"]["y"],
-                                "z": step_dict["vehicle_state"].get("z", 0.0),
-                                "yaw": step_dict["vehicle_state"]["yaw"],
-                                "velocity": step_dict["vehicle_state"]["velocity"],
-                                "acceleration": step_dict["action"]["acceleration"],
-                                "steering": step_dict["action"]["steering"],
+                                "x": step_dict["vehicle_state"]["x"]
+                                if "vehicle_state" in step_dict
+                                else 0.0,
+                                "y": step_dict["vehicle_state"]["y"]
+                                if "vehicle_state" in step_dict
+                                else 0.0,
+                                "z": step_dict["vehicle_state"].get("z", 0.0)
+                                if "vehicle_state" in step_dict
+                                else 0.0,
+                                "yaw": step_dict["vehicle_state"]["yaw"]
+                                if "vehicle_state" in step_dict
+                                else 0.0,
+                                "velocity": step_dict["vehicle_state"]["velocity"]
+                                if "vehicle_state" in step_dict
+                                else 0.0,
+                                "acceleration": step_dict["action"]["acceleration"]
+                                if "action" in step_dict
+                                else 0.0,
+                                "steering": step_dict["action"]["steering"]
+                                if "action" in step_dict
+                                else 0.0,
                                 "lidar_scan": None,
                                 "ad_component_log": step_dict.get("ad_component_log"),
                             }

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Any
 
 from core.data.ad_components.action import Action
-from core.data.ad_components.log import ADComponentLog
 from core.data.ad_components.state import VehicleState
 
 
@@ -16,15 +15,14 @@ class SimulationStep:
         timestamp: タイムスタンプ [s]
         vehicle_state: 車両状態
         action: 実行されたアクション
-        ad_component_log: ADコンポーネントのログ（任意）
         info: 追加情報（任意）
     """
 
     timestamp: float
     vehicle_state: VehicleState
     action: Action
-    ad_component_log: ADComponentLog | None = None
     info: dict[str, Any] | None = None
+    ad_component_log: Any | None = None  # Legacy support
 
 
 @dataclass

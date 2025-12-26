@@ -1,8 +1,8 @@
 # MPPI Agent Configuration
 
 nodes:
-  planning:
-    type: "mppi_planner.mppi_planner_node.MPPIPlannerNode"
+  control:
+    type: "mppi_controller.mppi_controller_node.MPPIControllerNode"
     rate_hz: 10.0
     params:
       vehicle_params: ${vehicle}
@@ -24,16 +24,5 @@ nodes:
       # Map boundary
       off_track_cost_weight: 10000.0  # Very high penalty for off-track
 
-  control:
-    type: PurePursuitControllerNode
-    rate_hz: 30.0
-    params:
-      vehicle_params: ${vehicle}
-      min_lookahead_distance: 2.0
-      max_lookahead_distance: 15.0
-      lookahead_speed_ratio: 1.5
-      kp: 100.0
-      ki: 0.0
-      kd: 0.05
-      u_min: -3.0
-      u_max: 3.0
+      # Velocity control
+      target_velocity: 5.0  # Target velocity [m/s]

@@ -15,8 +15,8 @@ class TestVehicleState:
         assert state.y == 2.0
         assert state.yaw == 0.5
         assert state.velocity == 5.0
-        assert state.acceleration is None
-        assert state.steering is None
+        assert state.acceleration == 0.0
+        assert state.steering == 0.0
 
     def test_to_array(self) -> None:
         """Test conversion to numpy array."""

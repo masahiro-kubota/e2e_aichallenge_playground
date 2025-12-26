@@ -1,7 +1,7 @@
-"""Logger node for recording FrameData."""
-
 import json
+import logging
 from pathlib import Path
+from typing import Any
 
 from pydantic import Field
 
@@ -9,7 +9,6 @@ from core.data import (
     Action,
     ComponentConfig,
     SimulationLog,
-    SimulationStep,
     VehicleParameters,
     VehicleState,
 )
@@ -31,6 +30,8 @@ from logger.visualization.obstacle_visualizer import ObstacleVisualizer
 from logger.visualization.path_visualizer import PathVisualizer
 from logger.visualization.trajectory_visualizer import TrajectoryVisualizer
 from logger.visualization.vehicle_visualizer import VehicleVisualizer
+
+logger = logging.getLogger(__name__)
 
 
 class LoggerConfig(ComponentConfig):
@@ -63,6 +64,7 @@ class LoggerNode(Node[LoggerConfig]):
 
         # Data accumulation for path visualization only
         self.vehicle_positions: list[tuple[float, float]] = []
+        self.first_timestamp: float | None = None
 
     def on_init(self) -> None:
         """Initialize resources."""
@@ -101,45 +103,96 @@ class LoggerNode(Node[LoggerConfig]):
             return NodeExecutionResult.SUCCESS
 
         self.current_time = current_time
-
-        # Reconstruct SimulationStep for legacy compatibility
-        sim_state = getattr(self.frame_data, "sim_state", None)
-        if sim_state is None:
-            sim_state = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=current_time)
-
-        action = getattr(self.frame_data, "action", None)
-        if action is None:
-            action = Action(steering=0.0, acceleration=0.0)
-
-        simulation_info = {
-            "goal_count": getattr(self.frame_data, "goal_count", 0),
-        }
-
-        ad_component_log = getattr(self.frame_data, "ad_component_log", None)
-
-        step = SimulationStep(
-            timestamp=current_time,
-            vehicle_state=sim_state,
-            action=action,
-            ad_component_log=ad_component_log,
-            info=simulation_info,
-        )
-        self.log.steps.append(step)
+        if self.first_timestamp is None:
+            self.first_timestamp = current_time
 
         if self.mcap_logger is None:
             return NodeExecutionResult.SUCCESS
 
-        # Log ROS 2 messages to MCAP
-        self._log_vehicle_state(sim_state, current_time)
-        self._log_lidar_scan(current_time)
-        self._log_trajectory(current_time)
-        self._log_control_command(action, current_time)
-        self._log_simulation_info(simulation_info, current_time)
+        # Dictionary to store a snapshot for the /simulation/step topic (legacy support/dashboard)
+        step_snapshot: dict[str, Any] = {"timestamp": current_time}
 
-        # Accumulate vehicle positions for path visualization (batch processing)
-        self.vehicle_positions.append((sim_state.x, sim_state.y))
+        # 1. Generically log all Pydantic models (BaseModel) and MarkerArrays found in FrameData
+        from pydantic import BaseModel
+
+        # Prepare AD log structure and simulation info for compatibility
+        ad_log_data = {}
+        simulation_info = {}
+
+        for key, value in vars(self.frame_data).items():
+            if value is None:
+                continue
+
+            # Log to dedicated topic: /key
+            topic = f"/{key}"
+
+            if isinstance(value, BaseModel):
+                self.mcap_logger.log(topic, value, current_time)
+                # Add to snapshot for dashboard (exclude large/internal data if necessary)
+                if key in ["vehicle_state", "action", "sim_state"]:
+                    step_snapshot[key] = value.model_dump()
+                elif isinstance(value, MarkerArray) and key.startswith("mppi_"):
+                    # Map MPPI markers to the format dashboard expects
+                    ad_log_data[key.replace("mppi_", "")] = value.model_dump()
+            elif isinstance(value, MarkerArray):
+                self.mcap_logger.log(topic, value, current_time)
+                if key.startswith("mppi_"):
+                    ad_log_data[key.replace("mppi_", "")] = value.model_dump()
+            elif key == "obstacles" and isinstance(value, list):
+                # Special handling for obstacles list
+                step_snapshot[key] = [
+                    obs.model_dump() if hasattr(obs, "model_dump") else obs for obs in value
+                ]
+            elif isinstance(value, int | float | str | bool):
+                # Gather primitive fields for /simulation/info
+                simulation_info[key] = value
+
+        if ad_log_data:
+            step_snapshot["ad_component_log"] = {
+                "component_type": "mppi_controller",
+                "data": ad_log_data,
+            }
+
+        # 2. Log consolidated simulation step and info for compatibility
+        try:
+            self.mcap_logger.log(
+                "/simulation/step", String(data=json.dumps(step_snapshot)), current_time
+            )
+            if simulation_info:
+                self.mcap_logger.log(
+                    "/simulation/info", String(data=json.dumps(simulation_info)), current_time
+                )
+        except Exception as e:
+            logger.warning("Failed to log /simulation/step or info: %s", e)
+
+        # 3. Maintain ROS-standard specific messages for Foxglove compatibility
+        sim_state = getattr(self.frame_data, "vehicle_state", None) or getattr(
+            self.frame_data, "sim_state", None
+        )
+        if sim_state:
+            self._log_vehicle_state(sim_state, current_time)
+            # Accumulate vehicle positions for final path visualization
+            self.vehicle_positions.append((sim_state.x, sim_state.y))
+
+        lidar_scan = getattr(self.frame_data, "lidar_scan", None)
+        if lidar_scan:
+            self._log_lidar_scan(current_time)
+
+        action = getattr(self.frame_data, "action", None)
+        if action:
+            self._log_control_command(action, current_time)
+
+        trajectory = getattr(self.frame_data, "trajectory", None)
+        if trajectory:
+            self._log_trajectory(trajectory, current_time)
 
         return NodeExecutionResult.SUCCESS
+
+    def _log_trajectory(self, trajectory: Any, timestamp: float) -> None:
+        """Log trajectory (lookahead point) markers."""
+        marker = self.trajectory_visualizer.create_marker(trajectory, timestamp)
+        if marker:
+            self.mcap_logger.log("/planning/marker", MarkerArray(markers=[marker]), timestamp)
 
     def _log_vehicle_state(self, vehicle_state: VehicleState, timestamp: float) -> None:
         """Log vehicle state messages."""
@@ -184,28 +237,13 @@ class LoggerNode(Node[LoggerConfig]):
         cmd_msg = build_ackermann_drive_message(action, timestamp)
         self.mcap_logger.log("/control/command/control_cmd", cmd_msg, timestamp)
 
-    def _log_simulation_info(self, simulation_info: dict, timestamp: float) -> None:
-        """Log simulation info as JSON."""
-        if simulation_info:
-            self.mcap_logger.log(
-                "/simulation/info", String(data=json.dumps(simulation_info)), timestamp
-            )
-
-    def _log_trajectory(self, timestamp: float) -> None:
-        """Log trajectory (lookahead point) markers."""
-        trajectory = getattr(self.frame_data, "trajectory", None)
-        if trajectory:
-            marker = self.trajectory_visualizer.create_marker(trajectory, timestamp)
-            if marker:
-                self.mcap_logger.log("/planning/marker", MarkerArray(markers=[marker]), timestamp)
-
     def _finalize_visualizations(self) -> None:
         """Finalize path visualization at the end of simulation."""
-        if not self.mcap_logger:
+        if not self.mcap_logger or self.first_timestamp is None:
             return
 
         # Use the first timestamp for static visualizations (like map)
-        first_timestamp = self.log.steps[0].timestamp if self.log.steps else 0.0
+        first_timestamp = self.first_timestamp
 
         # Vehicle path (entire trajectory as a single marker)
         if self.vehicle_positions:
