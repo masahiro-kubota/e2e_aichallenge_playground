@@ -185,7 +185,7 @@ class TestTinyLidarNetNode:
         )
 
         frame_data = FrameData()
-        frame_data.lidar_scan = lidar_scan
+        frame_data.perception_lidar_scan = lidar_scan
         node.frame_data = frame_data
 
         result = node.on_run(0.0)

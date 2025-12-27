@@ -57,7 +57,7 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
         from core.data.ros import AckermannDriveStamped
 
         return NodeIO(
-            inputs={"lidar_scan": LaserScan},
+            inputs={"perception_lidar_scan": LaserScan},
             outputs={"control_cmd": AckermannDriveStamped},
         )
 
@@ -74,7 +74,7 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
             return NodeExecutionResult.FAILED
 
         # Get LiDAR scan from frame_data (now a LaserScan message)
-        lidar_scan = getattr(self.frame_data, "lidar_scan", None)
+        lidar_scan = getattr(self.frame_data, "perception_lidar_scan", None)
 
         if lidar_scan is None:
             return NodeExecutionResult.SKIPPED

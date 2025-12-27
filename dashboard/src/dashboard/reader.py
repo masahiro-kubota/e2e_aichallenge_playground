@@ -25,8 +25,7 @@ DYNAMIC_TOPIC_PREFIXES = ["/mppi_", "/pure_pursuit_", "/pid_"]
 # Blacklisted topics that are too large for the dashboard overview
 BLACKLISTED_TOPICS = {
     "/mppi_candidates",  # Very large visualization data
-    "/lidar_scan",  # Raw sensor data
-    "/perception/lidar/scan",
+    "/perception/lidar/scan",  # Raw sensor data
 }
 
 

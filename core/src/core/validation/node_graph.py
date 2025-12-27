@@ -14,7 +14,7 @@ def validate_node_graph(nodes: list[Node]) -> None:
     """
     # 利用可能な出力(初期値として"action"と"sim_state"を含む - 循環のため)
     # Simulatorからの出力も含める
-    available_outputs = {"action", "sim_state", "obstacles", "lidar_scan"}
+    available_outputs = {"action", "sim_state", "obstacles", "perception_lidar_scan"}
 
     for node in nodes:
         io_spec = node.get_node_io()
