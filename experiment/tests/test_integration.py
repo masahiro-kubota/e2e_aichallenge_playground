@@ -22,7 +22,7 @@ def run_integration_test(agent_name: str, overrides: list[str] | None = None) ->
 
     base_overrides = [
         "experiment=evaluation",
-        f"agent={agent_name}",
+        f"ad_components={agent_name}",
         "execution.duration_sec=200.0",
         "execution.num_episodes=1",
     ]

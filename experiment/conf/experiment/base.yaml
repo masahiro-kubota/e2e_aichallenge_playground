@@ -26,13 +26,6 @@ system:
         initial_state: ${env.initial_state}
         obstacles: ${env.obstacles}
         obstacle_color: ${visualization.colors.obstacle}
-    sensor:
-      type: "ideal_sensor.sensor_node.IdealSensorNode"
-      rate_hz: 50.0
-
-      params:
-        vehicle_params: ${vehicle}
-        vehicle_color: ${visualization.colors.vehicle}
     logger:
       type: "LoggerNode"
       rate_hz: ${execution.clock_rate_hz}

@@ -1,6 +1,12 @@
 # Centerline Planner + Pure Pursuit Controller Agent Configuration
 
 nodes:
+  sensor:
+    type: "ideal_sensor.sensor_node.IdealSensorNode"
+    rate_hz: 50.0
+    params:
+      vehicle_params: ${vehicle}
+      vehicle_color: ${visualization.colors.vehicle}
   planning:
     type: CenterlinePlannerNode
     rate_hz: 10.0

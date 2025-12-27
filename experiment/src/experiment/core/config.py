@@ -178,4 +178,4 @@ class ExperimentConfig(BaseModel):
     input_dir: str | None = None
     output_dir: str | None = None
 
-    agent: dict[str, Any] | None = None
+    ad_components: dict[str, Any] | None = None

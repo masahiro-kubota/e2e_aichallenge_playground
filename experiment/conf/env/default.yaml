@@ -29,7 +29,6 @@ checkpoints:
     tolerance: 6.0
 
 # Obstacles
-# Obstacles
 obstacles:
   generation:
     enabled: false

@@ -4,7 +4,7 @@ defaults:
   - experiment: evaluation
   - env: default
   - vehicle: default
-  - agent: pure_pursuit
+  - ad_components: pure_pursuit
   - _self_
 
 seed: 42

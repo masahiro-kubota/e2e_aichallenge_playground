@@ -145,22 +145,22 @@ class CollectorEngine(BaseEngine):
         # Convert dictionary-based nodes to list format
         nodes_data = self._convert_nodes_to_list(system_data["nodes"])
 
-        # Handle agent nodes
-        agent_nodes_data = []
-        if "agent" in cfg_dict and "nodes" in cfg_dict["agent"]:
-            agent_nodes_data = self._convert_nodes_to_list(cfg_dict["agent"]["nodes"])
+        # Handle AD component nodes
+        ad_nodes_data = []
+        if "ad_components" in cfg_dict and "nodes" in cfg_dict["ad_components"]:
+            ad_nodes_data = self._convert_nodes_to_list(cfg_dict["ad_components"]["nodes"])
         elif "nodes" in cfg_dict:
-            agent_nodes_data = self._convert_nodes_to_list(cfg_dict["nodes"])
+            ad_nodes_data = self._convert_nodes_to_list(cfg_dict["nodes"])
 
-        if agent_nodes_data:
+        if ad_nodes_data:
             # Find insertion point (before Supervisor if it exists)
             insert_idx = len(nodes_data)
             for i, node in enumerate(nodes_data):
                 if node["name"] == "Supervisor":
                     insert_idx = i
                     break
-            # Insert agent nodes in reverse order to maintain correct sequence
-            for node in reversed(agent_nodes_data):
+            # Insert AD component nodes in reverse order to maintain correct sequence
+            for node in reversed(ad_nodes_data):
                 nodes_data.insert(insert_idx, node)
 
         for node in nodes_data:

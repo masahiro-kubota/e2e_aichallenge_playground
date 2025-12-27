@@ -1,6 +1,12 @@
 # MPPI Agent Configuration
 
 nodes:
+  sensor:
+    type: "ideal_sensor.sensor_node.IdealSensorNode"
+    rate_hz: 50.0
+    params:
+      vehicle_params: ${vehicle}
+      vehicle_color: ${visualization.colors.vehicle}
   control:
     type: "mppi_controller.mppi_controller_node.MPPIControllerNode"
     rate_hz: 10.0

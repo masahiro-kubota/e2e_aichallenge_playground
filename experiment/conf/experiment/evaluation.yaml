@@ -5,7 +5,7 @@ defaults:
   - base
   - _self_
 
-agent: tiny_lidar
+ad_components: tiny_lidar
 
 experiment:
   name: "evaluation"

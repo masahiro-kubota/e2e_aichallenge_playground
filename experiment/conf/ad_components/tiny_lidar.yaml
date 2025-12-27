@@ -3,6 +3,12 @@
 model_path: "outputs/2025-12-21/21-46-10/tinylidarnet.npy"
 
 nodes:
+  sensor:
+    type: "ideal_sensor.sensor_node.IdealSensorNode"
+    rate_hz: 50.0
+    params:
+      vehicle_params: ${vehicle}
+      vehicle_color: ${visualization.colors.vehicle}
   tiny_lidar_net:
     type: "tiny_lidar_net.node.TinyLidarNetNode"
     rate_hz: 50.0 # Match sensor rate or similar
