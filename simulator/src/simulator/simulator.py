@@ -61,7 +61,7 @@ class Simulator(Node[SimulatorConfig]):
         """Define node IO."""
         # Use lazy import for LidarScan because it might be circular if imported at top-level
         # (Though currently it's safe as it's in core.data)
-        from core.data.ros import AckermannDriveStamped, LaserScan, MarkerArray, TFMessage
+        from core.data.ros import AckermannDriveStamped, LaserScan, MarkerArray
 
         return NodeIO(
             inputs={
@@ -72,7 +72,6 @@ class Simulator(Node[SimulatorConfig]):
                 "obstacles": list[SimulatorObstacle],
                 "obstacle_markers": MarkerArray,
                 "perception_lidar_scan": LaserScan,
-                "tf_lidar": TFMessage,
             },
         )
 
@@ -254,10 +253,7 @@ class Simulator(Node[SimulatorConfig]):
         self.frame_data.obstacle_states = obstacle_states
 
         if ranges is not None:
-            from core.utils.ros_message_builder import (
-                build_laser_scan_message,
-                build_lidar_tf_message,
-            )
+            from core.utils.ros_message_builder import build_laser_scan_message
 
             # LaserScan message
             # Create a dict that looks like LidarScan for the builder if needed,
@@ -266,10 +262,6 @@ class Simulator(Node[SimulatorConfig]):
                 self.config.vehicle_params.lidar, ranges, self.current_time
             )
             self.frame_data.perception_lidar_scan = scan_msg
-
-            # TF (base_link -> lidar_link)
-            tf_msg = build_lidar_tf_message(self.config.vehicle_params.lidar, self.current_time)
-            self.frame_data.tf_lidar = tf_msg
 
         return NodeExecutionResult.SUCCESS
 
