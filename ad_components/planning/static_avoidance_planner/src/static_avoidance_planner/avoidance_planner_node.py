@@ -1,10 +1,24 @@
 import logging
+import math
 from pathlib import Path
 
 from core.data import ComponentConfig, VehicleState
 from core.data.ad_components import Trajectory
 from core.data.node_io import NodeIO
+
+# ROS Data Imports
+from core.data.ros import (
+    ColorRGBA,
+    Header,
+    Marker,
+    MarkerArray,
+    Point,
+    Pose,
+    Quaternion,
+    Vector3,
+)
 from core.interfaces.node import Node, NodeExecutionResult
+from core.utils.ros_message_builder import to_ros_time
 from planning_utils import load_track_csv
 from pydantic import Field
 
@@ -21,9 +35,11 @@ class AvoidancePlannerNodeConfig(ComponentConfig):
 
     # Avoidance params
     lookahead_distance: float = Field(..., description="Lookahead distance [m]")
-    avoidance_distance: float = Field(..., description="Obstacle avoidance activation distance [m]")
-    d_front: float = Field(..., description="Front margin distance [m]")
-    d_rear: float = Field(..., description="Rear margin distance [m]")
+    avoidance_maneuver_length: float = Field(
+        ..., description="Obstacle avoidance activation distance [m]"
+    )
+    longitudinal_margin_front: float = Field(..., description="Front margin distance [m]")
+    longitudinal_margin_rear: float = Field(..., description="Rear margin distance [m]")
     road_width: float = Field(..., description="Road width [m]")
     vehicle_width: float = Field(..., description="Vehicle width [m]")
     safe_margin: float = Field(..., description="Safety margin [m]")
@@ -61,9 +77,9 @@ class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
         # Init planner
         planner_config = AvoidancePlannerConfig(
             lookahead_distance=self.config.lookahead_distance,
-            avoidance_distance=self.config.avoidance_distance,
-            d_front=self.config.d_front,
-            d_rear=self.config.d_rear,
+            avoidance_maneuver_length=self.config.avoidance_maneuver_length,
+            longitudinal_margin_front=self.config.longitudinal_margin_front,
+            longitudinal_margin_rear=self.config.longitudinal_margin_rear,
             road_width=self.config.road_width,
             vehicle_width=self.config.vehicle_width,
             safe_margin=self.config.safe_margin,
@@ -167,18 +183,6 @@ class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
         self.frame_data.trajectory = trajectory
 
         # Visualize
-        import math
-
-        from core.data.ros import (
-            ColorRGBA,
-            Header,
-            Marker,
-            MarkerArray,
-            Point,
-            Vector3,
-        )
-        from core.utils.ros_message_builder import to_ros_time
-
         ros_time = to_ros_time(_current_time)
         markers = []
 
@@ -286,6 +290,39 @@ class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
 
             # Shift Profile Markers: REMOVED per user feedback (too cluttered)
             # Instead, we visualize the MERGED profile below.
+
+            # --- Restoration of Shift Point Text Markers (per user request) ---
+            # We visualize key points (S, L) for each profile to aid debugging.
+            # Define point types and their corresponding s values
+            point_defs = [
+                ("Start", profile.s_start_action),
+                ("Full", profile.s_full_avoid),
+                ("Keep", profile.s_keep_avoid),
+                ("End", profile.s_end_action),
+            ]
+
+            for label, s_sample in point_defs:
+                l_req = profile.get_lat(s_sample)
+                gx, gy = converter.frenet_to_global(s_sample, l_req)
+
+                # Text Marker for each point
+                markers.append(
+                    Marker(
+                        header=Header(stamp=ros_time, frame_id="map"),
+                        ns="shift_points",
+                        id=i * 100 + int(s_sample),  # Value-based ID
+                        type=9,  # TEXT_VIEW_FACING
+                        action=0,
+                        scale=Vector3(x=0.0, y=0.0, z=0.5),  # Height of text
+                        color=ColorRGBA.from_hex("#FFFF00CC"),
+                        pose=Pose(
+                            position=Point(x=gx, y=gy, z=1.0),
+                            orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0),
+                        ),
+                        points=[],
+                        text=f"{label}\nS:{s_sample:.1f}\nL:{l_req:.1f}",
+                    )
+                )
 
         # B. Merged Shift Profile (Single Line)
         if debug_data.s_samples is not None and debug_data.merged_lat is not None:

@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 from core.data.ad_components import VehicleState
@@ -46,14 +47,14 @@ class ObstacleManager:
         self.safe_margin = safe_margin
 
     def get_target_obstacles(
-        self, ego_state: VehicleState, obstacles: list[Obstacle], road_width: float = 6.0
+        self, ego_state: VehicleState, obstacles: list[Obstacle], _road_width: float = 6.0
     ) -> list[TargetObstacle]:
         """Convert obstacles to Frenet frame and filter.
 
         Args:
             ego_state: Current vehicle state
             obstacles: List of detected obstacles
-            road_width: Current road width [m]
+            _road_width: Current road width [m] (unused)
 
         Returns:
             List of TargetObstacle
@@ -65,7 +66,7 @@ class ObstacleManager:
 
         for obs in obstacles:
             # Convert to Frenet
-            s_obj, l_obj = self.converter.global_to_frenet(obs.x, obs.y)
+            s_obj, _ = self.converter.global_to_frenet(obs.x, obs.y)
 
             # 1. Forward check
             # TODO: Handle wrap-around scenarios properly.
@@ -75,29 +76,81 @@ class ObstacleManager:
             if s_obj <= s_ego:
                 continue
 
-            # 2. Distance check
-            if s_obj - s_ego > self.lookahead:
-                continue
+            # Map dimensions with YAW consideration
+            # Calculate Frenet Bounding Box
+            # 1. Get 4 corners in Global Frame
+            # length (longitudinal dim), width (lateral dim)
+            half_l = obs.height / 2.0  # length
+            half_w = obs.width / 2.0  # width
 
-            # 3. Lateral position check
-            # Check lateral position (within road width)
-            # Utilizing dynamic road_width if provided, otherwise default from self.road_width (if we want to keep it)
-            # Actually, let's use the passed road_width.
-            # safe_margin is included in ShiftProfile, but for filtering we check if it is ON ROAD.
-            # Assuming center of road is l=0, road edges are +/- road_width/2.
-            if abs(l_obj) > road_width / 2.0:
-                continue
+            corners_local = [
+                (half_l, half_w),
+                (half_l, -half_w),
+                (-half_l, -half_w),
+                (-half_l, half_w),
+            ]
 
-            # Map dimensions
-            # Assuming obs.height is length (longitudinal) and obs.width is lateral
-            length = obs.height
-            width = obs.width
+            ct = math.cos(obs.yaw)
+            st = math.sin(obs.yaw)
+
+            s_vals = []
+            l_vals = []
+
+            for cx, cy in corners_local:
+                # Rotate
+                gx = cx * ct - cy * st + obs.x
+                gy = cx * st + cy * ct + obs.y
+
+                # Convert to Frenet
+                cs, cl = self.converter.global_to_frenet(gx, gy)
+                s_vals.append(cs)
+                l_vals.append(cl)
+
+            # 2. Compute effective dimensions in Frenet Frame
+            s_min = min(s_vals)
+            s_max = max(s_vals)
+            l_min = min(l_vals)
+            l_max = max(l_vals)
+
+            # Effective width and length in Frenet Frame
+            width_frenet = l_max - l_min
+            length_frenet = s_max - s_min
+
+            # Use Frenet Center for checks or keep center?
+            # ShiftProfile uses obstacle.lat as center.
+            # Ideally use (l_min + l_max) / 2 as the effective center in Frenet.
+            l_center_frenet = (l_min + l_max) / 2.0
+            s_center_frenet = (s_min + s_max) / 2.0
+
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(
+                f"O({obs.id}): Yaw={obs.yaw:.2f}, L_range=[{l_min:.2f}, {l_max:.2f}], W_eff={width_frenet:.2f}, L_center={l_center_frenet:.2f}"
+            )
 
             targets.append(
-                TargetObstacle(id=obs.id, s=s_obj, lat=l_obj, length=length, width=width, raw=obs)
+                TargetObstacle(
+                    id=obs.id,
+                    s=s_center_frenet,
+                    lat=l_center_frenet,
+                    length=length_frenet,
+                    width=width_frenet,
+                    raw=obs,
+                )
             )
 
         # Sort by distance (s)
         targets.sort(key=lambda o: o.s)
+
+        if len(targets) > 0:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(f"[ObstacleManager] Found {len(targets)} targets:")
+            for t in targets:
+                logger.info(
+                    f"  ID={t.id} s={t.s:.2f} l={t.lat:.2f} w={t.width:.2f} l_raw={t.raw.x:.1f},{t.raw.y:.1f}"
+                )
 
         return targets

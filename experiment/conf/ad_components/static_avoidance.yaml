@@ -14,14 +14,21 @@ nodes:
     params:
       track_path: ${env.track_path}
       map_path: ${env.map_path}
-      lookahead_distance: 30.0
-      avoidance_distance: 15.0
-      d_front: 8.0
-      d_rear: 2.0
-      road_width: 6.0
-      vehicle_width: ${vehicle.width}
-      safe_margin: 0.5
-      trajectory_resolution: 0.5
+      # Perception / Planning Horizon
+      lookahead_distance: 15.0 # [m] Maximum distance to detect obstacles and generate trajectory. Determines the length of the planned path.
+
+      # Shift Profile Parameters (Avoidance Logic)
+      avoidance_maneuver_length: 5.0 # [m] Longitudinal distance required to complete the lateral shift (from 0 to target lateral position).
+      longitudinal_margin_front: 0.5 # [m] Buffer distance BEFORE the obstacle. The vehicle will reach full avoidance position this many meters before the obstacle.
+      longitudinal_margin_rear: 0.5 # [m] Buffer distance AFTER the obstacle. The vehicle maintains avoidance position for this distance after passing the obstacle.
+
+      # Vehicle & Environment
+      road_width: 6.0 # [m] Fallback road width if Lanelet2 map data is unavailable. Used for validity checks.
+      vehicle_width: ${vehicle.width} # [m] Width of the ego vehicle.
+      safe_margin: 0.5 # [m] Additional lateral clearance to keep from the obstacle boundary.
+
+      # Trajectory Generation
+      trajectory_resolution: 0.5 # [m] Spacing between discrete points in the output trajectory.
       trajectory_color: "#4DB6ACCC" # Teal
 
   control:
@@ -29,12 +36,14 @@ nodes:
     rate_hz: 30.0
     params:
       vehicle_params: ${vehicle}
-      min_lookahead_distance: 2.0
-      max_lookahead_distance: 5.0
-      lookahead_speed_ratio: 1.5
-      kp: 1.0
-      ki: 0.1
-      kd: 0.05
-      u_min: -3.0
-      u_max: 3.0
       lookahead_marker_color: "#D1C4E9CC" # Deep Purple 100
+      lateral:
+        min_lookahead_distance: 2.0
+        max_lookahead_distance: 5.0
+        lookahead_speed_ratio: 1.5
+      longitudinal:
+        kp: 1.0
+        ki: 0.1
+        kd: 0.05
+        u_min: -3.0
+        u_max: 3.0

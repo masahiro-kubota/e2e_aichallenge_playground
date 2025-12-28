@@ -13,21 +13,34 @@ from planning_utils.visualization import create_trajectory_marker
 from pydantic import Field
 
 
-class PurePursuitControllerConfig(ComponentConfig):
-    """Configuration for PurePursuitControllerNode."""
+class LateralControlParams(ComponentConfig):
+    """Lateral control parameters (Pure Pursuit)."""
 
-    vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
     min_lookahead_distance: float = Field(..., description="Minimum lookahead distance [m]")
     max_lookahead_distance: float = Field(..., description="Maximum lookahead distance [m]")
     lookahead_speed_ratio: float = Field(..., description="Lookahead distance speed ratio [s]")
 
-    # PID parameters for velocity control
+
+class LongitudinalControlParams(ComponentConfig):
+    """Longitudinal control parameters (PID)."""
+
     kp: float = Field(..., description="Proportional gain for velocity control")
     ki: float = Field(..., description="Integral gain for velocity control")
     kd: float = Field(..., description="Derivative gain for velocity control")
     u_min: float = Field(..., description="Minimum acceleration [m/s^2]")
     u_max: float = Field(..., description="Maximum acceleration [m/s^2]")
+
+
+class PurePursuitControllerConfig(ComponentConfig):
+    """Configuration for PurePursuitControllerNode."""
+
+    vehicle_params: VehicleParameters = Field(..., description="Vehicle parameters")
     lookahead_marker_color: str = Field("#FF00FFCC", description="Lookahead marker color")
+
+    lateral: LateralControlParams = Field(..., description="Lateral control parameters")
+    longitudinal: LongitudinalControlParams = Field(
+        ..., description="Longitudinal control parameters"
+    )
 
 
 class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
@@ -111,10 +124,10 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
         # 1. Calculate dynamic lookahead distance
         current_speed = vehicle_state.velocity
         lookahead = max(
-            self.config.min_lookahead_distance,
+            self.config.lateral.min_lookahead_distance,
             min(
-                self.config.max_lookahead_distance,
-                current_speed * self.config.lookahead_speed_ratio,
+                self.config.lateral.max_lookahead_distance,
+                current_speed * self.config.lateral.lookahead_speed_ratio,
             ),
         )
 
@@ -148,13 +161,15 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
         derivative_error = error - self.prev_error
 
         acceleration = (
-            self.config.kp * error
-            + self.config.ki * self.integral_error
-            + self.config.kd * derivative_error
+            self.config.longitudinal.kp * error
+            + self.config.longitudinal.ki * self.integral_error
+            + self.config.longitudinal.kd * derivative_error
         )
 
         # Output saturation
-        acceleration = max(self.config.u_min, min(self.config.u_max, acceleration))
+        acceleration = max(
+            self.config.longitudinal.u_min, min(self.config.longitudinal.u_max, acceleration)
+        )
 
         self.prev_error = error
 

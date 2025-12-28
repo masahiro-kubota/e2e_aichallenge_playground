@@ -22,7 +22,12 @@ class SingleProcessExecutor:
         self.nodes = nodes
         self.clock = clock
 
-    def run(self, duration: float, stop_condition: Callable[[], bool] | None = None) -> None:
+    def run(
+        self,
+        duration: float,
+        stop_condition: Callable[[], bool] | None = None,
+        suppress_console_log: bool = True,
+    ) -> None:
         """Run the simulation loop.
 
         シミュレーションループを実行します。
@@ -31,6 +36,7 @@ class SingleProcessExecutor:
         Args:
             duration: 実行期間 [sec]
             stop_condition: 終了条件を判定するコールバック関数(Trueを返すと終了)
+            suppress_console_log: 実行中にコンソールへのログ出力を抑制するかどうか
         """
         # Initialize all nodes
         for node in self.nodes:
@@ -41,6 +47,21 @@ class SingleProcessExecutor:
         # Calculate total steps for progress bar
         clock_rate = self.clock.rate_hz if hasattr(self.clock, "rate_hz") else 100.0
         total_steps = int(duration * clock_rate)
+
+        # Console logging suppression logic
+        root_logger = logging.getLogger()
+        original_handlers_levels = {}
+
+        if suppress_console_log:
+            # Find and modify console handlers
+            for handler in root_logger.handlers:
+                # Assuming StreamHandler without a file output is likely stdout/stderr
+                if isinstance(handler, logging.StreamHandler) and not isinstance(
+                    handler, logging.FileHandler
+                ):
+                    original_handlers_levels[handler] = handler.level
+                    # Suppress INFO/DEBUG, allow WARNING/ERROR
+                    handler.setLevel(logging.WARNING)
 
         try:
             # メインループ: 指定時間経過するか、終了条件が満たされるまで継続
@@ -94,6 +115,11 @@ class SingleProcessExecutor:
                     if step_count % 100 == 0:
                         pbar.set_postfix({"time": f"{self.clock.now:.1f}s"})
         finally:
+            # Restore original handler levels
+            if suppress_console_log:
+                for handler, level in original_handlers_levels.items():
+                    handler.setLevel(level)
+
             # Shutdown all nodes
             for node in self.nodes:
                 node.on_shutdown()

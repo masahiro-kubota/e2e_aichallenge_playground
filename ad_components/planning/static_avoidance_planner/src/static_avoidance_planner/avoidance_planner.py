@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 import numpy as np
@@ -8,16 +9,25 @@ from static_avoidance_planner.frenet_converter import FrenetConverter
 from static_avoidance_planner.obstacle_manager import ObstacleManager, TargetObstacle
 from static_avoidance_planner.shift_profile import ShiftProfile, merge_profiles
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class AvoidancePlannerConfig:
+    """Config for AvoidancePlanner."""
+
+    # Perception / Planning Horizon
     lookahead_distance: float = 30.0
-    avoidance_distance: float = 10.0
-    d_front: float = 2.0
-    d_rear: float = 2.0
+    avoidance_maneuver_length: float = 10.0
+
+    # Margins and Dimensions
+    longitudinal_margin_front: float = 2.0
+    longitudinal_margin_rear: float = 2.0
     road_width: float = 6.0
     vehicle_width: float = 2.0
     safe_margin: float = 0.5
+
+    # Trajectory Generation
     trajectory_resolution: float = 0.5  # [m]
 
 
@@ -60,7 +70,7 @@ class AvoidancePlanner:
         # 2. Get Ego Frenet State
         s_ego, l_ego = self.converter.global_to_frenet(ego_state.x, ego_state.y)
 
-        print(f"[AP] s_ego={s_ego:.2f}, l_ego={l_ego:.2f}, targets={len(targets)}")
+        logger.info(f"[AP] s_ego={s_ego:.2f}, l_ego={l_ego:.2f}, targets={len(targets)}")
 
         # 3. Define s range for planning
         s_end = s_ego + self.config.lookahead_distance
@@ -72,14 +82,14 @@ class AvoidancePlanner:
 
         # 4. Generate Shift Profiles
         profiles = []
-        for target in targets:
+        for t in targets:
             profile = ShiftProfile(
-                obstacle=target,
+                obstacle=t,
                 vehicle_width=self.config.vehicle_width,
                 safe_margin=self.config.safe_margin,
-                avoid_distance=self.config.avoidance_distance,
-                d_front=self.config.d_front,
-                d_rear=self.config.d_rear,
+                avoidance_maneuver_length=self.config.avoidance_maneuver_length,
+                longitudinal_margin_front=self.config.longitudinal_margin_front,
+                longitudinal_margin_rear=self.config.longitudinal_margin_rear,
             )
             profiles.append(profile)
 
@@ -88,11 +98,11 @@ class AvoidancePlanner:
         lat_target_array, collision = merge_profiles(s_samples, profiles)
 
         if len(profiles) > 0:
-            print(f"[AP] Merged {len(profiles)} profiles. Collision={collision}")
+            logger.info(f"[AP] Merged {len(profiles)} profiles. Collision={collision}")
             pass
 
         if collision:
-            print("[AP] COLLISION DETECTED in merge!")
+            logger.info("[AP] COLLISION DETECTED in merge!")
             # TODO: Handle collision (e.g. stop).
             # Current simplest behavior: stop or follow centerline?
             # planning.md says "Yield (Stop)".
@@ -145,6 +155,12 @@ class AvoidancePlanner:
             trajectory_points.append(
                 TrajectoryPoint(x=x, y=y, yaw=0.0, velocity=v_ref)
             )  # yaw updated later
+
+        if len(s_samples) > 0:
+            min_l = np.min(lat_target_array)
+            max_l = np.max(lat_target_array)
+            if abs(min_l) > 0.01 or abs(max_l) > 0.01:
+                logger.info(f"[AP] Planned Path Range L: [{min_l:.2f}, {max_l:.2f}]")
 
         # Calculate yaw from points
         for i in range(len(trajectory_points)):

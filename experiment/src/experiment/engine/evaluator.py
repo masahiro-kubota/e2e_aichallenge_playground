@@ -88,15 +88,16 @@ class EvaluatorEngine(BaseEngine):
         # MLflow tags
         mlflow.set_tag("evaluation_type", cfg.experiment.get("type", "standard"))
 
+        # Always resolve hydra_dir correctly to find simulation logs
+        try:
+            hydra_dir = Path(hydra.core.hydra_config.HydraConfig.get().run.dir)
+        except (ValueError, AttributeError):
+            hydra_dir = Path("outputs/latest")
+
         output_dir_raw = cfg.get("output_dir")
         if output_dir_raw:
             output_dir = Path(output_dir_raw)
         else:
-            # Safe HydraConfig access
-            try:
-                hydra_dir = Path(hydra.core.hydra_config.HydraConfig.get().run.dir)
-            except (ValueError, AttributeError):
-                hydra_dir = Path("outputs/latest")
             output_dir = hydra_dir / "evaluation"
 
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -237,6 +238,22 @@ class EvaluatorEngine(BaseEngine):
                 "mlflow.note.content",
                 f"### 🦊 Foxglove Visualization\n[View in Foxglove]({last_foxglove_url})",
             )
+
+        # Print Simulation Logs to Console after execution
+        # Use hydra_dir (root of output) instead of output_dir (evaluation specific)
+        sim_log_path = hydra_dir / "simulation.log"
+        if sim_log_path.exists():
+            print("\n" + "=" * 80)
+            print(f" LOGS FROM {sim_log_path} ")
+            print("=" * 80)
+            try:
+                with open(sim_log_path) as f:
+                    print(f.read())
+            except Exception as e:
+                print(f"Failed to read simulation log: {e}")
+            print("=" * 80 + "\n")
+        else:
+            logger.warning(f"Simulation log not found at {sim_log_path}")
 
         return ExperimentResult(
             experiment=None,  # No longer needed for result processing

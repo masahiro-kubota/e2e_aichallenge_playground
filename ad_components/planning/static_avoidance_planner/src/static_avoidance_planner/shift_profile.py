@@ -26,9 +26,9 @@ class ShiftProfile:
         obstacle: TargetObstacle,
         vehicle_width: float,
         safe_margin: float = 0.5,
-        avoid_distance: float = 10.0,
-        d_front: float = 2.0,
-        d_rear: float = 2.0,
+        avoidance_maneuver_length: float = 10.0,
+        longitudinal_margin_front: float = 2.0,
+        longitudinal_margin_rear: float = 2.0,
     ):
         """Initialize ShiftProfile.
 
@@ -36,7 +36,9 @@ class ShiftProfile:
             obstacle: Target obstacle
             vehicle_width: Ego width
             safe_margin: Safety margin
-            avoid_distance: Longitudinal distance for lane change
+            avoidance_maneuver_length: Longitudinal distance for lane change
+            longitudinal_margin_front: Buffer distance before obstacle
+            longitudinal_margin_rear: Buffer distance after obstacle
         """
         self.obs = obstacle
 
@@ -48,13 +50,24 @@ class ShiftProfile:
 
         # Calculate required shift amount
         required_clearance = obstacle.width / 2.0 + vehicle_width / 2.0 + safe_margin
-        self.target_lat = obstacle.lat + self.sign * required_clearance
+        raw_target_lat = obstacle.lat + self.sign * required_clearance
+
+        # Clamp target against centerline (0.0)
+        # We only want to shift if the centerline is blocked/unsafe.
+        # If obstacle is far Left (sign < 0), raw_target might be +1.25.
+        # We should NOT move to +1.25 from 0.0. We should stay at min(0, 1.25) = 0.
+        if self.sign > 0:  # Left shift
+            self.target_lat = max(0.0, raw_target_lat)
+        else:  # Right shift
+            self.target_lat = min(0.0, raw_target_lat)
 
         # Update s range
-        self.s_start_action = obstacle.s - d_front - avoid_distance
-        self.s_full_avoid = obstacle.s - d_front
-        self.s_keep_avoid = obstacle.s + obstacle.length + d_rear
-        self.s_end_action = obstacle.s + obstacle.length + d_rear + avoid_distance
+        self.s_start_action = obstacle.s - longitudinal_margin_front - avoidance_maneuver_length
+        self.s_full_avoid = obstacle.s - longitudinal_margin_front
+        self.s_keep_avoid = obstacle.s + obstacle.length + longitudinal_margin_rear
+        self.s_end_action = (
+            obstacle.s + obstacle.length + longitudinal_margin_rear + avoidance_maneuver_length
+        )
 
     def get_lat(self, s: float) -> float:
         """Get required lat at s."""
