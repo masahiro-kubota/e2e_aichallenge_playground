@@ -152,14 +152,12 @@ class LateralShiftPlannerNode(Node[LateralShiftPlannerNodeConfig]):
         # Dynamic road width and boundaries
         road_width = self.config.road_width  # Fallback
 
-        width = self.road_map.get_lateral_width(vehicle_state.x, vehicle_state.y, vehicle_state.yaw)
+        width = self.road_map.get_lateral_width(vehicle_state.x, vehicle_state.y)
         if width is not None:
             road_width = width
 
         # Get road boundaries (left and right distances from vehicle position)
-        boundaries = self.road_map.get_lateral_boundaries(
-            vehicle_state.x, vehicle_state.y, vehicle_state.yaw
-        )
+        boundaries = self.road_map.get_lateral_boundaries(vehicle_state.x, vehicle_state.y)
         if boundaries is not None:
             left_boundary_dist, right_boundary_dist = boundaries
         else:
@@ -173,9 +171,7 @@ class LateralShiftPlannerNode(Node[LateralShiftPlannerNodeConfig]):
         )
 
         # Plan
-        debug_data = self.planner.plan(
-            vehicle_state, converted_obstacles, road_width, left_boundary_dist, right_boundary_dist
-        )
+        debug_data = self.planner.plan(vehicle_state, converted_obstacles, road_width)
         trajectory = debug_data.trajectory
 
         logger.info(f"[LateralShiftPlanner] Generated Trajectory Points: {len(trajectory.points)}")

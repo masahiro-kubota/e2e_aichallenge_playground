@@ -66,11 +66,20 @@ class ObstacleManager:
         targets = []
 
         # Ego position in Frenet
-        s_ego, _ = self.converter.global_to_frenet(ego_state.x, ego_state.y)
+        s_ego, _l_ego = self.converter.global_to_frenet(ego_state.x, ego_state.y)
+
+        # Get road boundaries at ego position for lateral filtering
+        ego_boundaries = self.road_map.get_lateral_boundaries(ego_state.x, ego_state.y)
+        if ego_boundaries is not None:
+            ego_left_bound, ego_right_bound = ego_boundaries
+        else:
+            # Fallback: use symmetric road width
+            ego_left_bound = self.road_width / 2.0
+            ego_right_bound = self.road_width / 2.0
 
         for obs in obstacles:
             # Convert to Frenet
-            s_obj, _ = self.converter.global_to_frenet(obs.x, obs.y)
+            s_obj, l_obj = self.converter.global_to_frenet(obs.x, obs.y)
 
             # 1. Forward check
             # TODO: Handle wrap-around scenarios properly.
@@ -83,6 +92,19 @@ class ObstacleManager:
             # 2. Distance check
             dist = s_obj - s_ego
             if dist > self.lookahead:
+                continue
+
+            # 3. Lateral boundary check (filter out obstacles in adjacent lanelets)
+            # Check if obstacle is within the road boundaries at ego position
+            if l_obj > ego_left_bound or l_obj < -ego_right_bound:
+                # Obstacle is outside the ego lanelet boundaries
+                import logging
+
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    f"[ObstacleManager] Filtering out obstacle at s={s_obj:.2f}, l={l_obj:.2f} "
+                    f"(outside ego boundaries: L={ego_left_bound:.2f}, R={ego_right_bound:.2f})"
+                )
                 continue
 
             # Map dimensions with YAW consideration
