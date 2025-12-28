@@ -194,3 +194,41 @@ class FrenetConverter:
         y = y_ref + lat * ny
 
         return x, y
+
+    def get_yaw_at_s(self, s: float) -> float:
+        """Get interpolated yaw angle at specified s position.
+
+        Args:
+            s: Longitudinal distance along the path
+
+        Returns:
+            Interpolated yaw angle in radians
+        """
+        # Find segment for s
+        idx = np.searchsorted(self._s, s) - 1
+
+        # Clamp index
+        if idx < 0:
+            idx = 0
+        elif idx >= len(self.ref_path) - 1:
+            idx = len(self.ref_path) - 2
+
+        # Interpolate yaw
+        s0 = self._s[idx]
+        s1 = self._s[idx + 1]
+        if s1 - s0 < 1e-6:
+            ratio = 0.0
+        else:
+            ratio = (s - s0) / (s1 - s0)
+
+        yaw0 = self._yaw[idx]
+        yaw1 = self._yaw[idx + 1]
+
+        # Handle wraparound
+        diff = yaw1 - yaw0
+        while diff > np.pi:
+            diff -= 2 * np.pi
+        while diff < -np.pi:
+            diff += 2 * np.pi
+
+        return yaw0 + ratio * diff

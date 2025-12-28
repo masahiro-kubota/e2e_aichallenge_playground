@@ -31,7 +31,7 @@ uv run experiment-runner
 # パラメータを上書き
 uv run experiment-runner execution.duration_sec=10.0
 
-# エージェント（ADコンポーネント構成）を切り替え
+# ADコンポーネント構成を切り替え
 # Pure Pursuit (一体型: Planning + Control統合)
 uv run experiment-runner ad_components=pure_pursuit
 
@@ -40,6 +40,9 @@ uv run experiment-runner ad_components=centerline_pure_pursuit
 
 # MPPI Planner (Model Predictive Path Integral)
 uv run experiment-runner ad_components=mppi
+
+# Lateral Shift Planner (Static Avoidance)
+uv run experiment-runner ad_components=lateral_shift
 
 # Tiny LiDAR Net (学習ベースのEnd-to-End制御)
 uv run experiment-runner ad_components=tiny_lidar ad_components.model_path=models/tinylidarnet_v2.npy
@@ -90,9 +93,9 @@ uv run dvc status
 
 ---
 
-## 🤖 利用可能なエージェント
+## 🤖 利用可能なADコンポーネント
 
-本プラットフォームでは、以下のエージェント構成を切り替えて実験できます。
+本プラットフォームでは、以下のADコンポーネント構成を切り替えて実験できます。
 
 ### 1. Pure Pursuit (一体型)
 **設定**: `ad_components=pure_pursuit`
@@ -138,10 +141,28 @@ uv run experiment-runner ad_components=mppi
 - 障害物回避
 - リアルタイム軌道最適化
 
-### 4. Tiny LiDAR Net
+### 4. Lateral Shift Planner (Static Avoidance)
+**設定**: `ad_components=lateral_shift`
+
+静的な障害物を回避するためのラテラルシフトプランナーです。
+
+```bash
+uv run experiment-runner ad_components=lateral_shift
+```
+
+**構成**:
+- **Planning**: `LateralShiftPlannerNode` (障害物回避経路生成)
+- **Control**: `PurePursuitControllerNode` (軌道追従)
+
+**特徴**:
+- 障害物に応じた横方向シフトプロファイルの生成
+- 障害物の方位（Yaw）を考慮したバウンディングボックス計算
+- 安全マージンの確保
+
+### 5. Tiny LiDAR Net
 **設定**: `ad_components=tiny_lidar`
 
-学習ベースの End-to-End 制御エージェントです。
+学習ベースの End-to-End 制御ADコンポーネントです。
 
 ```bash
 uv run experiment-runner ad_components=tiny_lidar ad_components.model_path=models/tinylidarnet_v2.npy

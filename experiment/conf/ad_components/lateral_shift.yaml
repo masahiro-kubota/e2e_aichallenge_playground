@@ -9,7 +9,7 @@ nodes:
       vehicle_color: ${visualization.colors.vehicle}
 
   planning:
-    type: AvoidancePlannerNode
+    type: LateralShiftPlannerNode
     rate_hz: 10.0
     params:
       track_path: ${env.track_path}
@@ -19,8 +19,8 @@ nodes:
 
       # Shift Profile Parameters (Avoidance Logic)
       avoidance_maneuver_length: 5.0 # [m] Longitudinal distance required to complete the lateral shift (from 0 to target lateral position).
-      longitudinal_margin_front: 0.5 # [m] Buffer distance BEFORE the obstacle. The vehicle will reach full avoidance position this many meters before the obstacle.
-      longitudinal_margin_rear: 0.5 # [m] Buffer distance AFTER the obstacle. The vehicle maintains avoidance position for this distance after passing the obstacle.
+      longitudinal_margin_front: 1.0 # [m] Buffer distance BEFORE the obstacle. The vehicle will reach full avoidance position this many meters before the obstacle.
+      longitudinal_margin_rear: 1.0 # [m] Buffer distance AFTER the obstacle. The vehicle maintains avoidance position for this distance after passing the obstacle.
 
       # Vehicle & Environment
       road_width: 6.0 # [m] Fallback road width if Lanelet2 map data is unavailable. Used for validity checks.
@@ -39,7 +39,7 @@ nodes:
       lookahead_marker_color: "#D1C4E9CC" # Deep Purple 100
       lateral:
         min_lookahead_distance: 2.0
-        max_lookahead_distance: 5.0
+        max_lookahead_distance: 2.0
         lookahead_speed_ratio: 1.5
       longitudinal:
         kp: 1.0

@@ -5,16 +5,16 @@ import numpy as np
 from core.data.ad_components import Trajectory, TrajectoryPoint, VehicleState
 from core.data.environment.obstacle import Obstacle
 
-from static_avoidance_planner.frenet_converter import FrenetConverter
-from static_avoidance_planner.obstacle_manager import ObstacleManager, TargetObstacle
-from static_avoidance_planner.shift_profile import ShiftProfile, merge_profiles
+from lateral_shift_planner.frenet_converter import FrenetConverter
+from lateral_shift_planner.obstacle_manager import ObstacleManager, TargetObstacle
+from lateral_shift_planner.shift_profile import ShiftProfile, merge_profiles
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class AvoidancePlannerConfig:
-    """Config for AvoidancePlanner."""
+class LateralShiftPlannerConfig:
+    """Config for LateralShiftPlanner."""
 
     # Perception / Planning Horizon
     lookahead_distance: float = 30.0
@@ -40,29 +40,47 @@ class AvoidanceDebugData:
     shift_profiles: list[ShiftProfile]
     merged_lat: np.ndarray | None = None
     s_samples: np.ndarray | None = None
+    merged_profile: list | None = None
+    collision_detected: bool = False
 
 
-class AvoidancePlanner:
-    """Core logic for static avoidance planning."""
+class LateralShiftPlanner:
+    """Planning logic for static avoidance using lateral shift."""
 
-    def __init__(self, reference_path: Trajectory, config: AvoidancePlannerConfig):
+    def __init__(self, ref_path: np.ndarray, config: LateralShiftPlannerConfig, road_map):
+        """Initialize LateralShiftPlanner.
+
+        Args:
+            ref_path: Reference path (centerline) [N, 4] (x, y, yaw, velocity)
+            config: Configuration
+            road_map: RoadWidthMap instance for boundary calculations
+        """
+        self.ref_path = ref_path
         self.config = config
-        self.ref_path = reference_path
-
-        # Initialize sub-components
-        self.converter = FrenetConverter(reference_path)
+        self.converter = FrenetConverter(ref_path)
         self.obstacle_manager = ObstacleManager(
             converter=self.converter,
+            road_map=road_map,
             lookahead_distance=config.lookahead_distance,
             road_width=config.road_width,
             vehicle_width=config.vehicle_width,
             safe_margin=config.safe_margin,
         )
+        self.logger = logging.getLogger(__name__)
 
     def plan(
-        self, ego_state: VehicleState, obstacles: list[Obstacle], road_width: float = 6.0
+        self,
+        ego_state: VehicleState,
+        obstacles: list[Obstacle],
+        road_width: float = 6.0,
     ) -> AvoidanceDebugData:
-        """Generate avoidance trajectory."""
+        """Generate avoidance trajectory.
+
+        Args:
+            ego_state: Current vehicle state
+            obstacles: List of obstacles
+            road_width: Total road width [m]
+        """
 
         # 1. Get Target Obstacles (Frenet)
         targets = self.obstacle_manager.get_target_obstacles(ego_state, obstacles, road_width)
@@ -70,7 +88,7 @@ class AvoidancePlanner:
         # 2. Get Ego Frenet State
         s_ego, l_ego = self.converter.global_to_frenet(ego_state.x, ego_state.y)
 
-        logger.info(f"[AP] s_ego={s_ego:.2f}, l_ego={l_ego:.2f}, targets={len(targets)}")
+        self.logger.info(f"[LSP] s_ego={s_ego:.2f}, l_ego={l_ego:.2f}, targets={len(targets)}")
 
         # 3. Define s range for planning
         s_end = s_ego + self.config.lookahead_distance
@@ -80,29 +98,37 @@ class AvoidancePlanner:
             # Should not happen typically
             return Trajectory(points=[])
 
-        # 4. Generate Shift Profiles
-        profiles = []
-        for t in targets:
-            profile = ShiftProfile(
-                obstacle=t,
-                vehicle_width=self.config.vehicle_width,
-                safe_margin=self.config.safe_margin,
-                avoidance_maneuver_length=self.config.avoidance_maneuver_length,
-                longitudinal_margin_front=self.config.longitudinal_margin_front,
-                longitudinal_margin_rear=self.config.longitudinal_margin_rear,
-            )
-            profiles.append(profile)
+        if len(targets) == 0:
+            self.logger.info(f"[LSP] s_ego={s_ego:.2f}, l_ego={l_ego:.2f}, targets=0")
+            # No obstacles: Plan centerline (all zeros)
+            lat_target_array = np.zeros_like(s_samples)
+            collision_detected = False
+            profiles = []
+        else:
+            # 4. Create Shift Profiles for each obstacle
+            profiles: list[ShiftProfile] = []
+            for target in targets:
+                profile = ShiftProfile(
+                    obstacle=target,
+                    longitudinal_margin_front=self.config.longitudinal_margin_front,
+                    longitudinal_margin_rear=self.config.longitudinal_margin_rear,
+                    avoidance_maneuver_length=self.config.avoidance_maneuver_length,
+                    safe_margin=self.config.safe_margin,
+                    vehicle_width=self.config.vehicle_width,
+                )
+                profiles.append(profile)
 
-        # 5. Merge Profiles
-        # lat_target_array: Array of target lat values corresponding to s_samples
-        lat_target_array, collision = merge_profiles(s_samples, profiles)
+            # 5. Merge Profiles (take max shift)
+            lat_target_array, collision_detected = merge_profiles(s_samples, profiles)
 
         if len(profiles) > 0:
-            logger.info(f"[AP] Merged {len(profiles)} profiles. Collision={collision}")
+            self.logger.info(
+                f"[LSP] Merged {len(profiles)} profiles. Collision={collision_detected}"
+            )
             pass
 
-        if collision:
-            logger.info("[AP] COLLISION DETECTED in merge!")
+        if collision_detected:
+            self.logger.info("[LSP] COLLISION DETECTED in merge!")
             # TODO: Handle collision (e.g. stop).
             # Current simplest behavior: stop or follow centerline?
             # planning.md says "Yield (Stop)".
@@ -160,7 +186,7 @@ class AvoidancePlanner:
             min_l = np.min(lat_target_array)
             max_l = np.max(lat_target_array)
             if abs(min_l) > 0.01 or abs(max_l) > 0.01:
-                logger.info(f"[AP] Planned Path Range L: [{min_l:.2f}, {max_l:.2f}]")
+                logger.info(f"[LSP] Planned Path Range L: [{min_l:.2f}, {max_l:.2f}]")
 
         # Calculate yaw from points
         for i in range(len(trajectory_points)):

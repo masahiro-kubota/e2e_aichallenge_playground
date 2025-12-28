@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from core.data.ad_components import VehicleState
 from core.data.environment.obstacle import Obstacle
 
-from static_avoidance_planner.frenet_converter import FrenetConverter
+from lateral_shift_planner.frenet_converter import FrenetConverter
 
 
 @dataclass
@@ -15,8 +15,9 @@ class TargetObstacle:
     s: float
     lat: float
     length: float
-    length: float
     width: float
+    left_boundary_dist: float  # Distance from obstacle to left road boundary [m]
+    right_boundary_dist: float  # Distance from obstacle to right road boundary [m]
     raw: Obstacle | None = None
 
 
@@ -26,6 +27,7 @@ class ObstacleManager:
     def __init__(
         self,
         converter: FrenetConverter,
+        road_map,  # RoadWidthMap instance
         lookahead_distance: float = 30.0,
         road_width: float = 6.0,
         vehicle_width: float = 2.0,
@@ -35,12 +37,14 @@ class ObstacleManager:
 
         Args:
             converter: FrenetConverter instance
+            road_map: RoadWidthMap instance for boundary calculations
             lookahead_distance: Max distance to consider obstacles [m]
             road_width: Total road width [m]
             vehicle_width: Ego vehicle width [m]
             safe_margin: Safety margin [m]
         """
         self.converter = converter
+        self.road_map = road_map
         self.lookahead = lookahead_distance
         self.road_width = road_width
         self.vehicle_width = vehicle_width
@@ -76,18 +80,24 @@ class ObstacleManager:
             if s_obj <= s_ego:
                 continue
 
+            # 2. Distance check
+            dist = s_obj - s_ego
+            if dist > self.lookahead:
+                continue
+
             # Map dimensions with YAW consideration
             # Calculate Frenet Bounding Box
             # 1. Get 4 corners in Global Frame
-            # length (longitudinal dim), width (lateral dim)
-            half_l = obs.height / 2.0  # length
-            half_w = obs.width / 2.0  # width
+            # Obstacle has width (lateral) and height (longitudinal)
+            # Local frame: x-axis is forward (height/length), y-axis is lateral (width)
+            half_length = obs.height / 2.0
+            half_width = obs.width / 2.0
 
             corners_local = [
-                (half_l, half_w),
-                (half_l, -half_w),
-                (-half_l, -half_w),
-                (-half_l, half_w),
+                (half_length, half_width),
+                (half_length, -half_width),
+                (-half_length, -half_width),
+                (-half_length, half_width),
             ]
 
             ct = math.cos(obs.yaw)
@@ -106,28 +116,32 @@ class ObstacleManager:
                 s_vals.append(cs)
                 l_vals.append(cl)
 
-            # 2. Compute effective dimensions in Frenet Frame
+            # 4. Determine Frenet Bounding Box
             s_min = min(s_vals)
             s_max = max(s_vals)
             l_min = min(l_vals)
             l_max = max(l_vals)
 
-            # Effective width and length in Frenet Frame
-            width_frenet = l_max - l_min
+            # 5. Calculate effective dimensions in Frenet
             length_frenet = s_max - s_min
-
-            # Use Frenet Center for checks or keep center?
-            # ShiftProfile uses obstacle.lat as center.
-            # Ideally use (l_min + l_max) / 2 as the effective center in Frenet.
-            l_center_frenet = (l_min + l_max) / 2.0
+            width_frenet = l_max - l_min
             s_center_frenet = (s_min + s_max) / 2.0
+            l_center_frenet = (l_min + l_max) / 2.0
 
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.info(
-                f"O({obs.id}): Yaw={obs.yaw:.2f}, L_range=[{l_min:.2f}, {l_max:.2f}], W_eff={width_frenet:.2f}, L_center={l_center_frenet:.2f}"
+            # Get road boundaries at obstacle position
+            # Use obstacle's global position and yaw from centerline
+            # Get position at obstacle's s position from centerline
+            obs_global_x, obs_global_y = self.converter.frenet_to_global(
+                s_center_frenet, l_center_frenet
             )
+
+            boundaries = self.road_map.get_lateral_boundaries(obs_global_x, obs_global_y)
+            if boundaries is not None:
+                left_boundary_dist, right_boundary_dist = boundaries
+            else:
+                # Fallback: use symmetric road width
+                left_boundary_dist = self.road_width / 2.0
+                right_boundary_dist = self.road_width / 2.0
 
             targets.append(
                 TargetObstacle(
@@ -136,6 +150,8 @@ class ObstacleManager:
                     lat=l_center_frenet,
                     length=length_frenet,
                     width=width_frenet,
+                    left_boundary_dist=left_boundary_dist,
+                    right_boundary_dist=right_boundary_dist,
                     raw=obs,
                 )
             )

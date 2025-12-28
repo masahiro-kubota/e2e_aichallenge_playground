@@ -3,7 +3,7 @@ from enum import Enum
 
 import numpy as np
 
-from static_avoidance_planner.obstacle_manager import TargetObstacle
+from lateral_shift_planner.obstacle_manager import TargetObstacle
 
 
 class AvoidanceDirection(Enum):
@@ -33,7 +33,7 @@ class ShiftProfile:
         """Initialize ShiftProfile.
 
         Args:
-            obstacle: Target obstacle
+            obstacle: Target obstacle (includes road boundary info)
             vehicle_width: Ego width
             safe_margin: Safety margin
             avoidance_maneuver_length: Longitudinal distance for lane change
@@ -42,11 +42,22 @@ class ShiftProfile:
         """
         self.obs = obstacle
 
-        # Determine direction
-        if obstacle.lat == 0:
-            self.sign = 1.0  # Left
+        # Determine direction based on available space to road boundaries
+        # obstacle.lat is in Frenet frame (lateral offset from centerline)
+        # obstacle.left_boundary_dist and right_boundary_dist are ALREADY distances
+        # from the obstacle's position to the road edges, so we don't need to adjust by lat
+
+        # Distance from obstacle to left boundary
+        space_to_left = obstacle.left_boundary_dist
+
+        # Distance from obstacle to right boundary
+        space_to_right = obstacle.right_boundary_dist
+
+        # Choose direction with more space
+        if space_to_left >= space_to_right:
+            self.sign = 1.0  # Left (positive lat)
         else:
-            self.sign = np.sign(-obstacle.lat)
+            self.sign = -1.0  # Right (negative lat)
 
         # Calculate required shift amount
         required_clearance = obstacle.width / 2.0 + vehicle_width / 2.0 + safe_margin

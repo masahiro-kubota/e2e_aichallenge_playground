@@ -22,13 +22,16 @@ from core.utils.ros_message_builder import to_ros_time
 from planning_utils import load_track_csv
 from pydantic import Field
 
-from static_avoidance_planner.avoidance_planner import AvoidancePlanner, AvoidancePlannerConfig
+from lateral_shift_planner.lateral_shift_planner import (
+    LateralShiftPlanner,
+    LateralShiftPlannerConfig,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class AvoidancePlannerNodeConfig(ComponentConfig):
-    """Configuration for AvoidancePlannerNode."""
+class LateralShiftPlannerNodeConfig(ComponentConfig):
+    """Configuration for LateralShiftPlannerNode."""
 
     track_path: Path = Field(..., description="Path to reference trajectory CSV")
     map_path: Path = Field(..., description="Path to Lanelet2 map file")
@@ -49,33 +52,21 @@ class AvoidancePlannerNodeConfig(ComponentConfig):
     trajectory_color: str = Field("#00FF00CC", description="Trajectory color")
 
 
-class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
-    """ROS 2 Node for static avoidance planning."""
-
-    def __init__(self, config: AvoidancePlannerNodeConfig, rate_hz: float):
-        super().__init__("AvoidancePlanner", rate_hz, config)
-
-        # Load map
-        from core.utils import get_project_root
+class LateralShiftPlannerNode(Node[LateralShiftPlannerNodeConfig]):
+    def __init__(self, config: LateralShiftPlannerNodeConfig, rate_hz: float):
+        super().__init__("LateralShiftPlanner", rate_hz, config)
 
         track_path = self.config.track_path
-        if not track_path.is_absolute():
-            track_path = get_project_root() / track_path
-
         map_path = self.config.map_path
-        if not map_path.is_absolute():
-            map_path = get_project_root() / map_path
-
         ref_path = load_track_csv(track_path)
-
         # Init map utils
-        from static_avoidance_planner.map_utils import RoadWidthMap
+        from lateral_shift_planner.map_utils import RoadWidthMap
 
-        logger.info(f"Initializing AvoidancePlanner with map: {map_path}")
+        logger.info(f"Initializing LateralShiftPlanner with map: {map_path}")
         self.road_map = RoadWidthMap(map_path)
 
         # Init planner
-        planner_config = AvoidancePlannerConfig(
+        planner_config = LateralShiftPlannerConfig(
             lookahead_distance=self.config.lookahead_distance,
             avoidance_maneuver_length=self.config.avoidance_maneuver_length,
             longitudinal_margin_front=self.config.longitudinal_margin_front,
@@ -85,7 +76,7 @@ class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
             safe_margin=self.config.safe_margin,
             trajectory_resolution=self.config.trajectory_resolution,
         )
-        self.planner = AvoidancePlanner(ref_path, planner_config)
+        self.planner = LateralShiftPlanner(ref_path, planner_config, self.road_map)
 
     def get_node_io(self) -> NodeIO:
         # from core.data.environment.obstacle import Obstacle
@@ -158,23 +149,36 @@ class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
                     )
                 )
 
-        # Dynamic road width
+        # Dynamic road width and boundaries
         road_width = self.config.road_width  # Fallback
 
         width = self.road_map.get_lateral_width(vehicle_state.x, vehicle_state.y, vehicle_state.yaw)
         if width is not None:
             road_width = width
 
+        # Get road boundaries (left and right distances from vehicle position)
+        boundaries = self.road_map.get_lateral_boundaries(
+            vehicle_state.x, vehicle_state.y, vehicle_state.yaw
+        )
+        if boundaries is not None:
+            left_boundary_dist, right_boundary_dist = boundaries
+        else:
+            # Fallback: assume symmetric road
+            left_boundary_dist = road_width / 2.0
+            right_boundary_dist = road_width / 2.0
+
         # DEBUG LOGGING
         logger.info(
-            f"[AvoidancePlanner] Pos: ({vehicle_state.x:.2f}, {vehicle_state.y:.2f}), Road Width: {road_width:.2f}"
+            f"[LateralShiftPlanner] Pos: ({vehicle_state.x:.2f}, {vehicle_state.y:.2f}), Road Width: {road_width:.2f}, Boundaries: L={left_boundary_dist:.2f}, R={right_boundary_dist:.2f}"
         )
 
         # Plan
-        debug_data = self.planner.plan(vehicle_state, converted_obstacles, road_width)
+        debug_data = self.planner.plan(
+            vehicle_state, converted_obstacles, road_width, left_boundary_dist, right_boundary_dist
+        )
         trajectory = debug_data.trajectory
 
-        logger.info(f"[AvoidancePlanner] Generated Trajectory Points: {len(trajectory.points)}")
+        logger.info(f"[LateralShiftPlanner] Generated Trajectory Points: {len(trajectory.points)}")
         if len(trajectory.points) > 0:
             p0 = trajectory.points[0]
             logger.info(f"  Start Point: ({p0.x:.2f}, {p0.y:.2f})")
@@ -284,6 +288,42 @@ class AvoidancePlannerNode(Node[AvoidancePlannerNodeConfig]):
                     scale=Vector3(x=0.1, y=0.0, z=0.0),
                     color=ColorRGBA.from_hex("#FF0000CC"),  # Red for targets
                     points=corner_points,
+                    frame_locked=True,
+                )
+            )
+
+            # Obstacle ID and Info Text Marker (above obstacle)
+            if obs.raw:
+                text_pos = Point(x=obs.raw.x, y=obs.raw.y, z=2.0)  # 2m above obstacle
+                # Create info text with ID, boundaries, and avoidance direction
+                direction = "LEFT" if profile.sign > 0 else "RIGHT"
+                arrow = "←" if profile.sign > 0 else "→"
+                info_text = f"ID:{obs.raw.id}\nL:{obs.left_boundary_dist:.1f}m R:{obs.right_boundary_dist:.1f}m\n{arrow}{direction}"
+
+                # Debug logging
+                logger.info(
+                    f"Obstacle {obs.raw.id}: lat={obs.lat:.2f}, L_bound={obs.left_boundary_dist:.2f}, R_bound={obs.right_boundary_dist:.2f}, sign={profile.sign}, direction={direction}"
+                )
+            else:
+                gx, gy = converter.frenet_to_global(obs.s, obs.lat)
+                text_pos = Point(x=gx, y=gy, z=2.0)
+                direction = "LEFT" if profile.sign > 0 else "RIGHT"
+                arrow = "←" if profile.sign > 0 else "→"
+                info_text = f"ID:?\nL:{obs.left_boundary_dist:.1f}m R:{obs.right_boundary_dist:.1f}m\n{arrow}{direction}"
+
+            markers.append(
+                Marker(
+                    header=Header(stamp=ros_time, frame_id="map"),
+                    ns="obstacle_info",
+                    id=i,
+                    type=9,  # TEXT_VIEW_FACING
+                    action=0,
+                    pose=Pose(
+                        position=text_pos, orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+                    ),
+                    scale=Vector3(x=0.0, y=0.0, z=0.5),  # Text height
+                    color=ColorRGBA(r=1.0, g=1.0, b=1.0, a=1.0),  # White text
+                    text=info_text,
                     frame_locked=True,
                 )
             )
