@@ -73,6 +73,12 @@ class DashboardConfig(ComponentConfig):
     vehicle_config_path: str = Field(..., description="Path to vehicle configuration YAML file")
 
 
+class FoxgloveConfig(ComponentConfig):
+    """Configuration for Foxglove."""
+
+    auto_open: bool = Field(False, description="Auto open foxglove link")
+
+
 class PostprocessConfig(ComponentConfig):
     """Configuration for postprocessing (logging, metrics, dashboard)."""
 
@@ -80,6 +86,7 @@ class PostprocessConfig(ComponentConfig):
     mlflow: MLflowConfig = Field(...)
     mcap: MCAPConfig = Field(...)
     dashboard: DashboardConfig = Field(...)
+    foxglove: FoxgloveConfig = Field(...)
 
 
 class ExperimentMetadata(BaseModel):

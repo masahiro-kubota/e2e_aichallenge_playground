@@ -1,15 +1,16 @@
 import logging
+import webbrowser
 from datetime import datetime
 from pathlib import Path
 
 import hydra
+import mlflow
 from core.clock import create_clock
 from core.data import SimulationResult
 from core.data.frame_data import collect_node_output_fields, create_frame_data_type
 from core.executor import SingleProcessExecutor
 from omegaconf import DictConfig
 
-import mlflow
 from experiment.core.structures import Artifact, ExperimentResult, Metrics
 from experiment.engine.base import BaseEngine
 from logger import LoggerNode
@@ -204,6 +205,11 @@ class EvaluatorEngine(BaseEngine):
 
                         # Use print with flush to ensure it shows up in terminal
                         print(f"\n🦊 View in Foxglove: {foxglove_url}", flush=True)
+
+                        # Auto-open if configured
+                        if cfg.postprocess.foxglove.auto_open:
+                            logger.info(f"Auto-opening Foxglove URL: {foxglove_url}")
+                            webbrowser.open(foxglove_url)
                 except Exception:
                     pass
 

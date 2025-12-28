@@ -81,3 +81,5 @@ postprocess:
     enabled: true
     map_path: ${env.map_path}
     vehicle_config_path: "experiment/conf/vehicle/default.yaml"
+  foxglove:
+    auto_open: true

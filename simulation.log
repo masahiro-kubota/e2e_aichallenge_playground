@@ -1,0 +1,169 @@
+[2025-12-28 18:04:45,984][botocore.credentials][INFO] - Found credentials in environment variables.
+[2025-12-28 18:04:46,020][botocore.configprovider][INFO] - Found endpoint for s3 via: environment_global.
+[2025-12-28 18:04:46,033][experiment.engine.evaluator][INFO] - Running Evaluation Engine...
+[2025-12-28 18:04:46,039][experiment.engine.evaluator][INFO] - Evaluating model on 1 episodes...
+[2025-12-28 18:04:46,221][static_avoidance_planner.avoidance_planner_node][INFO] - Initializing AvoidancePlanner with map: /home/masa/e2e_aichallenge_playground/experiment/assets/lanelet2_map.osm
+[2025-12-28 18:04:46,429][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89631.16, 43130.45), Road Width: 10.32
+[2025-12-28 18:04:46,430][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,430][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.58, 43130.01)
+[2025-12-28 18:04:46,455][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89631.15, 43130.46), Road Width: 10.31
+[2025-12-28 18:04:46,456][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,456][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.57, 43130.02)
+[2025-12-28 18:04:46,470][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89631.11, 43130.48), Road Width: 10.29
+[2025-12-28 18:04:46,470][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,470][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.55, 43130.06)
+[2025-12-28 18:04:46,488][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89631.05, 43130.52), Road Width: 10.25
+[2025-12-28 18:04:46,489][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,489][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.50, 43130.11)
+[2025-12-28 18:04:46,502][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89630.96, 43130.58), Road Width: 10.20
+[2025-12-28 18:04:46,503][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,503][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.45, 43130.19)
+[2025-12-28 18:04:46,516][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89630.85, 43130.66), Road Width: 10.13
+[2025-12-28 18:04:46,517][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,517][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.37, 43130.29)
+[2025-12-28 18:04:46,534][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89630.71, 43130.75), Road Width: 10.06
+[2025-12-28 18:04:46,535][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,535][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.27, 43130.42)
+[2025-12-28 18:04:46,548][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89630.55, 43130.86), Road Width: 9.98
+[2025-12-28 18:04:46,549][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,549][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.16, 43130.57)
+[2025-12-28 18:04:46,563][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89630.37, 43130.99), Road Width: 9.89
+[2025-12-28 18:04:46,563][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,563][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89630.03, 43130.74)
+[2025-12-28 18:04:46,581][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89630.17, 43131.15), Road Width: 9.80
+[2025-12-28 18:04:46,581][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,581][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89629.89, 43130.94)
+[2025-12-28 18:04:46,595][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89629.95, 43131.33), Road Width: 9.71
+[2025-12-28 18:04:46,596][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,596][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89629.72, 43131.16)
+[2025-12-28 18:04:46,609][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89629.70, 43131.53), Road Width: 9.61
+[2025-12-28 18:04:46,610][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,610][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89629.54, 43131.40)
+[2025-12-28 18:04:46,628][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89629.44, 43131.76), Road Width: 9.52
+[2025-12-28 18:04:46,629][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,629][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89629.33, 43131.67)
+[2025-12-28 18:04:46,642][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89629.17, 43132.01), Road Width: 9.43
+[2025-12-28 18:04:46,643][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,643][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89629.13, 43131.98)
+[2025-12-28 18:04:46,657][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89628.88, 43132.29), Road Width: 9.34
+[2025-12-28 18:04:46,657][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,657][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89628.90, 43132.31)
+[2025-12-28 18:04:46,675][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89628.58, 43132.60), Road Width: 9.27
+[2025-12-28 18:04:46,676][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 61
+[2025-12-28 18:04:46,676][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89628.65, 43132.65)
+[2025-12-28 18:04:46,689][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89628.26, 43132.95), Road Width: 9.21
+[2025-12-28 18:04:46,690][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,690][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89628.37, 43133.03)
+[2025-12-28 18:04:46,704][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89627.94, 43133.32), Road Width: 9.15
+[2025-12-28 18:04:46,704][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,704][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89628.09, 43133.43)
+[2025-12-28 18:04:46,722][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89627.61, 43133.73), Road Width: 9.10
+[2025-12-28 18:04:46,723][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,723][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89627.79, 43133.86)
+[2025-12-28 18:04:46,736][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89627.26, 43134.16), Road Width: 9.07
+[2025-12-28 18:04:46,737][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,737][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89627.47, 43134.31)
+[2025-12-28 18:04:46,755][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89626.91, 43134.63), Road Width: 9.06
+[2025-12-28 18:04:46,755][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,755][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89627.13, 43134.79)
+[2025-12-28 18:04:46,770][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89626.55, 43135.13), Road Width: 9.08
+[2025-12-28 18:04:46,770][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,770][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89626.78, 43135.29)
+[2025-12-28 18:04:46,784][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89626.19, 43135.66), Road Width: 9.10
+[2025-12-28 18:04:46,784][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 61
+[2025-12-28 18:04:46,785][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89626.41, 43135.82)
+[2025-12-28 18:04:46,803][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89625.81, 43136.22), Road Width: 9.13
+[2025-12-28 18:04:46,803][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,804][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89626.02, 43136.37)
+[2025-12-28 18:04:46,818][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89625.42, 43136.81), Road Width: 9.17
+[2025-12-28 18:04:46,818][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,818][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89625.62, 43136.95)
+[2025-12-28 18:04:46,832][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89625.02, 43137.43), Road Width: 9.20
+[2025-12-28 18:04:46,833][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,833][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89625.20, 43137.55)
+[2025-12-28 18:04:46,851][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89624.60, 43138.07), Road Width: 9.16
+[2025-12-28 18:04:46,852][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,852][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89624.76, 43138.18)
+[2025-12-28 18:04:46,866][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89624.17, 43138.74), Road Width: 9.13
+[2025-12-28 18:04:46,867][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,867][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89624.31, 43138.83)
+[2025-12-28 18:04:46,880][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89623.72, 43139.43), Road Width: 9.12
+[2025-12-28 18:04:46,881][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,881][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89623.84, 43139.51)
+[2025-12-28 18:04:46,899][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89623.26, 43140.15), Road Width: 9.06
+[2025-12-28 18:04:46,900][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,900][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89623.35, 43140.21)
+[2025-12-28 18:04:46,913][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89622.78, 43140.89), Road Width: 8.98
+[2025-12-28 18:04:46,914][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,914][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89622.84, 43140.93)
+[2025-12-28 18:04:46,928][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89622.27, 43141.65), Road Width: 8.91
+[2025-12-28 18:04:46,928][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,928][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89622.32, 43141.69)
+[2025-12-28 18:04:46,945][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89621.75, 43142.44), Road Width: 8.82
+[2025-12-28 18:04:46,946][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,946][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89621.78, 43142.46)
+[2025-12-28 18:04:46,960][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89621.21, 43143.25), Road Width: 8.74
+[2025-12-28 18:04:46,961][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,961][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89621.23, 43143.26)
+[2025-12-28 18:04:46,974][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89620.65, 43144.09), Road Width: 8.69
+[2025-12-28 18:04:46,975][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 61
+[2025-12-28 18:04:46,975][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89620.65, 43144.09)
+[2025-12-28 18:04:46,993][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89620.07, 43144.94), Road Width: 8.64
+[2025-12-28 18:04:46,993][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:46,993][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89620.07, 43144.94)
+[2025-12-28 18:04:47,007][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89619.47, 43145.82), Road Width: 8.69
+[2025-12-28 18:04:47,008][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,008][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89619.46, 43145.82)
+[2025-12-28 18:04:47,028][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89618.86, 43146.73), Road Width: 8.70
+[2025-12-28 18:04:47,028][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,029][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89618.85, 43146.72)
+[2025-12-28 18:04:47,042][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89618.23, 43147.66), Road Width: 8.69
+[2025-12-28 18:04:47,043][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,043][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89618.21, 43147.65)
+[2025-12-28 18:04:47,057][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89617.59, 43148.62), Road Width: 8.67
+[2025-12-28 18:04:47,057][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,057][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89617.57, 43148.61)
+[2025-12-28 18:04:47,076][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89616.93, 43149.61), Road Width: 8.69
+[2025-12-28 18:04:47,076][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,076][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89616.91, 43149.60)
+[2025-12-28 18:04:47,090][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89616.27, 43150.63), Road Width: 8.65
+[2025-12-28 18:04:47,091][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 61
+[2025-12-28 18:04:47,091][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89616.25, 43150.62)
+[2025-12-28 18:04:47,105][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89615.62, 43151.69), Road Width: 8.56
+[2025-12-28 18:04:47,105][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,105][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89615.59, 43151.67)
+[2025-12-28 18:04:47,123][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89614.98, 43152.79), Road Width: 8.56
+[2025-12-28 18:04:47,124][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,124][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89614.91, 43152.75)
+[2025-12-28 18:04:47,137][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89614.37, 43153.95), Road Width: 8.66
+[2025-12-28 18:04:47,137][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,137][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89614.31, 43153.92)
+[2025-12-28 18:04:47,151][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89613.82, 43155.17), Road Width: 8.84
+[2025-12-28 18:04:47,152][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,152][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89613.71, 43155.11)
+[2025-12-28 18:04:47,170][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89613.36, 43156.45), Road Width: 9.12
+[2025-12-28 18:04:47,170][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 61
+[2025-12-28 18:04:47,170][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89613.25, 43156.42)
+[2025-12-28 18:04:47,184][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89613.01, 43157.80), Road Width: 9.50
+[2025-12-28 18:04:47,184][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,184][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89612.86, 43157.76)
+[2025-12-28 18:04:47,197][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89612.83, 43159.21), Road Width: 9.85
+[2025-12-28 18:04:47,198][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,198][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89612.70, 43159.21)
+[2025-12-28 18:04:47,216][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89612.86, 43160.67), Road Width: 9.89
+[2025-12-28 18:04:47,217][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,217][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89612.72, 43160.67)
+[2025-12-28 18:04:47,230][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89613.15, 43162.12), Road Width: 9.55
+[2025-12-28 18:04:47,231][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 60
+[2025-12-28 18:04:47,231][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89613.04, 43162.16)
+[2025-12-28 18:04:47,248][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89613.75, 43163.51), Road Width: 8.91
+[2025-12-28 18:04:47,249][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Generated Trajectory Points: 61
+[2025-12-28 18:04:47,249][static_avoidance_planner.avoidance_planner_node][INFO] -   Start Point: (89613.57, 43163.57)
+[2025-12-28 18:04:47,262][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89614.69, 43164.73), Road Width: 7.78
+[2025-12-28 18:04:47,266][logger.logger_node][INFO] - Logged final path visualization with 520 points
+[2025-12-28 18:06:18,363][botocore.credentials][INFO] - Found credentials in environment variables.
+[2025-12-28 18:06:18,399][botocore.configprovider][INFO] - Found endpoint for s3 via: environment_global.
+[2025-12-28 18:06:18,410][experiment.engine.evaluator][INFO] - Running Evaluation Engine...
+[2025-12-28 18:06:18,417][experiment.engine.evaluator][INFO] - Evaluating model on 1 episodes...
+[2025-12-28 18:06:18,593][static_avoidance_planner.avoidance_planner_node][INFO] - Initializing AvoidancePlanner with map: /home/masa/e2e_aichallenge_playground/experiment/assets/lanelet2_map.osm
+[2025-12-28 18:06:18,802][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89631.16, 43130.45), Road Width: 10.32

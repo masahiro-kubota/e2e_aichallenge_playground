@@ -1,0 +1,165 @@
+from dataclasses import dataclass
+
+import numpy as np
+from core.data.ad_components import Trajectory, TrajectoryPoint, VehicleState
+from core.data.environment.obstacle import Obstacle
+
+from static_avoidance_planner.frenet_converter import FrenetConverter
+from static_avoidance_planner.obstacle_manager import ObstacleManager, TargetObstacle
+from static_avoidance_planner.shift_profile import ShiftProfile, merge_profiles
+
+
+@dataclass
+class AvoidancePlannerConfig:
+    lookahead_distance: float = 30.0
+    avoidance_distance: float = 10.0
+    d_front: float = 2.0
+    d_rear: float = 2.0
+    road_width: float = 6.0
+    vehicle_width: float = 2.0
+    safe_margin: float = 0.5
+    trajectory_resolution: float = 0.5  # [m]
+
+
+@dataclass
+class AvoidanceDebugData:
+    """Debug data for visualization."""
+
+    trajectory: Trajectory
+    target_obstacles: list[TargetObstacle]
+    shift_profiles: list[ShiftProfile]
+    merged_lat: np.ndarray | None = None
+    s_samples: np.ndarray | None = None
+
+
+class AvoidancePlanner:
+    """Core logic for static avoidance planning."""
+
+    def __init__(self, reference_path: Trajectory, config: AvoidancePlannerConfig):
+        self.config = config
+        self.ref_path = reference_path
+
+        # Initialize sub-components
+        self.converter = FrenetConverter(reference_path)
+        self.obstacle_manager = ObstacleManager(
+            converter=self.converter,
+            lookahead_distance=config.lookahead_distance,
+            road_width=config.road_width,
+            vehicle_width=config.vehicle_width,
+            safe_margin=config.safe_margin,
+        )
+
+    def plan(
+        self, ego_state: VehicleState, obstacles: list[Obstacle], road_width: float = 6.0
+    ) -> AvoidanceDebugData:
+        """Generate avoidance trajectory."""
+
+        # 1. Get Target Obstacles (Frenet)
+        targets = self.obstacle_manager.get_target_obstacles(ego_state, obstacles, road_width)
+
+        # 2. Get Ego Frenet State
+        s_ego, l_ego = self.converter.global_to_frenet(ego_state.x, ego_state.y)
+
+        print(f"[AP] s_ego={s_ego:.2f}, l_ego={l_ego:.2f}, targets={len(targets)}")
+
+        # 3. Define s range for planning
+        s_end = s_ego + self.config.lookahead_distance
+        s_samples = np.arange(s_ego, s_end, self.config.trajectory_resolution)
+
+        if len(s_samples) == 0:
+            # Should not happen typically
+            return Trajectory(points=[])
+
+        # 4. Generate Shift Profiles
+        profiles = []
+        for target in targets:
+            profile = ShiftProfile(
+                obstacle=target,
+                vehicle_width=self.config.vehicle_width,
+                safe_margin=self.config.safe_margin,
+                avoid_distance=self.config.avoidance_distance,
+                d_front=self.config.d_front,
+                d_rear=self.config.d_rear,
+            )
+            profiles.append(profile)
+
+        # 5. Merge Profiles
+        # lat_target_array: Array of target lat values corresponding to s_samples
+        lat_target_array, collision = merge_profiles(s_samples, profiles)
+
+        if len(profiles) > 0:
+            print(f"[AP] Merged {len(profiles)} profiles. Collision={collision}")
+            pass
+
+        if collision:
+            print("[AP] COLLISION DETECTED in merge!")
+            # TODO: Handle collision (e.g. stop).
+            # Current simplest behavior: stop or follow centerline?
+            # planning.md says "Yield (Stop)".
+            # If stopping, we should output a trajectory that stops.
+            # For now, let's output centerline but maybe with 0 velocity?
+            # Or just best effort centerline.
+            # We can log a warning or set velocity to 0.
+            pass
+
+        # 6. Generate Global Trajectory
+        trajectory_points = []
+        for i, s in enumerate(s_samples):
+            lat = lat_target_array[i]
+
+            # Smooth transition from current ego lateral position?
+            # If s is close to s_ego, we might be at l_ego != l_target[0].
+            # The current logic plans from current s forward.
+            # If l_target[0] jumps, the path jumps.
+            # Ideally we should interpolate from l_ego to l_target over some distance.
+            # But ShiftProfile handles ramping.
+            # However, ShiftProfile is relative to Obstacles.
+            # If no obstacles, l_target is 0.
+            # If ego is at l=1 (drifted), and plans 0, it jumps.
+            # We should probably filter the output or start from ego position.
+
+            # Simple approach: The converter returns global coords.
+            # Controller handles tracking error.
+            # But if we output a path starting 1m away, the controller might react harshly.
+            # Better to assume the planner outputs the *desired* path, and controller converges.
+
+            x, y = self.converter.frenet_to_global(s, lat)
+
+            # Target speed
+            # Detailed speed planning is listed as future work (Expansion).
+            # Simple constant speed for now? Or maintain current?
+            # Or use reference speed from map?
+            # Reference map has velocity.
+            # We need to find velocity at s.
+            # Assuming constant for now or look up.
+
+            # Look up reference velocity at s
+            # FrenetConverter doesn't expose it directly, but we can search.
+            # For efficiency let's use a default or nearest.
+            v_ref = 10.0  # Default
+            # TODO: Look up v_ref from ref_path
+
+            # Use yaw from frenet_to_global implicitly?
+            # frenet_to_global output x, y. Yaw needs to be calculated from dx, dy of the generated path.
+
+            trajectory_points.append(
+                TrajectoryPoint(x=x, y=y, yaw=0.0, velocity=v_ref)
+            )  # yaw updated later
+
+        # Calculate yaw from points
+        for i in range(len(trajectory_points)):
+            if i < len(trajectory_points) - 1:
+                dx = trajectory_points[i + 1].x - trajectory_points[i].x
+                dy = trajectory_points[i + 1].y - trajectory_points[i].y
+                yaw = np.arctan2(dy, dx)
+                trajectory_points[i].yaw = yaw
+            else:
+                trajectory_points[i].yaw = trajectory_points[i - 1].yaw
+
+        return AvoidanceDebugData(
+            trajectory=Trajectory(points=trajectory_points),
+            target_obstacles=targets,
+            shift_profiles=profiles,
+            merged_lat=lat_target_array,
+            s_samples=s_samples,
+        )

@@ -1,0 +1,40 @@
+# Static Avoidance Planner + Pure Pursuit Controller Agent Configuration
+
+nodes:
+  sensor:
+    type: "ideal_sensor.sensor_node.IdealSensorNode"
+    rate_hz: 50.0
+    params:
+      vehicle_params: ${vehicle}
+      vehicle_color: ${visualization.colors.vehicle}
+
+  planning:
+    type: AvoidancePlannerNode
+    rate_hz: 10.0
+    params:
+      track_path: ${env.track_path}
+      map_path: ${env.map_path}
+      lookahead_distance: 30.0
+      avoidance_distance: 15.0
+      d_front: 8.0
+      d_rear: 2.0
+      road_width: 6.0
+      vehicle_width: ${vehicle.width}
+      safe_margin: 0.5
+      trajectory_resolution: 0.5
+      trajectory_color: "#4DB6ACCC" # Teal
+
+  control:
+    type: PurePursuitControllerNode
+    rate_hz: 30.0
+    params:
+      vehicle_params: ${vehicle}
+      min_lookahead_distance: 2.0
+      max_lookahead_distance: 5.0
+      lookahead_speed_ratio: 1.5
+      kp: 1.0
+      ki: 0.1
+      kd: 0.05
+      u_min: -3.0
+      u_max: 3.0
+      lookahead_marker_color: "#D1C4E9CC" # Deep Purple 100

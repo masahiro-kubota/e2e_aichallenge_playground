@@ -101,6 +101,7 @@ class PostProcessConfig(BaseModel):
     mlflow: dict[str, Any] = Field(default_factory=dict)
     dashboard: dict[str, Any] = Field(default_factory=dict)
     mcap: dict[str, Any] = Field(default_factory=dict)
+    foxglove: dict[str, Any] = Field(default_factory=dict)
 
 
 class ExperimentMetaConfig(BaseModel):

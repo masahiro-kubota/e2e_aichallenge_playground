@@ -1,0 +1,259 @@
+================================================================================
+Running experiment with Hydra configuration
+================================================================================
+execution:
+  num_episodes: 1
+  clock_rate_hz: 100.0
+  duration_sec: 7.0
+  clock_type: stepped
+system:
+  nodes:
+    simulator:
+      type: KinematicSimulator
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        map_path: ${env.map_path}
+        vehicle_params: ${vehicle}
+        initial_state: ${env.initial_state}
+        obstacles: ${env.obstacles}
+        obstacle_color: ${visualization.colors.obstacle}
+    logger:
+      type: LoggerNode
+      rate_hz: ${execution.clock_rate_hz}
+      params:
+        output_mcap_path: ${postprocess.mcap.output_dir}/simulation.mcap
+        map_path: ${env.map_path}
+        track_path: ${env.track_path}
+        vehicle_params: ${vehicle}
+        map_left_color: ${visualization.colors.map_left}
+        map_right_color: ${visualization.colors.map_right}
+        global_track_color: ${visualization.colors.global_track}
+        path_color: ${visualization.colors.path}
+    supervisor:
+      type: SupervisorNode
+      rate_hz: 10.0
+      params:
+        goal:
+          enabled: true
+          x: ${env.goal_position.x}
+          'y': ${env.goal_position.y}
+          radius: ${env.goal_tolerance}
+          min_elapsed_time: 20.0
+        checkpoints: ${env.checkpoints}
+        collision:
+          enabled: true
+        off_track:
+          enabled: true
+visualization:
+  colors:
+    vehicle: '#3B99DDCC'
+    obstacle: '#FF5252B3'
+    trajectory: '#4DB6ACCC'
+    lookahead: '#D1C4E9CC'
+    path: '#3B99DDCC'
+    map_left: '#B0BEC533'
+    map_right: '#B0BEC51A'
+    global_track: '#E0E0E026'
+postprocess:
+  inputs:
+  - ${postprocess.mcap.output_dir}/simulation.mcap
+  mlflow:
+    enabled: false
+    tracking_uri: http://localhost:5000
+  mcap:
+    enabled: true
+    output_dir: ${hydra:runtime.output_dir}
+  dashboard:
+    enabled: true
+    map_path: ${env.map_path}
+    vehicle_config_path: experiment/conf/vehicle/default.yaml
+  foxglove:
+    auto_open: true
+ad_components:
+  nodes:
+    sensor:
+      type: ideal_sensor.sensor_node.IdealSensorNode
+      rate_hz: 50.0
+      params:
+        vehicle_params: ${vehicle}
+        vehicle_color: ${visualization.colors.vehicle}
+    planning:
+      type: AvoidancePlannerNode
+      rate_hz: 10.0
+      params:
+        track_path: ${env.track_path}
+        map_path: ${env.map_path}
+        lookahead_distance: 30.0
+        avoidance_distance: 15.0
+        d_front: 8.0
+        d_rear: 2.0
+        road_width: 6.0
+        vehicle_width: ${vehicle.width}
+        safe_margin: 0.5
+        trajectory_resolution: 0.5
+        trajectory_color: '#4DB6ACCC'
+    control:
+      type: PurePursuitControllerNode
+      rate_hz: 30.0
+      params:
+        vehicle_params: ${vehicle}
+        min_lookahead_distance: 2.0
+        max_lookahead_distance: 5.0
+        lookahead_speed_ratio: 1.5
+        kp: 1.0
+        ki: 0.1
+        kd: 0.05
+        u_min: -3.0
+        u_max: 3.0
+        lookahead_marker_color: '#D1C4E9CC'
+experiment:
+  name: evaluation
+  type: evaluation
+  description: Closed-loop evaluation of trained model
+env:
+  map_path: experiment/assets/lanelet2_map.osm
+  track_path: experiment/assets/raceline_awsim_15km.csv
+  initial_state:
+    x: 89630.067
+    'y': 43130.695
+    yaw: 2.2
+    velocity: 0.0
+  goal_position:
+    x: 89630.067
+    'y': 43130.695
+  goal_tolerance: 6.0
+  checkpoints:
+  - x: 89625.0
+    'y': 43140.0
+    tolerance: 6.0
+  - x: 89625.0
+    'y': 43160.0
+    tolerance: 6.0
+  - x: 89663.0
+    'y': 43178.0
+    tolerance: 6.0
+  obstacles:
+    generation:
+      enabled: false
+      groups: []
+    list:
+    - type: static
+      shape:
+        type: rectangle
+        width: 1.3
+        length: 2.064
+      position:
+        x: 89635.303
+        'y': 43148.381
+        yaw: 0
+    - type: static
+      shape:
+        type: rectangle
+        width: 1.3
+        length: 2.064
+      position:
+        x: 89642.364
+        'y': 43156.666
+        yaw: 0
+    - type: static
+      shape:
+        type: rectangle
+        width: 1.3
+        length: 2.064
+      position:
+        x: 89640.387
+        'y': 43139.626
+        yaw: 0
+    - type: static
+      shape:
+        type: rectangle
+        width: 1.3
+        length: 2.064
+      position:
+        x: 89639.822
+        'y': 43149.417
+        yaw: 0
+    - type: static
+      shape:
+        type: rectangle
+        width: 1.3
+        length: 2.064
+      position:
+        x: 89645.0
+        'y': 43132.0
+        yaw: 0
+vehicle:
+  wheelbase: 1.087
+  width: 1.3
+  front_overhang: 0.467
+  rear_overhang: 0.51
+  max_steering_angle: 0.8
+  max_velocity: 35.0
+  max_acceleration: 5.0
+  mass: 1500.0
+  inertia: 2500.0
+  lf: 1.2
+  lr: 1.3
+  cf: 80000.0
+  cr: 80000.0
+  c_drag: 0.3
+  c_roll: 0.015
+  max_drive_force: 5000.0
+  max_brake_force: 8000.0
+  tire_params: {}
+  lidar:
+    num_beams: 1080
+    range_max: 30.0
+    range_min: 0.1
+    fov: 270.0
+    angle_increment: 0.0
+    x: 1.5
+    'y': 0.0
+    z: 1.8
+    yaw: 0.0
+seed: 42
+split: train
+
+================================================================================
+[2025-12-28 18:06:18,363][botocore.credentials][INFO] - Found credentials in environment variables.
+[2025-12-28 18:06:18,399][botocore.configprovider][INFO] - Found endpoint for s3 via: environment_global.
+[2025-12-28 18:06:18,410][experiment.engine.evaluator][INFO] - Running Evaluation Engine...
+[2025-12-28 18:06:18,417][experiment.engine.evaluator][INFO] - Evaluating model on 1 episodes...
+[2025-12-28 18:06:18,593][static_avoidance_planner.avoidance_planner_node][INFO] - Initializing AvoidancePlanner with map: /home/masa/e2e_aichallenge_playground/experiment/assets/lanelet2_map.osm
+
+Simulation:   0%|                                                         | 0/700 [00:00<?, ?step/s][2025-12-28 18:06:18,802][static_avoidance_planner.avoidance_planner_node][INFO] - [AvoidancePlanner] Pos: (89631.16, 43130.45), Road Width: 10.32
+
+Simulation:   0%|                                                         | 0/700 [00:00<?, ?step/s]
+[AP] s_ego=352.20, l_ego=-0.73, targets=0
+🏃 View run evaluation_unnamed at: http://localhost:5000/#/experiments/1/runs/adefa2c97934482b96e56f0c7fb89d42
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+Error executing job with overrides: ['ad_components=static_avoidance', 'execution.duration_sec=7.0']
+Traceback (most recent call last):
+  File "/home/masa/e2e_aichallenge_playground/experiment/src/experiment/cli.py", line 33, in main
+    orchestrator.run_from_hydra(cfg)
+  File "/home/masa/e2e_aichallenge_playground/experiment/src/experiment/core/orchestrator.py", line 44, in run_from_hydra
+    return engine.run(strict_cfg)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/masa/e2e_aichallenge_playground/experiment/src/experiment/engine/base.py", line 54, in run
+    return self._run_impl(cfg)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/masa/e2e_aichallenge_playground/experiment/src/experiment/engine/evaluator.py", line 135, in _run_impl
+    res = runner.run_simulation(experiment_structure)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/masa/e2e_aichallenge_playground/experiment/src/experiment/engine/evaluator.py", line 45, in run_simulation
+    executor.run(duration=duration)
+  File "/home/masa/e2e_aichallenge_playground/core/src/core/executor/single_process.py", line 75, in run
+    result = node.on_run(self.clock.now)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/masa/e2e_aichallenge_playground/ad_components/planning/static_avoidance_planner/src/static_avoidance_planner/avoidance_planner_node.py", line 158, in on_run
+    debug_data = self.planner.plan(vehicle_state, converted_obstacles, road_width)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/masa/e2e_aichallenge_playground/ad_components/planning/static_avoidance_planner/src/static_avoidance_planner/avoidance_planner.py", line 126, in plan
+    x, y = self.converter.frenet_to_global(s, lat)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/masa/e2e_aichallenge_playground/ad_components/planning/static_avoidance_planner/src/static_avoidance_planner/frenet_converter.py", line 193, in frenet_to_global
+    x = x_ref + l * nx
+                ^
+NameError: name 'l' is not defined
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.

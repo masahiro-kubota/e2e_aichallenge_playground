@@ -16,3 +16,8 @@ hydra:
   sweep:
     dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
     subdir: ${hydra.job.num}
+
+  job_logging:
+    handlers:
+      file:
+        filename: ${hydra:runtime.output_dir}/simulation.log

@@ -13,6 +13,7 @@ dependencies = [
     "ruff>=0.14.10",
     "pure-pursuit",
     "mppi-planner",
+    "mppi-controller",
     "planning-utils",
     "pid-controller",
     "tiny-lidar-net",
@@ -31,6 +32,8 @@ dependencies = [
     "dvc[s3]>=3.65.0",
     "numba>=0.63.1",
     "onnxscript>=0.5.7",
+    "static-avoidance-planner",
+    "pure-pursuit-controller",
 ]
 
 [tool.uv]
@@ -44,6 +47,7 @@ pure-pursuit = { workspace = true }
 centerline-planner = { workspace = true }
 pure-pursuit-controller = { workspace = true }
 mppi-planner = { workspace = true }
+mppi-controller = { workspace = true }
 planning-utils = { workspace = true }
 pid-controller = { workspace = true }
 tiny-lidar-net = { workspace = true }
@@ -52,15 +56,18 @@ simulator = { workspace = true }
 "dashboard" = { workspace = true }
 "supervisor" = { workspace = true }
 "logger" = { workspace = true }
+"static-avoidance-planner" = { workspace = true }
 
 [tool.uv.workspace]
 members = [
     "core",
+    "ad_components/planning/static_avoidance_planner",
     "ad_components/core",
     "ad_components/planning/pure_pursuit",
     "ad_components/planning/centerline_planner",
     "ad_components/planning/planning_utils",
     "ad_components/planning/mppi_planner",
+    "ad_components/control/mppi_controller",
     "ad_components/control/pid_controller",
     "ad_components/control/pure_pursuit_controller",
     "ad_components/control/tiny_lidar_net",
