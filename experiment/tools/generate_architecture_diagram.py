@@ -99,7 +99,7 @@ def generate_mermaid(projects: dict[str, ProjectInfo]) -> str:
             # Escape description for mermaid
             desc = p.description.replace('"', "'")
             # formatting: Name[name<br/>description]
-            short_desc = (desc[:20] + "..") if len(desc) > 20 else desc
+            short_desc = (desc[:40] + "..") if len(desc) > 40 else desc
             if short_desc:
                 label = f"{p.name}<br/>{short_desc}"
             else:

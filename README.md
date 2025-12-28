@@ -21,40 +21,38 @@ cd e2e_aichallenge_playground
 # 2. 依存関係をインストール
 uv sync
 
-# 3. 実験トラッキングサーバーを起動（MLflow + MinIO）
-cd mlflow
+# 3. 実験インフラを起動 (MLflow, MinIO, Foxglove Server)
 docker compose up -d
-cd ..
 
-# 4. 実験を実行 (追跡用環境変数の指定が必須です)
-# デフォルト実行 (Pure Pursuit, 60秒)
+# 4. 実験を実行
+# デフォルト実行 (Pure Pursuit, 200秒)
 uv run experiment-runner
 
 # パラメータを上書き
 uv run experiment-runner execution.duration_sec=10.0
 
-# エージェントを切り替え
+# エージェント（ADコンポーネント構成）を切り替え
 # Pure Pursuit (一体型: Planning + Control統合)
-uv run experiment-runner agent=pure_pursuit
+uv run experiment-runner ad_components=pure_pursuit
 
 # Centerline + Pure Pursuit (分離型: Planning と Control が独立)
-uv run experiment-runner agent=centerline_pure_pursuit
+uv run experiment-runner ad_components=centerline_pure_pursuit
 
 # MPPI Planner (Model Predictive Path Integral)
-uv run experiment-runner agent=mppi
+uv run experiment-runner ad_components=mppi
 
 # Tiny LiDAR Net (学習ベースのEnd-to-End制御)
-uv run experiment-runner agent=tiny_lidar agent.model_path=models/tinylidarnet_v2.npy
+uv run experiment-runner ad_components=tiny_lidar ad_components.model_path=models/tinylidarnet_v2.npy
 
 # 5. 結果を確認
+# Foxglove Studio (可視化): 実験終了後のターミナルに表示されるリンクをクリック
 # MLflow UI: http://localhost:5000
 # MinIO Console: http://localhost:9001 (minioadmin / minioadmin)
 ```
 
-### サーバーの停止
+### インフラの停止
 
 ```bash
-cd mlflow
 docker compose down  # データを保持
 docker compose down -v  # データも削除
 ```
@@ -75,10 +73,10 @@ docker compose down -v  # データも削除
   - `config.yaml`: 使用した設定ファイル。
   - `dashboard.html`: 評価ダッシュボード（評価フェーズ時）。
 
-### 2. ファイルの実体 (MinIO)
-ブラウザで [http://localhost:9001](http://localhost:9001) にアクセスします（ID/PW: `minioadmin`）。
-- **`mlflow` バケット**: MLflow で記録したモデルやログの実体が保存されています。
-- **`dvc-storage` バケット**: `dvc push` した大容量データやモデルの重みが保存されます。
+### 3. Foxglove Studio (詳細な可視化)
+実験終了後にターミナルに出力される `🦊 View in Foxglove` リンクをクリックします。
+- **機能**: 車両の挙動、LiDARスキャン、経路、障害物などを3D/2Dでリアルタイムに確認できます。
+- **仕組み**: `docker compose` で自動起動する配信サーバーを通じて、ローカルの MCAP ファイルをブラウザ版 Foxglove にストリーミングします。
 
 ### 3. 大容量データのバージョン (DVC)
 ローカルで以下のコマンドを実行します。
@@ -97,12 +95,12 @@ uv run dvc status
 本プラットフォームでは、以下のエージェント構成を切り替えて実験できます。
 
 ### 1. Pure Pursuit (一体型)
-**設定**: `agent=pure_pursuit`
+**設定**: `ad_components=pure_pursuit`
 
 Planning と Control が統合された従来型の Pure Pursuit 実装です。
 
 ```bash
-uv run experiment-runner agent=pure_pursuit
+uv run experiment-runner ad_components=pure_pursuit
 ```
 
 **構成**:
@@ -110,12 +108,12 @@ uv run experiment-runner agent=pure_pursuit
 - **Control**: `PIDControllerNode` (加速度制御のみ)
 
 ### 2. Centerline + Pure Pursuit (分離型)
-**設定**: `agent=centerline_pure_pursuit`
+**設定**: `ad_components=centerline_pure_pursuit`
 
 Planning と Control を完全に分離したモジュラー構成です。
 
 ```bash
-uv run experiment-runner agent=centerline_pure_pursuit
+uv run experiment-runner ad_components=centerline_pure_pursuit
 ```
 
 **構成**:
@@ -123,12 +121,12 @@ uv run experiment-runner agent=centerline_pure_pursuit
 - **Control**: `PurePursuitControllerNode` (Pure Pursuit による軌道追従制御)
 
 ### 3. MPPI Planner
-**設定**: `agent=mppi`
+**設定**: `ad_components=mppi`
 
 Model Predictive Path Integral (MPPI) ベースの最適化プランナーです。
 
 ```bash
-uv run experiment-runner agent=mppi
+uv run experiment-runner ad_components=mppi
 ```
 
 **構成**:
@@ -137,16 +135,16 @@ uv run experiment-runner agent=mppi
 
 **特徴**:
 - サンプリングベースの確率的最適化
-- 障害物回避機能（現在は無効化）
+- 障害物回避
 - リアルタイム軌道最適化
 
 ### 4. Tiny LiDAR Net
-**設定**: `agent=tiny_lidar`
+**設定**: `ad_components=tiny_lidar`
 
 学習ベースの End-to-End 制御エージェントです。
 
 ```bash
-uv run experiment-runner agent=tiny_lidar agent.model_path=models/tinylidarnet_v2.npy
+uv run experiment-runner ad_components=tiny_lidar ad_components.model_path=models/tinylidarnet_v2.npy
 ```
 
 **構成**:
@@ -239,10 +237,11 @@ e2e_aichallenge_playground/
 │           ├── core/             # Orchestrator, Structures
 │           ├── data/             # Dataset, DataLoading
 │           └── models/           # 模型定義 (TinyLidarNet)
-├── dashboard/                    # 可視化ダッシュボード
+├── dashboard/                    # 可視化ダッシュボード (HTMLベース)
 ├── supervisor/                   # シミュレート監視・判定
 ├── logger/                       # ログ記録
-├── mlflow/                       # MLflow + MinIO サーバー
+├── docker/                       # Docker用資材 (Dockerfile等)
+├── mlflow/                       # MLflow 設定資材
 └── models/                       # 学習済みモデル (.npy)
 ```
 
@@ -263,13 +262,13 @@ graph TD
     classDef app fill:#bfb,stroke:#333,stroke-width:2px;
     classDef default fill:#fff,stroke:#333,stroke-width:1px;
     subgraph group_other [other]
-        logger["logger<br/>Logging node for rec.."]
+        logger["logger<br/>Logging node for recording FrameData dur.."]
         class logger impl;
-        supervisor["supervisor<br/>Supervision and moni.."]
+        supervisor["supervisor<br/>Supervision and monitoring node for simu.."]
         class supervisor impl;
     end
     subgraph group_core [core]
-        core["core<br/>Core data structures.."]
+        core["core<br/>Core data structures and interfaces"]
         class core core;
     end
     subgraph group_simulator [simulator]
@@ -277,28 +276,34 @@ graph TD
         class simulator impl;
     end
     subgraph group_experiment [experiment]
-        experiment["experiment<br/>Unified experiment e.."]
+        experiment["experiment<br/>Unified experiment execution framework"]
         class experiment impl;
     end
     subgraph group_dashboard [dashboard]
-        dashboard["dashboard<br/>Interactive HTML das.."]
+        dashboard["dashboard<br/>Interactive HTML dashboard generator for.."]
         class dashboard impl;
     end
     subgraph group_ad_components [ad_components]
-        ad_component_core["ad-component-core<br/>Core interfaces and .."]
+        ad_component_core["ad-component-core<br/>Core interfaces and data types for AD co.."]
         class ad_component_core base;
-        centerline_planner["centerline-planner<br/>Centerline trajectory planner"]
-        class centerline_planner impl;
-        pure_pursuit_controller["pure-pursuit-controller<br/>Pure Pursuit controller"]
-        class pure_pursuit_controller impl;
-        mppi_planner["mppi-planner<br/>MPPI-based planner"]
-        class mppi_planner impl;
+        pure_pursuit["pure-pursuit<br/>Pure Pursuit path tracking algorithm"]
+        class pure_pursuit impl;
         planning_utils["planning-utils<br/>Planning utilities"]
         class planning_utils impl;
+        mppi_planner["mppi-planner<br/>MPPI Planner component"]
+        class mppi_planner impl;
+        centerline_planner["centerline-planner<br/>Simple centerline trajectory planner"]
+        class centerline_planner impl;
+        ideal_sensor["ideal-sensor<br/>Ideal sensor node for simulation"]
+        class ideal_sensor impl;
         pid_controller["pid-controller<br/>PID controller"]
         class pid_controller impl;
-        tiny_lidar_net["tiny-lidar-net<br/>Tiny LiDAR Net end-t.."]
+        mppi_controller["mppi-controller<br/>MPPI Controller component"]
+        class mppi_controller impl;
+        tiny_lidar_net["tiny-lidar-net<br/>Tiny LiDAR Net end-to-end controller"]
         class tiny_lidar_net impl;
+        pure_pursuit_controller["pure-pursuit-controller<br/>Pure Pursuit path tracking controller"]
+        class pure_pursuit_controller impl;
     end
     %% Dependencies
     logger --> core
@@ -310,14 +315,18 @@ graph TD
     dashboard --> core
     supervisor --> core
     ad_component_core --> core
+    pure_pursuit --> core
+    pure_pursuit --> planning_utils
+    pure_pursuit --> simulator
+    planning_utils --> core
+    mppi_planner --> core
     centerline_planner --> core
     centerline_planner --> planning_utils
-    pure_pursuit_controller --> core
-    mppi_planner --> core
-    mppi_planner --> simulator
-    planning_utils --> core
+    ideal_sensor --> core
     pid_controller --> core
+    mppi_controller --> core
     tiny_lidar_net --> core
+    pure_pursuit_controller --> core
 ```
 <!-- ARCHITECTURE_DIAGRAM_END -->
 
@@ -447,6 +456,6 @@ uv run python experiment/tools/convert_model.py \
 
 ```bash
 uv run experiment-runner experiment=evaluation \
-    agent=tiny_lidar \
-    agent.model_path=models/tinylidarnet_v1.npy
+    ad_components=tiny_lidar \
+    ad_components.model_path=models/tinylidarnet_v1.npy
 ```
