@@ -88,6 +88,7 @@ class ExecutionConfig(BaseModel):
     clock_type: Literal["stepped", "realtime", "external"] = Field(
         ..., description="Clock type for simulation timing"
     )
+    enable_progress_bar: bool = Field(..., description="Enable progress bar")
 
 
 class EvaluationConfig(BaseModel):

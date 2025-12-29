@@ -18,6 +18,7 @@ class ExecutionConfig(BaseModel):
         ..., gt=0, description="Maximum duration of each episode in seconds"
     )
     clock_type: Literal["stepped", "realtime"] = Field(..., description="Clock type")
+    enable_progress_bar: bool = Field(..., description="Enable progress bar")
 
 
 class ObstaclePlacement(BaseModel):

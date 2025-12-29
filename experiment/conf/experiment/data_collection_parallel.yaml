@@ -1,0 +1,22 @@
+# @package _global_
+defaults:
+  - data_collection
+  - override /hydra/launcher: joblib
+  - _self_
+
+experiment:
+  name: "data_collection_parallel"
+
+execution:
+  enable_progress_bar: false
+
+postprocess:
+  foxglove:
+    auto_open: false
+  dashboard:
+    enabled: false
+
+hydra:
+  sweeper:
+    params:
+      env.obstacles.generation.seed: range(100,104)

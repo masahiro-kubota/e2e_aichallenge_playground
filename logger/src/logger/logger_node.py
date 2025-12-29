@@ -198,7 +198,7 @@ class LoggerNode(Node[LoggerConfig]):
 
             from core.data.ros import ColorRGBA, Header, Marker, MarkerArray, Point, Vector3
 
-            points = [Point(x=p.x, y=p.y, z=0.0) for p in track.points]
+            points = [Point(x=p.pose.position.x, y=p.pose.position.y, z=0.0) for p in track.points]
             marker = Marker(
                 header=Header(stamp=to_ros_time(self.current_time), frame_id="map"),
                 ns="global_track",

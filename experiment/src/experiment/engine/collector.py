@@ -28,10 +28,13 @@ class CollectorEngine(BaseEngine):
     def _run_impl(self, cfg: DictConfig) -> Any:
         num_episodes = cfg.execution.num_episodes
         split = cfg.split
-        # Safe HydraConfig access
+        # Safe HydraConfig access for both Run and Multirun
         try:
-            hydra_dir = Path(hydra.core.hydra_config.HydraConfig.get().run.dir)
-        except (ValueError, AttributeError):
+            hydra_config = hydra.core.hydra_config.HydraConfig.get()
+            # runtime.output_dir is available in both single run and multirun
+            hydra_dir = Path(hydra_config.runtime.output_dir)
+        except (ValueError, AttributeError, Exception) as e:
+            logger.warning(f"Failed to get hydra output dir: {e}. Fallback to outputs/latest")
             hydra_dir = Path("outputs/latest")
 
         output_dir = hydra_dir / split / "raw_data"
@@ -57,6 +60,37 @@ class CollectorEngine(BaseEngine):
 
             runner = SimulatorRunner()
             result = runner.run_simulation(experiment)
+
+            # Save result to JSON for metrics aggregation and filtering
+            episode_dir = output_dir / f"episode_{i:04d}"
+            episode_dir.mkdir(parents=True, exist_ok=True)
+            result_path = episode_dir / "result.json"
+            try:
+                import json
+
+                with open(result_path, "w") as f:
+                    # Collect seed if available
+                    seed_val = episode_seed
+
+                    json.dump(
+                        {
+                            "episode_idx": i,
+                            "seed": seed_val,
+                            "success": result.success,
+                            "reason": result.reason,
+                            "metrics": result.metrics,
+                            "final_state": {
+                                "x": result.final_state.x if result.final_state else None,
+                                "y": result.final_state.y if result.final_state else None,
+                            }
+                            if result.final_state
+                            else None,
+                        },
+                        f,
+                        indent=4,
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to save result.json for episode {i}: {e}")
 
             if result.success:
                 logger.info("Episode successful.")

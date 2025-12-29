@@ -28,6 +28,7 @@ class SimulatorRunner:
         clock_rate = config.execution.clock_rate_hz
         duration = config.execution.duration_sec
         clock_type = config.execution.clock_type
+        enable_progress_bar = config.execution.enable_progress_bar
 
         fields = collect_node_output_fields(nodes)
         dynamic_frame_data_type = create_frame_data_type(fields)
@@ -45,7 +46,7 @@ class SimulatorRunner:
 
         clock = create_clock(start_time=0.0, rate_hz=clock_rate, clock_type=clock_type)
         executor = SingleProcessExecutor(nodes, clock)
-        executor.run(duration=duration)
+        executor.run(duration=duration, enable_progress_bar=enable_progress_bar)
 
         log = None
         # Prefer Simulator log as it contains better metadata (obstacles, etc.)

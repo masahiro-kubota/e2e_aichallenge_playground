@@ -11,16 +11,7 @@ experiment:
   description: "Data collection with randomized episodes"
 
 # Disable supervisor features for data collection
-system:
-  nodes:
-    supervisor:
-      params:
-        goal:
-          enabled: false
-        collision:
-          enabled: false
-        off_track:
-          enabled: false
+
 
 # Override mcap output directory for raw data collection
 postprocess:

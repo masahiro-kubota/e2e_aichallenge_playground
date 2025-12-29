@@ -23,15 +23,6 @@ def main(cfg: DictConfig) -> None:
     """
     load_dotenv()  # Load environment variables from .env file
 
-    print("=" * 80)
-    print("Running experiment with Hydra configuration")
-    print("=" * 80)
-    print(OmegaConf.to_yaml(cfg))
-    print("=" * 80)
-
-    orchestrator = ExperimentOrchestrator()
-    orchestrator.run_from_hydra(cfg)
-
     # Update outputs/latest symlink
     try:
         from hydra.core.hydra_config import HydraConfig
@@ -55,6 +46,15 @@ def main(cfg: DictConfig) -> None:
             print(f"Updated symlink: {latest_link} -> {relative_target}")
     except Exception as e:
         print(f"Warning: Could not update 'latest' symlink: {e}")
+
+    print("=" * 80)
+    print("Running experiment with Hydra configuration")
+    print("=" * 80)
+    print(OmegaConf.to_yaml(cfg))
+    print("=" * 80)
+
+    orchestrator = ExperimentOrchestrator()
+    orchestrator.run_from_hydra(cfg)
 
     print("Experiment completed successfully.")
 

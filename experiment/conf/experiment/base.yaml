@@ -13,6 +13,7 @@ execution:
   # Clock type for simulation timing control (時間管理のタイプ)
   # Currently only "stepped" is supported, but may be extended in the future (e.g., "realtime", "external")
   clock_type: "stepped" # "stepped": ステップ実行（非リアルタイプ）, "realtime": 実時間同期 [str]
+  enable_progress_bar: true # プログレスバーを表示するかどうか [bool]
 
 # Default system configuration (システム構成)
 system:

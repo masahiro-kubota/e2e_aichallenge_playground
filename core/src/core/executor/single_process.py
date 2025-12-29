@@ -35,6 +35,7 @@ class SingleProcessExecutor:
         duration: float,
         stop_condition: Callable[[], bool] | None = None,
         suppress_console_log: bool = True,
+        enable_progress_bar: bool = True,
     ) -> None:
         """Run the simulation loop.
 
@@ -45,6 +46,7 @@ class SingleProcessExecutor:
             duration: 実行期間 [sec]
             stop_condition: 終了条件を判定するコールバック関数(Trueを返すと終了)
             suppress_console_log: 実行中にコンソールへのログ出力を抑制するかどうか
+            enable_progress_bar: プログレスバーを表示するかどうか
         """
         # Initialize all nodes
         for node in self.nodes:
@@ -73,7 +75,13 @@ class SingleProcessExecutor:
 
         try:
             # メインループ: 指定時間経過するか、終了条件が満たされるまで継続
-            with tqdm(total=total_steps, desc="Simulation", unit="step", ncols=100) as pbar:
+            with tqdm(
+                total=total_steps,
+                desc="Simulation",
+                unit="step",
+                ncols=100,
+                disable=not enable_progress_bar,
+            ) as pbar:
                 while self.clock.now < duration:
                     # Update global sim time for logging
                     set_sim_time(self.clock.now)
