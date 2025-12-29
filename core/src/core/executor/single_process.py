@@ -7,6 +7,7 @@ from tqdm import tqdm
 
 from core.interfaces.clock import Clock
 from core.interfaces.node import Node, NodeExecutionResult
+from core.utils.logging import set_sim_time
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,9 @@ class SingleProcessExecutor:
             # メインループ: 指定時間経過するか、終了条件が満たされるまで継続
             with tqdm(total=total_steps, desc="Simulation", unit="step", ncols=100) as pbar:
                 while self.clock.now < duration:
+                    # Update global sim time for logging
+                    set_sim_time(self.clock.now)
+
                     # Check stop condition
                     if stop_condition and stop_condition():
                         logger.info("Stop condition met, terminating simulation")

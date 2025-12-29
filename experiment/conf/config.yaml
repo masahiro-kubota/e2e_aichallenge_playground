@@ -18,6 +18,15 @@ hydra:
     subdir: ${hydra.job.num} # 各ジョブのサブディレクトリ名
 
   job_logging:
+    filters:
+      sim_time_filter:
+        (): core.utils.logging.SimTimeFilter
+    formatters:
+      simple:
+        format: '[%(asctime)s][SimTime: %(sim_time)s][%(short_name)s][%(levelname)s] %(message)s'
     handlers:
       file:
-        filename: ${hydra:runtime.output_dir}/simulation.log # ログファイルの出力先
+        class: logging.FileHandler
+        filename: ${hydra:runtime.output_dir}/simulation.log
+        formatter: simple
+        filters: [sim_time_filter]

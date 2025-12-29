@@ -99,13 +99,10 @@ class LateralShiftPlannerNode(Node[LateralShiftPlannerNodeConfig]):
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
-
+        """Run the planner."""
+        # Get Inputs
         vehicle_state = self.subscribe("vehicle_state")
-        # raw_obstacles is list[SimulatorObstacle]
         raw_obstacles = self.subscribe("obstacles")
-        # raw_obstacle_states is list[ObstacleState]
         raw_obstacle_states = self.subscribe("obstacle_states")
 
         if vehicle_state is None:

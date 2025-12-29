@@ -104,26 +104,57 @@ class Node[T: ComponentConfig](ABC):
 
         slot.update(data)
 
-    def subscribe(self, topic_name: str) -> Any | None:
+    def subscribe(self, topic_name: str, default: Any = None) -> Any | None:
         """Subscribe to a topic.
 
         Args:
             topic_name: Name of the topic
+            default: Default value if topic doesn't exist. If None and topic missing, still raises unless checked.
 
         Returns:
-            Topic data or None if empty
+            Topic data or default
         """
         if self.frame_data is None:
             raise ValueError("frame_data is not set")
 
         if not hasattr(self.frame_data, topic_name):
-            raise ValueError(f"Topic '{topic_name}' does not exist in FrameData")
+            return default
 
         slot = getattr(self.frame_data, topic_name)
         if not isinstance(slot, TopicSlot):
-            raise ValueError(f"Topic '{topic_name}' is not a TopicSlot")
+            return default  # Or raise if preferred, but for safety return default
 
         return slot.data
+
+    def get_topic_seq(self, topic_name: str, default: int = -1) -> int:
+        """Get sequence number of a topic safely.
+
+        Args:
+            topic_name: Name of the topic
+            default: Default seq if topic doesn't exist
+
+        Returns:
+            Sequence number
+        """
+        if self.frame_data is None or not hasattr(self.frame_data, topic_name):
+            return default
+
+        slot = getattr(self.frame_data, topic_name)
+        if not isinstance(slot, TopicSlot):
+            return default
+
+        return slot.seq
+
+    def get_topics(self) -> dict[str, TopicSlot]:
+        """Get all available topics as TopicSlots.
+
+        Note: This is intended for system nodes like Logger.
+        Use subscribe() for normal data access.
+        """
+        if self.frame_data is None:
+            return {}
+
+        return {k: v for k, v in vars(self.frame_data).items() if isinstance(v, TopicSlot)}
 
     def should_run(self, sim_time: float) -> bool:
         """Check if node should run at current time.
@@ -137,12 +168,17 @@ class Node[T: ComponentConfig](ABC):
         return sim_time + 1e-9 >= self.next_time
 
     def update_next_time(self, current_time: float) -> None:
-        """Update next execution time.
+        """Update next execution time using accumulative timing to maintain average frequency.
 
         Args:
             current_time: Current simulation time
         """
-        self.next_time = current_time + self.period
+        # If this is the first execution (next_time is 0), initialize it properly.
+        # Otherwise, add period to the previous scheduled time to catch up on jitter.
+        if self.next_time <= 1e-9:
+            self.next_time = current_time + self.period
+        else:
+            self.next_time += self.period
 
     def on_init(self) -> None:
         """Initialize node resources.

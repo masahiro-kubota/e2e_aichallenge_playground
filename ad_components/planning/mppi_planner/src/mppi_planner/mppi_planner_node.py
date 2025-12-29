@@ -91,9 +91,6 @@ class MPPIPlannerNode(Node[MPPIPlannerConfig]):
         )
 
     def on_run(self, current_time: float) -> NodeExecutionResult:
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
-
         # Get Inputs
         vehicle_state = self.subscribe("vehicle_state")
         obstacles = self.subscribe("obstacles") or []

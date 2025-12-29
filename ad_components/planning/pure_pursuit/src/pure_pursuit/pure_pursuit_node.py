@@ -57,9 +57,6 @@ class PurePursuitNode(Node[PurePursuitConfig]):
         )
 
     def on_run(self, current_time: float) -> NodeExecutionResult:
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
-
         self.current_time = current_time
 
         # Get Input

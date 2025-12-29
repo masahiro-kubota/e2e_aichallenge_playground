@@ -63,16 +63,7 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
-        """Execute inference step.
-
-        Args:
-            _current_time: Current simulation time
-
-        Returns:
-            NodeExecutionResult indicating execution status
-        """
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
+        """Execute inference step."""
 
         # Get LiDAR scan from frame_data (now a LaserScan message)
         lidar_scan = self.subscribe("perception_lidar_scan")

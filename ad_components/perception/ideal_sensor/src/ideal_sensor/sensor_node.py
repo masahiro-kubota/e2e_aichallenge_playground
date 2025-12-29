@@ -45,9 +45,6 @@ class IdealSensorNode(Node[IdealSensorConfig]):
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
-
         sim_state = self.subscribe("sim_state")
         if sim_state:
             self.publish("vehicle_state", sim_state)

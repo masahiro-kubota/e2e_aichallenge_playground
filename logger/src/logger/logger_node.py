@@ -5,7 +5,6 @@ from pathlib import Path
 from core.data import (
     ComponentConfig,
     SimulationLog,
-    TopicSlot,
     VehicleParameters,
 )
 from core.data.node_io import NodeIO
@@ -106,10 +105,7 @@ class LoggerNode(Node[LoggerConfig]):
 
         simulation_info = {}
 
-        for key, slot in vars(self.frame_data).items():
-            if not isinstance(slot, TopicSlot):
-                continue
-
+        for key, slot in self.get_topics().items():
             # Check sequence number for updates
             current_seq = slot.seq
             last_seq = self._last_logged_seq.get(key, -1)
@@ -131,10 +127,9 @@ class LoggerNode(Node[LoggerConfig]):
                 "control_cmd": "/control/command/control_cmd",
                 "perception_lidar_scan": "/sensing/lidar/scan",
                 "trajectory": "/planning/trajectory",
-                "lookahead_marker": "/planning/lookahead_marker",
+                "lookahead_marker": "/control/lookahead_marker",
                 "obstacle_markers": "/perception/obstacle_markers",
                 "tf_kinematic": "/tf",
-                "tf_lidar": "/tf",
                 "vehicle_marker": "/vehicle/marker",
                 "planning_marker": "/planning/marker",
                 "mppi_candidates": "/planning/mppi/candidates",
@@ -169,10 +164,7 @@ class LoggerNode(Node[LoggerConfig]):
         # Track vehicle position for final path generation
         from core.utils.mcap_utils import extract_dashboard_state
 
-        for key, slot in vars(self.frame_data).items():
-            if not isinstance(slot, TopicSlot):
-                continue
-
+        for key, slot in self.get_topics().items():
             value = slot.data
             if value is None:
                 continue

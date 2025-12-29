@@ -46,9 +46,6 @@ class CenterlinePlannerNode(Node[CenterlinePlannerConfig]):
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
-
         vehicle_state = self.subscribe("vehicle_state")
         if vehicle_state is None:
             return NodeExecutionResult.SKIPPED

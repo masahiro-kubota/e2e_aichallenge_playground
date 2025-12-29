@@ -40,9 +40,6 @@ class PIDControllerNode(Node[PIDConfig]):
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
-        if self.frame_data is None:
-            return NodeExecutionResult.FAILED
-
         trajectory = self.subscribe("trajectory")
         vehicle_state = self.subscribe("vehicle_state")
 
