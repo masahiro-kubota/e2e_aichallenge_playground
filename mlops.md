@@ -29,6 +29,49 @@ graph TD
 
 ---
 
+## 📂 データとアーティファクトの構成推移
+
+各フェーズにおけるディレクトリ構成の推移と、最終生成物の配置は以下の通りです。
+
+### 1. データ収集 (Raw Data)
+Hydra Joblib Launcherにより、ジョブ（シード）ごとに分散して保存されます。
+```text
+outputs/YYYY-MM-DD/HH-MM-SS/   <-- Hydra Multirun Root
+├── 0/
+│   └── train/raw_data/episode_seed100/
+│       ├── simulation.mcap    <-- 生ログ
+│       ├── result.json        <-- 成功可否
+│       └── config.yaml
+├── 1/
+│   └── train/raw_data/episode_seed101/
+└── ...
+```
+
+### 2. データ抽出・結合 (Dataset)
+`extractor` により、成功データのみが抽出・結合され、フラットで扱いやすい形式になります。
+このディレクトリは **DVC** でバージョン管理されます。
+```text
+data/
+└── processed/v1.0/            <-- DVC managed
+    ├── metadata.json
+    ├── stats.json             <-- 正規化用統計値（平均・分散）
+    ├── scans.npy              <-- 結合されたLiDARデータ (N, 1080)
+    └── actions.npy            <-- 結合された制御入力 (N, 2)
+```
+
+### 3. 学習・モデル (Model Artifacts)
+MLflowにより、学習済みモデルと付帯情報がパッケージングされます。
+推論時はこのディレクトリを参照するだけで動作するようにします。
+```text
+mlruns/
+└── <ExpID>/<RunID>/artifacts/model/
+    ├── model.pth              <-- 学習済み重み
+    ├── config.yaml            <-- モデル構成設定
+    └── stats.json             <-- 学習時に使用した統計値（推論時の正規化に必須）
+```
+
+---
+
 ## 1. データ収集 (Data Collection)
 
 多様なシナリオでの走行データを効率的に、かつ再現性を持って収集します。
@@ -46,6 +89,7 @@ Hydraの **Joblib Launcher** を使用して複数のエピソードを並列実
     env.obstacles.generation.seed="range(100,105)" \
     split=train
   ```
+
   **効果**: Joblib Launcherを使用することで、直列実行と比較して **約4.4倍** の高速化を確認しています（50エピソード実行時: 382秒 -> 87秒）。
   > [!NOTE]
   > `collector` は内部ループで `seed` をインクリメントしながら `num_episodes` 分のエピソードを生成します（例: seed=100 -> 100, 101, 102...）。
@@ -55,12 +99,39 @@ Hydraの **Joblib Launcher** を使用して複数のエピソードを並列実
   > 大量試行時は必ず `postprocess.foxglove.auto_open=false` を設定してください。そうしないと、エピソードごとにFoxgloveが開き、システムがフリーズする可能性があります。
 
 
-### エピソード管理
-各エピソードは独立したディレクトリに保存され、以下を含みます：
-- `simulation.mcap`: 全センサー・制御ログ
-- `config.yaml`: そのエピソードで使用された完全な設定（障害物配置を含む）
-- `result.json`: シミュレーションの結果（成功/失敗、衝突理由、通過メトリクス）
+### データセット分割戦略 (Data Splitting)
+**重要**: モデルの汎化性能を正しく評価するため、学習用（Train）と評価用（Test）のデータは、**シード値の範囲**によって厳密に分離します。
 
+| データセット | 用途 | シード範囲例 | ディレクトリ名 (split) |
+| :--- | :--- | :--- | :--- |
+| **Training** | モデルの学習 | `0` 〜 `999` | `train` |
+| **Validation** | 学習中のモデル選択・HP調整 | `10000` 〜 `10099` | `val` |
+| **Test** | 最終的な性能評価（未知のシナリオ） | `20000` 〜 `20099` | `test` |
+
+#### 実行コマンド例
+
+**1. 学習データの収集 (Train)**
+```bash
+# シード 0〜999 (1000エピソード)
+uv run experiment-runner -m \
+  experiment=data_collection_parallel \
+  env.obstacles.generation.seed="range(0,1000)" \
+  split=train
+```
+
+**2. 評価データの収集 (Test)**
+学習データとは全く異なるシード範囲を使用します。
+```bash
+# シード 20000〜20099 (100エピソード)
+uv run experiment-runner -m \
+  experiment=data_collection_parallel \
+  env.obstacles.generation.seed="range(20000,20100)" \
+  split=test
+```
+
+### エピソード管理
+`collector` の設定により、シード値を含むディレクトリ名で保存されます（例: `episode_seed100`）。
+これにより分散して保存された後も、どのシード（シナリオ）のデータかを容易に識別できます。
 
 
 ---
@@ -96,7 +167,27 @@ uv run python summarize_results.py outputs/2025-XX-XX/HH-MM-SS
 
 - **フィルタリング・ロジック**: `result.json` を参照し、`success: true` のエピソードのみを処理対象とします。
 - **同期**: LiDARスキャン時刻と制御入力（ステアリング、アクセル）をタイムスタンプベースで同期し、学習ペアを作成します。
+- **整合性チェック**: 抽出時にデータの周波数（LiDAR: 10Hz, Control: 30Hz）を自動検出し、設定値から乖離している場合は警告を出します。
 - **正規化用統計**: 抽出時にデータセット全体の平均・標準偏差を計算し `stats.json` として保存します。
+
+#### 実行コマンド例（Train/Valの分割抽出）
+学習用（Train）と検証用（Validation）のデータを個別に抽出します。
+
+```bash
+# 学習データ (Train) の抽出
+# input_dir: Trainデータ収集の出力ディレクトリを指定
+uv run experiment-runner -m \
+  experiment=extraction \
+  input_dir=outputs/YYYY-MM-DD/HH-MM-SS_TRAIN \
+  output_dir=data/processed/train_v1
+
+# 検証データ (Val) の抽出
+# input_dir: Valデータ収集の出力ディレクトリを指定
+uv run experiment-runner -m \
+  experiment=extraction \
+  input_dir=outputs/YYYY-MM-DD/HH-MM-SS_VAL \
+  output_dir=data/processed/val_v1
+```
 
 ---
 
@@ -112,13 +203,41 @@ uv run python summarize_results.py outputs/2025-XX-XX/HH-MM-SS
 - DVC を使用して、どのバージョンのデータセットを使用して学習したかをモデルと紐付けます。
 - `stats.json` を使用して学習時にデータをオンライン正規化します。
 
+#### 実行コマンド例
+作成したTrain/Valデータセットを指定して学習を実行します。
+
+```bash
+uv run experiment-runner -m \
+  experiment=training \
+  train_data=data/processed/train_v1 \
+  val_data=data/processed/val_v1 \
+  training.num_epochs=50 \
+  training.batch_size=32
+```
+
 ---
 
 ## 5. 評価 (Evaluation)
 
 モデルの汎化性能を定量的・定性的に検証します。
 
+
 ### 再現性のあるベンチマーク
+学習済みモデルの評価は、**Test用シードセット（例：20000〜20099）** を使用して行います。学習時に一度も見たことのない障害物配置で走行させることで、真の汎化性能を測定します。
+
+#### 評価実行コマンド
+```bash
+# 学習済みモデルをロードして評価（シードはTestセットを使用）
+# model_pathは実際には学習アーティファクトのパスを指定
+uv run experiment-runner -m \
+  experiment=evaluation \
+  env.obstacles.generation.seed="range(20000,20100)" \
+  split=evaluation_results \
+  ad_components.nodes.control.type=InferenceControllerNode \
+  # ad_components.nodes.control.params.model_path=...
+```
+
+- **Metrics**:
 - 評価専用のシード値セットを使用し、未学習のシナリオで評価します。
 - **成功率 (Success Rate)**、**衝突までの平均距離 (MPC)**、**チェックポイント通過率** などをメトリクスとして算出します。
 

@@ -75,7 +75,8 @@ uv run python ad_components/control/tiny_lidar_net/scripts/extract_data_from_mca
 出力:
 - `scans.npy`: LiDAR距離データ (N, 1080)
 - `steers.npy`: ステアリング角 (N,)
-- `accelerations.npy`: 加速度 (N,)
+
+**注意**: 以前のバージョンでは`accelerations.npy`も生成されていましたが、現在のモデルはステアリングのみを学習するため不要です。
 
 ### 2. モデルの学習
 

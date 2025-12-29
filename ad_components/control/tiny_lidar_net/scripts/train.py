@@ -7,7 +7,7 @@ from pathlib import Path
 import torch
 import torch.optim as optim
 from lib.data import ScanControlDataset
-from lib.loss import WeightedSmoothL1Loss
+from lib.loss import SteeringLoss
 from lib.model import TinyLidarNet, TinyLidarNetSmall
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -69,10 +69,8 @@ def main():
         "--model", type=str, default="large", choices=["large", "small"], help="Model architecture"
     )
     parser.add_argument("--input-dim", type=int, default=1080, help="Input dimension")
-    parser.add_argument("--output-dim", type=int, default=2, help="Output dimension")
+    parser.add_argument("--output-dim", type=int, default=1, help="Output dimension")
     parser.add_argument("--max-range", type=float, default=30.0, help="Maximum LiDAR range")
-    parser.add_argument("--accel-weight", type=float, default=1.0, help="Acceleration loss weight")
-    parser.add_argument("--steer-weight", type=float, default=1.0, help="Steering loss weight")
     parser.add_argument(
         "--checkpoint-dir",
         type=Path,
@@ -111,7 +109,7 @@ def main():
     logger.info(f"Total parameters: {sum(p.numel() for p in model.parameters()):,}")
 
     # Create loss and optimizer
-    criterion = WeightedSmoothL1Loss(accel_weight=args.accel_weight, steer_weight=args.steer_weight)
+    criterion = SteeringLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     # Create checkpoint directory

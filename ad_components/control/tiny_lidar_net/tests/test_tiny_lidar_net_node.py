@@ -17,7 +17,7 @@ class TestTinyLidarNetCore:
         """Create a TinyLidarNetCore instance without loading weights."""
         return TinyLidarNetCore(
             input_dim=1080,
-            output_dim=2,
+            output_dim=1,
             architecture="large",
             ckpt_path="",
             max_range=30.0,
@@ -26,7 +26,7 @@ class TestTinyLidarNetCore:
     def test_initialization(self, core_without_weights: TinyLidarNetCore) -> None:
         """Test core initialization."""
         assert core_without_weights.input_dim == 1080
-        assert core_without_weights.output_dim == 2
+        assert core_without_weights.output_dim == 1
         assert core_without_weights.max_range == 30.0
         assert core_without_weights.model is not None
 
@@ -102,21 +102,21 @@ class TestTinyLidarNetCore:
         assert -1.0 <= accel <= 1.0
         assert -1.0 <= steer <= 1.0
 
-    def test_control_mode_fixed(self) -> None:
-        """Test fixed control mode."""
+    def test_control_mode_always_fixed_acceleration(self) -> None:
+        """Test that acceleration is always fixed (model outputs steering only)."""
         core = TinyLidarNetCore(
             input_dim=1080,
-            output_dim=2,
+            output_dim=1,
             architecture="large",
             ckpt_path="",
-            control_mode="fixed",
+            control_mode="ai",
             acceleration=0.5,
         )
 
         ranges = np.ones(720, dtype=np.float32) * 10.0
         accel, steer = core.process(ranges)
 
-        # In fixed mode, acceleration should be the fixed value
+        # Acceleration should always be the fixed value
         assert accel == 0.5
         assert isinstance(steer, float)
 
@@ -150,9 +150,11 @@ class TestTinyLidarNetNode:
         return TinyLidarNetConfig(
             model_path=weights_path,
             input_dim=1080,
-            output_dim=2,
+            output_dim=1,
             architecture="large",
             max_range=30.0,
+            control_mode="ai",
+            fixed_acceleration=1.0,
             vehicle_params=VehicleParameters(**vehicle_config),
         )
 

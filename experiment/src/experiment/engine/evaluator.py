@@ -141,8 +141,11 @@ class EvaluatorEngine(BaseEngine):
             # Apply configuration randomization/resolution (handles obstacle dict->list conversion)
             collector.randomize_simulation_config(episode_cfg, rng, i)
 
+            episode_dir = output_dir / f"episode_{i:04d}"
+            episode_dir.mkdir(parents=True, exist_ok=True)
+
             experiment_structure = collector.create_experiment_instance(
-                episode_cfg, output_dir=output_dir, episode_idx=i
+                episode_cfg, episode_dir=episode_dir
             )
             runner = SimulatorRunner()
             res = runner.run_simulation(experiment_structure)

@@ -39,13 +39,33 @@ class ExtractorEngine(BaseEngine):
         all_scans = []
         all_steers = []
         all_accels = []
+        s_freq_list = []
+        c_freq_list = []
 
         for mcap_file in mcap_files:
+            # Check result.json for success status
+            result_json_path = mcap_file.parent / "result.json"
+            if result_json_path.exists():
+                try:
+                    with open(result_json_path) as f:
+                        result_data = json.load(f)
+                        if not result_data.get("success", False):
+                            logger.info(f"Skipping failed episode: {mcap_file.parent}")
+                            continue
+                except Exception as e:
+                    logger.warning(f"Failed to read result.json at {result_json_path}: {e}")
+                    # Decide whether to skip or proceed. Safe approach: skip if status unknown
+                    continue
+
             result = self._extract_from_single_mcap(mcap_file)
             if result:
                 all_scans.append(result["scans"])
                 all_steers.append(result["steers"])
                 all_accels.append(result["accelerations"])
+                if "s_freq" in result:
+                    s_freq_list.append(result["s_freq"])
+                if "c_freq" in result:
+                    c_freq_list.append(result["c_freq"])
 
         if not all_scans:
             logger.error("No data could be extracted from any MCAP file.")
@@ -55,7 +75,20 @@ class ExtractorEngine(BaseEngine):
         steers = np.concatenate(all_steers, axis=0)
         accels = np.concatenate(all_accels, axis=0)
 
-        # 3. Calculate statistics
+        scans = np.concatenate(all_scans, axis=0)
+        steers = np.concatenate(all_steers, axis=0)
+        accels = np.concatenate(all_accels, axis=0)
+
+        # 3. Calculate and Log Global Frequency
+        if s_freq_list:
+            avg_s_freq = np.mean(s_freq_list)
+            logger.info(f"Global Average LiDAR Frequency: {avg_s_freq:.2f} Hz")
+
+        if c_freq_list:
+            avg_c_freq = np.mean(c_freq_list)
+            logger.info(f"Global Average Control Frequency: {avg_c_freq:.2f} Hz")
+
+        # 4. Calculate statistics
         # Filter finite values for stats calculation to avoid NaN
         valid_scans = scans[np.isfinite(scans)]
         if len(valid_scans) == 0:
@@ -216,9 +249,33 @@ class ExtractorEngine(BaseEngine):
             )
             return None
 
-        # Sync
+        # Verify data frequency
+        s_freq = None
+        c_freq = None
         s_times = np.array(scan_times, dtype=np.int64)
         c_times = np.array(control_times, dtype=np.int64)
+
+        if len(s_times) > 1:
+            s_diff = np.diff(s_times) / 1e9  # ns to sec
+            s_freq = 1.0 / np.mean(s_diff)
+            if abs(s_freq - 10.0) > 1.0:  # Allow 1Hz deviation
+                logger.warning(
+                    f"LiDAR frequency deviation in {mcap_path.name}: {s_freq:.2f}Hz (expected ~10.0Hz)"
+                )
+            else:
+                logger.debug(f"LiDAR frequency OK: {s_freq:.2f}Hz")
+
+        if len(c_times) > 1:
+            c_diff = np.diff(c_times) / 1e9
+            c_freq = 1.0 / np.mean(c_diff)
+            if abs(c_freq - 30.0) > 3.0:  # Allow 3Hz deviation (10%)
+                logger.warning(
+                    f"Control frequency deviation in {mcap_path.name}: {c_freq:.2f}Hz (expected ~30.0Hz)"
+                )
+            else:
+                logger.debug(f"Control frequency OK: {c_freq:.2f}Hz")
+
+        # Sync
         c_data = np.array(control_data, dtype=np.float32)
 
         idx = np.searchsorted(c_times, s_times)
@@ -229,4 +286,6 @@ class ExtractorEngine(BaseEngine):
             "scans": np.array(scans_list, dtype=np.float32),
             "steers": synced_controls[:, 0],
             "accelerations": synced_controls[:, 1],
+            "s_freq": s_freq,
+            "c_freq": c_freq,
         }

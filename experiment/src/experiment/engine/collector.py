@@ -28,6 +28,7 @@ class CollectorEngine(BaseEngine):
     def _run_impl(self, cfg: DictConfig) -> Any:
         num_episodes = cfg.execution.num_episodes
         split = cfg.split
+
         # Safe HydraConfig access for both Run and Multirun
         try:
             hydra_config = hydra.core.hydra_config.HydraConfig.get()
@@ -50,20 +51,23 @@ class CollectorEngine(BaseEngine):
                 # User config ensures seed is present if generation is configured
                 episode_seed = cfg.env.obstacles.generation.seed + i
 
+            # Generate consistent episode directory
+            episode_dir_name = f"episode_seed{episode_seed}"
+            episode_dir = output_dir / episode_dir_name
+            episode_dir.mkdir(parents=True, exist_ok=True)
+
             logger.info(f"--- Episode {i + 1}/{num_episodes} (Seed: {episode_seed}) ---")
 
             rng = np.random.default_rng(episode_seed)
 
             episode_cfg = cfg.copy()
             self.randomize_simulation_config(episode_cfg, rng, i)
-            experiment = self.create_experiment_instance(episode_cfg, output_dir, i)
+            experiment = self.create_experiment_instance(episode_cfg, episode_dir)
 
             runner = SimulatorRunner()
             result = runner.run_simulation(experiment)
 
             # Save result to JSON for metrics aggregation and filtering
-            episode_dir = output_dir / f"episode_{i:04d}"
-            episode_dir.mkdir(parents=True, exist_ok=True)
             result_path = episode_dir / "result.json"
             try:
                 import json
@@ -100,7 +104,7 @@ class CollectorEngine(BaseEngine):
             # Generate dashboard if enabled
             if cfg.postprocess.dashboard.enabled:
                 try:
-                    episode_dir = output_dir / f"episode_{i:04d}"
+                    # episode_dir is already defined
 
                     from dashboard.generator import HTMLDashboardGenerator
                     from dashboard.reader import load_simulation_data
@@ -161,9 +165,7 @@ class CollectorEngine(BaseEngine):
             # Legacy list format: return as-is
             return list(nodes_data)
 
-    def create_experiment_instance(
-        self, cfg: DictConfig, output_dir: Path, episode_idx: int
-    ) -> ExperimentStructure:
+    def create_experiment_instance(self, cfg: DictConfig, episode_dir: Path) -> ExperimentStructure:
         cfg_dict = OmegaConf.to_container(cfg, resolve=True)
 
         experiment_data = cfg_dict["experiment"]
@@ -171,8 +173,7 @@ class CollectorEngine(BaseEngine):
         postprocess_data = cfg_dict["postprocess"]
         system_data = cfg_dict["system"]
 
-        episode_dir = output_dir / f"episode_{episode_idx:04d}"
-        episode_dir.mkdir(parents=True, exist_ok=True)
+        # episode_dir is already created by caller
 
         # Convert dictionary-based nodes to list format
         nodes_data = self._convert_nodes_to_list(system_data["nodes"])

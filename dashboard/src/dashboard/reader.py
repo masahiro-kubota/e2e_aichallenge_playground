@@ -139,7 +139,7 @@ def load_simulation_data(mcap_path: Path, vehicle_params: dict[str, Any] | Any) 
                 elif topic == "/obstacles" or schema.name in ["String", "std_msgs/String"]:
                     if "obstacles" in extracted and not obstacles_data:
                         obstacles_data = extracted["obstacles"]
-                        logger.info(f"Loaded obstacles (count={len(obstacles_data)})")
+                        logger.debug(f"Loaded obstacles (count={len(obstacles_data)})")
                 else:
                     # Generic AD logs
                     current_ad_logs[topic] = msg.model_dump() if hasattr(msg, "model_dump") else msg
