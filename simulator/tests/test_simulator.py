@@ -8,7 +8,7 @@ import pytest
 from core.data import TopicSlot, VehicleParameters, VehicleState
 from core.data.node_io import NodeIO
 from core.interfaces.node import NodeExecutionResult
-from simulator.simulator import Simulator, SimulatorConfig
+from simulator.simulator import SimulatorConfig, SimulatorNode
 
 DUMMY_VP = VehicleParameters(
     wheelbase=2.5,
@@ -57,9 +57,9 @@ class TestSimulatorNode:
             obstacle_color="#FF5252B3",
         )
 
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
 
-        assert sim.name == "Simulator"
+        assert sim.name == "SimulatorNode"
         assert sim.rate_hz == 10.0
         assert sim.config.initial_state.x == 10.0
         assert sim.config.initial_state.y == 5.0
@@ -73,7 +73,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
 
         node_io = sim.get_node_io()
 
@@ -90,7 +90,7 @@ class TestSimulatorNode:
             obstacle_color="#FF5252B3",
         )
 
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         # Check internal state is initialized
@@ -108,7 +108,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         # Create frame data manually
@@ -142,7 +142,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         from core.data.ros import AckermannDrive, AckermannDriveStamped
@@ -176,7 +176,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         frame_data = SimpleNamespace()
@@ -204,7 +204,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         frame_data = SimpleNamespace()
@@ -224,7 +224,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         from core.data.ros import AckermannDrive, AckermannDriveStamped
@@ -262,7 +262,7 @@ class TestSimulatorNode:
             map_path=Path("dummy_map.osm"),
             obstacle_color="#FF5252B3",
         )
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         from core.data.ros import AckermannDrive, AckermannDriveStamped
@@ -343,7 +343,7 @@ class TestSimulatorWithMap:
             obstacle_color="#FF5252B3",
         )
 
-        sim = Simulator(config=config, rate_hz=10.0, priority=1)
+        sim = SimulatorNode(config=config, rate_hz=10.0, priority=1)
         sim.on_init()
 
         # Map should be loaded

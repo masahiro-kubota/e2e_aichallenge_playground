@@ -205,7 +205,7 @@ class CollectorEngine(BaseEngine):
             if not sim_node:
                 # Fallback: search by type
                 sim_node = next(
-                    (n for n in nodes.values() if n.get("type") == "KinematicSimulator"), None
+                    (n for n in nodes.values() if n.get("type") == "SimulatorNode"), None
                 )
         else:
             # List format: search by name

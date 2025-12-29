@@ -52,7 +52,7 @@ class SimulatorRunner:
         for node in nodes:
             class_name = node.__class__.__name__
             logger.debug(f"Checking node: {class_name}, has get_log: {hasattr(node, 'get_log')}")
-            if class_name == "Simulator":
+            if class_name == "SimulatorNode":
                 if hasattr(node, "get_log"):
                     log = node.get_log()
                     logger.debug(f"Got log from Simulator: {log is not None}")

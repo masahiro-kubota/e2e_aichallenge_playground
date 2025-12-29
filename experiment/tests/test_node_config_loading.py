@@ -17,7 +17,7 @@ class MockNode(Node[MockNodeConfig]):
     """Test node for verification."""
 
     def __init__(self, config: MockNodeConfig, rate_hz: float = 10.0, priority: int = 100):
-        super().__init__("MockNode", rate_hz, config, priority=priority)
+        super().__init__("MockNode", rate_hz, config, priority)
 
     def get_node_io(self) -> NodeIO:
         return NodeIO(inputs={}, outputs={})

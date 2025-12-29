@@ -19,7 +19,7 @@ components:
       kd: 0.05
 
 simulator:
-  type: "KinematicSimulator"
+  type: "SimulatorNode"
   params:
     dt: 0.1
     initial_state:

@@ -33,7 +33,7 @@ class SimulatorConfig(ComponentConfig):
     obstacle_color: str = Field(..., description="Obstacle marker color")
 
 
-class Simulator(Node[SimulatorConfig]):
+class SimulatorNode(Node[SimulatorConfig]):
     """Simulator node using bicycle kinematic model."""
 
     def __init__(
@@ -49,7 +49,7 @@ class Simulator(Node[SimulatorConfig]):
             rate_hz: Physics update rate [Hz]
             priority: Execution priority
         """
-        super().__init__("Simulator", rate_hz, config, priority=priority)
+        super().__init__("SimulatorNode", rate_hz, config, priority)
 
         self.dt = 1.0 / rate_hz
         self._current_state: SimulationVehicleState | None = None

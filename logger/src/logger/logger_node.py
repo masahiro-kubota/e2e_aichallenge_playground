@@ -42,7 +42,7 @@ class LoggerNode(Node[LoggerConfig]):
 
     def __init__(self, config: LoggerConfig, rate_hz: float, priority: int):
         """Initialize LoggerNode."""
-        super().__init__("Logger", rate_hz, config, priority=priority)
+        super().__init__("Logger", rate_hz, config, priority)
         self.current_time = 0.0
         self.mcap_logger: MCAPLogger | None = None
         self.log = SimulationLog(steps=[], metadata={})

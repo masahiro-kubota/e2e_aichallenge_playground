@@ -18,7 +18,7 @@ execution:
 system:
   nodes:
     simulator:
-      type: "KinematicSimulator"
+      type: "SimulatorNode"
       rate_hz: ${execution.clock_rate_hz} # シミュレータ更新レート（クロックレートに同期） [Hz]
       priority: 1  # 実行優先度（最優先）
       params:

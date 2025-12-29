@@ -9,7 +9,7 @@
 - **`simulator.state`**: 車両状態定義(`SimulationVehicleState`)。
 - **`simulator.dynamics`**: 車両運動モデル(バイシクルモデルなど)。
 - **`simulator.map`**: マップ読み込み・判定(`LaneletMap`)。
-- **`simulator.presets`**: プリセット設定(`KinematicSimulator`など)。
+- **`simulator.presets`**: プリセット設定(`SimulatorNode`など)。
 
 ## アーキテクチャの主要な変更点
 
