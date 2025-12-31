@@ -19,3 +19,6 @@ postprocess:
     output_dir: ${hydra:runtime.output_dir}/raw_data
   dashboard:
     enabled: false
+
+execution:
+  num_episodes: 100

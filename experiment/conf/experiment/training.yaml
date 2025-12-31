@@ -14,9 +14,9 @@ train_data: "outputs/latest/processed_data"
 val_data: "outputs/latest/processed_data"
 
 training:
-  batch_size: 32
-  learning_rate: 0.001
-  num_epochs: 10
+  batch_size: 64
+  learning_rate: 5e-5
+  num_epochs: 20
   device: "cpu"
 
 model:

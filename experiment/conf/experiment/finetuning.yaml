@@ -1,0 +1,26 @@
+# @package _global_
+# Fine-tuning Configuration
+
+defaults:
+  - base
+  - _self_
+
+experiment:
+  name: "finetune_tinylidar"
+  type: "training"
+  description: "Fine-tune TinyLidarNet with specific MCAP data"
+
+# Use absolute paths to extracted data
+train_data: "/home/masa/python-self-driving-simulator/data/processed/extra_tuning/train"
+val_data: "/home/masa/python-self-driving-simulator/data/processed/extra_tuning/val"
+
+training:
+  batch_size: 64
+  learning_rate: 1e-5
+  num_epochs: 20
+  device: "cuda"
+  pretrained_model_path: "/home/masa/python-self-driving-simulator/outputs/2025-12-30/00-58-22/checkpoints/best_model.pth"
+
+model:
+  input_width: 1080
+  output_dim: 2

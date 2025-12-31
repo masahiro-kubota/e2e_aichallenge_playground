@@ -16,6 +16,12 @@ output_dir: "outputs/latest/processed_data"
 normalization:
   enabled: true
   method: "standard" # standard (mean/std) or minmax
+ignore_failure: true
+
+# Postprocessing (inherited from base.yaml, can override)
+postprocess:
+  mlflow:
+    enabled: false  # Disable MLflow for extraction
 
 dvc:
   auto_add: true

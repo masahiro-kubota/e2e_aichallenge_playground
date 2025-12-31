@@ -1,13 +1,26 @@
 # @package _global_
-# Evaluation Configuration
+# Evaluation Benchmark Configuration
+# 障害物なし1ケース + 障害物あり複数ケースを1セットとして評価
 
 defaults:
   - base
+  - override /hydra/launcher: joblib  # 並列実行用（override を明示）
   - _self_
 
 ad_components: tiny_lidar
 
 experiment:
-  name: "evaluation"
+  name: "evaluation_benchmark"
   type: "evaluation"
-  description: "Closed-loop evaluation of trained model"
+  description: "Benchmark evaluation: no obstacles + multiple obstacle scenarios"
+
+execution:
+  num_episodes: 1  # 各シナリオで1エピソード実行
+  enable_progress_bar: false  # ベンチマーク実行時はプログレスバーを無効化
+
+# 後処理設定
+postprocess:
+  foxglove:
+    auto_open: false  # ベンチマーク実行時は自動で開かない
+  dashboard:
+    enabled: false  # ベンチマーク実行時はダッシュボードを無効化

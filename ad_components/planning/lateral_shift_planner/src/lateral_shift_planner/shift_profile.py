@@ -125,6 +125,7 @@ def merge_profiles(s_samples: np.ndarray, profiles: list[ShiftProfile]) -> tuple
         collision: Boolean, true if impossible
     """
     lat_target = np.zeros_like(s_samples)
+    collision_detected = False
 
     # We process point-wise
     for i, s in enumerate(s_samples):
@@ -151,8 +152,14 @@ def merge_profiles(s_samples: np.ndarray, profiles: list[ShiftProfile]) -> tuple
         if active_min and active_max:
             if bound_min > bound_max:
                 # Collision
-                return lat_target, True  # Or handle partial
-            lat_target[i] = (bound_min + bound_max) / 2.0
+                collision_detected = True
+                # Use average or default to 0 for this point?
+                # Relying on 0 might be safer than proposing an impossible path.
+                # But average shows "middle ground".
+                # Let's use 0.0 to indicate "cannot solve" locally or keep 0.
+                lat_target[i] = 0.0
+            else:
+                lat_target[i] = (bound_min + bound_max) / 2.0
 
         elif active_min:
             lat_target[i] = bound_min
@@ -163,4 +170,4 @@ def merge_profiles(s_samples: np.ndarray, profiles: list[ShiftProfile]) -> tuple
         else:
             lat_target[i] = 0.0
 
-    return lat_target, False
+    return lat_target, collision_detected

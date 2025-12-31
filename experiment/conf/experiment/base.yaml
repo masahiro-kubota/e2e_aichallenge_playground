@@ -14,6 +14,7 @@ execution:
   # Currently only "stepped" is supported, but may be extended in the future (e.g., "realtime", "external")
   clock_type: "stepped" # "stepped": ステップ実行（非リアルタイプ）, "realtime": 実時間同期 [str]
   enable_progress_bar: true # プログレスバーを表示するかどうか [bool]
+  log_level: "INFO"     # ログレベル (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
 # Default system configuration (システム構成)
 system:
@@ -32,6 +33,7 @@ system:
           obstacles: 10.0
           obstacle_markers: 10.0
           sim_state: 50.0
+          steering_status: 50.0  # Same rate as sim_state for smooth visualization
     logger:
       type: "LoggerNode"
       rate_hz: ${execution.clock_rate_hz} # ロガー更新レート [Hz]

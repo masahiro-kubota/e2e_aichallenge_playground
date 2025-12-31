@@ -15,7 +15,7 @@ max_acceleration: 4.37   # 最大加速度 [m/s^2]
 
 # Steering Response (ステアリング応答モデル)
 steer_delay_time: 0.1722      # 純粋な時間遅れ [秒] (0-0.5)
-steer_time_constant: 0.1    # 一次遅れの時定数 [秒] (0.01-1.0)
+
 max_steer_rate: 0.9366         # ステア角の最大変化率 [rad/s]
 steer_gain: 0.6979          # ステアリングゲイン (DCゲイン)
 steer_zeta: 0.6605          # SOPDT減衰比

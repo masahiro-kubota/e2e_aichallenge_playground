@@ -165,3 +165,21 @@ def build_laser_scan_message(
         ranges=[r if r != float("inf") and not math.isnan(r) else float("inf") for r in ranges],
         intensities=[],
     )
+
+
+def build_steering_report(steering_angle: float, timestamp: float):
+    """Build SteeringReport message from steering angle.
+
+    Args:
+        steering_angle: Current steering tire angle in radians.
+        timestamp: Current timestamp.
+
+    Returns:
+        SteeringReport message.
+    """
+    from core.data.autoware import SteeringReport
+
+    return SteeringReport(
+        stamp=to_ros_time(timestamp),
+        steering_tire_angle=steering_angle,
+    )

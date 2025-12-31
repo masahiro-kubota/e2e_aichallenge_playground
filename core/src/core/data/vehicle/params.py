@@ -48,31 +48,26 @@ class VehicleParameters(BaseModel):
     max_velocity: float  # 最大速度 [m/s]
     max_acceleration: float  # 最大加速度 [m/s^2]
 
-    # 動力学パラメータ(オプション)
-    mass: float  # 質量 [kg]
-    inertia: float  # ヨー慣性モーメント [kg*m^2]
 
-    # NOTE: 以下は重心位置パラメータ
-    lf: float  # 重心から前軸までの距離 [m]
-    lr: float  # 重心から後軸までの距離 [m]
-
-    # NOTE: 以下はタイヤ特性パラメータ
-    cf: float  # 前輪コーナリング剛性 [N/rad]
-    cr: float  # 後輪コーナリング剛性 [N/rad]
-
-    # NOTE: 以下は抵抗係数パラメータ
-    c_drag: float  # 空気抵抗係数
-    c_roll: float  # 転がり抵抗係数
-
-    # NOTE: 以下は駆動力パラメータ
-    max_drive_force: float  # 最大駆動力 [N]
-    max_brake_force: float  # 最大制動力 [N]
 
     # 寸法詳細パラメータ (オプション、未指定時は length, wheelbase から推定)
     front_overhang: float  # フロントオーバーハング [m]
     rear_overhang: float  # リアオーバーハング [m]
 
-    tire_params: dict[str, Any] = Field(..., description="Tire parameters")
+
+
+    # ステアリング応答パラメータ
+    steer_delay_time: float = Field(description="純粋な時間遅れ [秒]")
+
+    max_steer_rate: float = Field(description="ステア角の最大変化率 [rad/s]")
+
+    steer_gain: float = Field(description="ステアリングゲイン (DCゲイン)")
+
+    steer_zeta: float = Field(description="SOPDTモデルの減衰比 (damping ratio)")
+
+    steer_omega_n: float = Field(
+        description="SOPDTモデルの固有角周波数 (natural frequency) [rad/s]"
+    )
 
     # センサー設定
     lidar: LidarConfig | None = None

@@ -19,6 +19,9 @@ class ExecutionConfig(BaseModel):
     )
     clock_type: Literal["stepped", "realtime"] = Field(..., description="Clock type")
     enable_progress_bar: bool = Field(..., description="Enable progress bar")
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
+        "INFO", description="Logging level"
+    )
 
 
 class ObstaclePlacement(BaseModel):
@@ -138,6 +141,7 @@ class TrainingConfig(BaseModel):
     learning_rate: float = Field(..., gt=0)
     num_epochs: int = Field(..., gt=0)
     device: str = Field(...)
+    pretrained_model_path: str | None = None
 
 
 class ModelConfig(BaseModel):

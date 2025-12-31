@@ -76,5 +76,5 @@ print(f"  Std:   {np.degrees(np.std(steering_angles)):.3f}° ({np.std(steering_a
 
 print(f"\nRatio (Steering/Control):")
 print(f"  Range ratio: {np.ptp(steering_angles) / np.ptp(control_angles) * 100:.1f}%")
-print(f"  Expected (grip_steer_factor): 70%")
+print(f"  Expected (steer_gain): 70%")
 print(f"  Note: Lower ratio is expected due to delay and rate limiting")

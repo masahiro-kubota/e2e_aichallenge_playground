@@ -7,4 +7,5 @@ obstacles:
   generation:
     enabled: false # 障害物生成を無効化 [bool]
     groups: []     # グループリストを空にする
+    seed: 0        # 障害物生成は無効だが、設定の整合性のためデフォルト値を設定
   list: []         # 固定障害物リストを空にする

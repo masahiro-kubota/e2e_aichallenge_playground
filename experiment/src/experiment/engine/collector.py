@@ -196,6 +196,11 @@ class CollectorEngine(BaseEngine):
             for node in reversed(ad_nodes_data):
                 nodes_data.insert(insert_idx, node)
 
+        # Filter out LoggerNode if MCAP is disabled
+        mcap_enabled = postprocess_data.get("mcap", {}).get("enabled", True)
+        if not mcap_enabled:
+            nodes_data = [n for n in nodes_data if n.get("type") != "LoggerNode"]
+
         for node in nodes_data:
             if node["name"] == "Logger":
                 node["params"]["output_mcap_path"] = str(episode_dir / "simulation.mcap")

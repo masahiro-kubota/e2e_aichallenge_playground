@@ -42,11 +42,12 @@ class LateralShiftPlannerNodeConfig(ComponentConfig):
         ..., description="Obstacle avoidance activation distance [m]"
     )
     longitudinal_margin_front: float = Field(..., description="Front margin distance [m]")
-    longitudinal_margin_front: float = Field(..., description="Front margin distance [m]")
     longitudinal_margin_rear: float = Field(..., description="Rear margin distance [m]")
+    # Vehicle & Environment (車両・環境設定)
     vehicle_width: float = Field(..., description="Vehicle width [m]")
     safe_margin: float = Field(..., description="Safety margin [m]")
     trajectory_resolution: float = Field(..., description="Trajectory output resolution [m]")
+    target_velocity: float | None = Field(None, description="Target velocity override [m/s]")
 
     # Visualization
     trajectory_color: str = Field(..., description="Trajectory color")
@@ -75,6 +76,7 @@ class LateralShiftPlannerNode(Node[LateralShiftPlannerNodeConfig]):
             vehicle_width=self.config.vehicle_width,
             safe_margin=self.config.safe_margin,
             trajectory_resolution=self.config.trajectory_resolution,
+            target_velocity=self.config.target_velocity,
         )
         self.planner = LateralShiftPlanner(ref_path, planner_config, self.road_map)
 

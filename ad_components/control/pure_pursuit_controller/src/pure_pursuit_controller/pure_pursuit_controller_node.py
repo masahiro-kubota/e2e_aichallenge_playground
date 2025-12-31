@@ -19,6 +19,7 @@ class LateralControlParams(ComponentConfig):
     min_lookahead_distance: float = Field(..., description="Minimum lookahead distance [m]")
     max_lookahead_distance: float = Field(..., description="Maximum lookahead distance [m]")
     lookahead_speed_ratio: float = Field(..., description="Lookahead distance speed ratio [s]")
+    steering_gain: float = Field(..., description="Steering output gain")
 
 
 class LongitudinalControlParams(ComponentConfig):
@@ -163,6 +164,9 @@ class PurePursuitControllerNode(Node[PurePursuitControllerConfig]):
             steering = 0.0
         else:
             steering = math.atan2(2 * self.wheelbase * math.sin(alpha), ld)
+
+        # Apply steering gain
+        steering = steering * self.config.lateral.steering_gain
 
         # Clip steering to vehicle limits
         steering = max(

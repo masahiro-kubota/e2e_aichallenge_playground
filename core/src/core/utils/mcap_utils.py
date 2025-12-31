@@ -24,6 +24,11 @@ logger = logging.getLogger(__name__)
 _SCHEMA_TO_MODEL_CACHE: dict[str, type[BaseModel]] = {}
 
 
+def is_json_encoding(encoding: str) -> bool:
+    """Check if the encoding is JSON or JSON-schema based."""
+    return encoding in ['json', 'jsonschema'] or 'json' in encoding or encoding == 'json'
+
+
 def msg_to_dict(obj: Any) -> Any:
     """Convert rosbags message object to dictionary."""
     if hasattr(obj, '__dict__'):
@@ -77,7 +82,16 @@ def read_messages(
             
             for connection, timestamp, rawdata in reader.messages(connections=connections):
                 try:
-                    if connection.digest == 'json' or 'json' in connection.encoding:
+                    is_json = False
+                    if hasattr(connection, 'digest'):
+                         if connection.digest == 'json':
+                             is_json = True
+                    
+                    if not is_json and hasattr(connection, 'encoding'):
+                         if is_json_encoding(connection.encoding):
+                             is_json = True
+
+                    if is_json:
                         msg = json.loads(rawdata)
                         if as_namespace:
                             msg = dict_to_namespace(msg)
@@ -101,7 +115,7 @@ def read_messages(
             reader = make_reader(f)
             for schema, channel, message in reader.iter_messages(topics=topics):
                 try:
-                    if schema.encoding in ['json', 'jsonschema']:
+                    if is_json_encoding(schema.encoding):
                         msg = json.loads(message.data)
                         if as_namespace:
                             msg = dict_to_namespace(msg)

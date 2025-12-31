@@ -1,0 +1,27 @@
+# @package _global_
+# Training with new validation split
+
+defaults:
+  - base
+  - _self_
+
+experiment:
+  name: "train_split_v3_newval"
+  type: "training"
+  description: "Train with Nan-Fixed 00-55-17 data, validate with 00-56-44 data"
+
+# Train on collected data (NaN fixed)
+train_data: "/home/masa/python-self-driving-simulator/data/processed/train_nan_fixed"
+
+# Validate on new simulation data (00-56-44)
+val_data: "/home/masa/python-self-driving-simulator/data/processed/val_from_005644"
+
+training:
+  batch_size: 64
+  learning_rate: 1e-4
+  num_epochs: 20
+  device: "cuda"
+
+model:
+  input_width: 1080
+  output_dim: 2

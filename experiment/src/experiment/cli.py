@@ -23,6 +23,17 @@ def main(cfg: DictConfig) -> None:
     """
     load_dotenv()  # Load environment variables from .env file
 
+    # Configure logging level from config
+    import logging
+    try:
+        log_level_str = cfg.execution.get("log_level", "INFO")
+        log_level = getattr(logging, log_level_str.upper())
+        logging.getLogger().setLevel(log_level)
+        # Also set for specific loggers if needed, but root should cover it
+        # Hydra's own handlers might need adjustment, but setLevel on root affects propagation
+    except Exception as e:
+        print(f"Warning: Failed to set log level: {e}")
+
     # Update outputs/latest symlink
     try:
         from hydra.core.hydra_config import HydraConfig

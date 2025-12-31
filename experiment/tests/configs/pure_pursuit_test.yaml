@@ -10,6 +10,7 @@ components:
       min_lookahead_distance: 5.0
       max_lookahead_distance: 5.0
       lookahead_speed_ratio: 0.0
+      steering_gain: 1.42
       # track_path: "data/planning/pure_pursuit/tracks/my_custom_track.csv"  # Optional: defaults to raceline_awsim_15km.csv
   control:
     type: "PIDController"

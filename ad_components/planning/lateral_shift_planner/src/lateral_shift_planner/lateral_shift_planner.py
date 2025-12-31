@@ -31,6 +31,10 @@ class LateralShiftPlannerConfig:
     # Trajectory Generation
     trajectory_resolution: float
 
+    # Optional Override
+    target_velocity: float | None = None
+
+
 
 @dataclass
 class AvoidanceDebugData:
@@ -173,8 +177,12 @@ class LateralShiftPlanner:
             # Look up reference velocity at s
             # FrenetConverter doesn't expose it directly, but we can search.
             # For efficiency let's use a default or nearest.
-            v_ref = 10.0  # Default
-            # TODO: Look up v_ref from ref_path
+
+            if self.config.target_velocity is not None:
+                v_ref = self.config.target_velocity
+            else:
+                v_ref = 10.0  # Default
+                # TODO: Look up v_ref from ref_path
 
             # Use yaw from frenet_to_global implicitly?
             # frenet_to_global output x, y. Yaw needs to be calculated from dx, dy of the generated path.

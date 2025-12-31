@@ -1,9 +1,11 @@
 version = 1
 requires-python = ">=3.12"
 resolution-markers = [
-    "python_full_version >= '3.13' and sys_platform == 'linux'",
+    "python_full_version >= '3.14' and sys_platform == 'linux'",
+    "python_full_version == '3.13.*' and sys_platform == 'linux'",
     "python_full_version < '3.13' and sys_platform == 'linux'",
-    "python_full_version >= '3.13' and sys_platform != 'linux'",
+    "python_full_version >= '3.14' and sys_platform != 'linux'",
+    "python_full_version == '3.13.*' and sys_platform != 'linux'",
     "python_full_version < '3.13' and sys_platform != 'linux'",
 ]
 
@@ -683,6 +685,7 @@ version = "0.1.0"
 source = { editable = "core" }
 dependencies = [
     { name = "deptry" },
+    { name = "mcap" },
     { name = "numpy" },
     { name = "pre-commit" },
     { name = "pydantic" },
@@ -690,6 +693,7 @@ dependencies = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pyyaml" },
+    { name = "rosbags" },
     { name = "ruff" },
     { name = "scipy" },
     { name = "shapely" },
@@ -699,6 +703,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "deptry", specifier = ">=0.12.0" },
+    { name = "mcap", specifier = ">=1.0.0" },
     { name = "numpy", specifier = ">=2.3.5" },
     { name = "pre-commit", specifier = ">=3.0.0" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -706,6 +711,7 @@ requires-dist = [
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
+    { name = "rosbags", specifier = ">=0.9.15" },
     { name = "ruff", specifier = ">=0.8.0" },
     { name = "scipy", specifier = ">=1.10.0" },
     { name = "shapely", specifier = ">=2.0.0" },
@@ -1174,6 +1180,7 @@ dependencies = [
     { name = "ideal-sensor" },
     { name = "lark" },
     { name = "lateral-shift-planner" },
+    { name = "matplotlib" },
     { name = "mcap" },
     { name = "mcap-ros2-support" },
     { name = "mlflow" },
@@ -1183,13 +1190,16 @@ dependencies = [
     { name = "onnxscript" },
     { name = "pid-controller" },
     { name = "planning-utils" },
+    { name = "plotly" },
     { name = "pre-commit" },
     { name = "pure-pursuit" },
     { name = "pure-pursuit-controller" },
     { name = "py-spy" },
     { name = "pytest" },
     { name = "pytest-cov" },
+    { name = "rosbags" },
     { name = "ruff" },
+    { name = "scipy" },
     { name = "simulator" },
     { name = "tiny-lidar-net" },
     { name = "torch" },
@@ -1202,6 +1212,7 @@ dev = [
     { name = "import-linter" },
     { name = "linkify-it-py" },
     { name = "myst-parser" },
+    { name = "pytest" },
     { name = "sphinx" },
     { name = "sphinx-rtd-theme" },
     { name = "vulture" },
@@ -1219,6 +1230,7 @@ requires-dist = [
     { name = "ideal-sensor", editable = "ad_components/perception/ideal_sensor" },
     { name = "lark", specifier = ">=1.0.0" },
     { name = "lateral-shift-planner", editable = "ad_components/planning/lateral_shift_planner" },
+    { name = "matplotlib", specifier = ">=3.5.0" },
     { name = "mcap", specifier = ">=1.3.0" },
     { name = "mcap-ros2-support", specifier = ">=0.5.6" },
     { name = "mlflow", specifier = ">=3.7.0" },
@@ -1228,13 +1240,16 @@ requires-dist = [
     { name = "onnxscript", specifier = ">=0.5.7" },
     { name = "pid-controller", editable = "ad_components/control/pid_controller" },
     { name = "planning-utils", editable = "ad_components/planning/planning_utils" },
+    { name = "plotly", specifier = ">=5.0.0" },
     { name = "pre-commit", specifier = ">=3.0.0" },
     { name = "pure-pursuit", editable = "ad_components/planning/pure_pursuit" },
     { name = "pure-pursuit-controller", editable = "ad_components/control/pure_pursuit_controller" },
     { name = "py-spy", specifier = ">=0.4.1" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-cov", specifier = ">=4.1.0" },
+    { name = "rosbags", specifier = ">=0.9.15" },
     { name = "ruff", specifier = ">=0.14.10" },
+    { name = "scipy", specifier = ">=1.10.0" },
     { name = "simulator", editable = "simulator" },
     { name = "tiny-lidar-net", editable = "ad_components/control/tiny_lidar_net" },
     { name = "torch", specifier = ">=2.9.1" },
@@ -1247,6 +1262,7 @@ dev = [
     { name = "import-linter", specifier = ">=2.0" },
     { name = "linkify-it-py", specifier = ">=2.0.3" },
     { name = "myst-parser", specifier = ">=4.0.1" },
+    { name = "pytest", specifier = ">=9.0.2" },
     { name = "sphinx", specifier = ">=8.2.3" },
     { name = "sphinx-rtd-theme", specifier = ">=3.0.2" },
     { name = "vulture", specifier = ">=2.14" },
@@ -2648,6 +2664,15 @@ wheels = [
 ]
 
 [[package]]
+name = "narwhals"
+version = "2.14.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4a/84/897fe7b6406d436ef312e57e5a1a13b4a5e7e36d1844e8d934ce8880e3d3/narwhals-2.14.0.tar.gz", hash = "sha256:98be155c3599db4d5c211e565c3190c398c87e7bf5b3cdb157dece67641946e0", size = 600648 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/3e/b8ecc67e178919671695f64374a7ba916cf0adbf86efedc6054f38b5b8ae/narwhals-2.14.0-py3-none-any.whl", hash = "sha256:b56796c9a00179bd757d15282c540024e1d5c910b19b8c9944d836566c030acf", size = 430788 },
+]
+
+[[package]]
 name = "networkx"
 version = "3.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3248,6 +3273,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cf/86/0248f086a84f01b37aaec0fa567b397df1a119f73c16f6c7a9aac73ea309/platformdirs-4.5.1.tar.gz", hash = "sha256:61d5cdcc6065745cdd94f0f878977f8de9437be93de97c1c12f853c9c0cdcbda", size = 21715 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cb/28/3bfe2fa5a7b9c46fe7e13c97bda14c895fb10fa2ebf1d0abb90e0cea7ee1/platformdirs-4.5.1-py3-none-any.whl", hash = "sha256:d03afa3963c806a9bed9d5125c8f4cb2fdaf74a55ab60e5d59b3fde758104d31", size = 18731 },
+]
+
+[[package]]
+name = "plotly"
+version = "6.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "narwhals" },
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/94/05/1199e2a03ce6637960bc1e951ca0f928209a48cfceb57355806a88f214cf/plotly-6.5.0.tar.gz", hash = "sha256:d5d38224883fd38c1409bef7d6a8dc32b74348d39313f3c52ca998b8e447f5c8", size = 7013624 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e7/c3/3031c931098de393393e1f93a38dc9ed6805d86bb801acc3cf2d5bd1e6b7/plotly-6.5.0-py3-none-any.whl", hash = "sha256:5ac851e100367735250206788a2b1325412aa4a4917a4fe3e6f0bc5aa6f3d90a", size = 9893174 },
 ]
 
 [[package]]
@@ -3912,6 +3950,23 @@ wheels = [
 ]
 
 [[package]]
+name = "rosbags"
+version = "0.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "lz4", marker = "python_full_version < '3.14'" },
+    { name = "numpy" },
+    { name = "ruamel-yaml" },
+    { name = "safelz4", marker = "python_full_version >= '3.14'" },
+    { name = "typing-extensions" },
+    { name = "zstandard" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/2f/b6d11cc9fac4003b284e2c152b5c34ca5b6d26caf5f6979118e2d588a0d7/rosbags-0.11.0.tar.gz", hash = "sha256:e73bbe79a15d7f539653375278ffca6c48e56b5c2ada4a4531de0b17737cbc46", size = 254438 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/75/b66d992a87539cd9e0070bca6ba49694b9258a4f9bc905d0576354d7864a/rosbags-0.11.0-py3-none-any.whl", hash = "sha256:2ce27d8dc37f554f10bf5962f665331ce16f43aba304c6c233eb15fab05b61ab", size = 137920 },
+]
+
+[[package]]
 name = "rsa"
 version = "4.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -4023,6 +4078,28 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ca/bb/940d6af975948c1cc18f44545ffb219d3c35d78ec972b42ae229e8e37e08/s3transfer-0.15.0.tar.gz", hash = "sha256:d36fac8d0e3603eff9b5bfa4282c7ce6feb0301a633566153cbd0b93d11d8379", size = 152185 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5f/e1/5ef25f52973aa12a19cf4e1375d00932d7fb354ffd310487ba7d44225c1a/s3transfer-0.15.0-py3-none-any.whl", hash = "sha256:6f8bf5caa31a0865c4081186689db1b2534cef721d104eb26101de4b9d6a5852", size = 85984 },
+]
+
+[[package]]
+name = "safelz4"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/95/23b6a266a051315f53ceb855db96cbdc505ac7cf1e99732a06af699c3e85/safelz4-0.1.0.tar.gz", hash = "sha256:f1d9a6ff6f5588e4cd8dfbbdb84490fb9d1d0658a99008d604b1ec5ecbac84a2", size = 120385 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/03/fd66dd28a44104f5baaa5dcb53e2256794c7768f9c938b83aaff3737cdce/safelz4-0.1.0-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:dd3f942c86c9979d5d075d86c59a970268dead78fb27598cdd6b92ae72f2d36d", size = 357100 },
+    { url = "https://files.pythonhosted.org/packages/db/4b/96f451761f519d20c45ad62af428a5a0b895560859d2b7337ae5e81cc3b2/safelz4-0.1.0-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:11341eeedfc2a506405299478a6d020f2e6b10475cf7471cf28baeed6daf54b4", size = 345247 },
+    { url = "https://files.pythonhosted.org/packages/25/e2/240171af935b62af83034be09f606d105285942dbd4b2350907b5cf516f4/safelz4-0.1.0-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:df8b93fdfb8d54e5b5c3b44ea127a6bce01bbc8b6278fe6fb753881415667e9a", size = 380106 },
+    { url = "https://files.pythonhosted.org/packages/ad/e7/156394716683129a06862ff4ccc348f739de2cf998d955448ab6876935e6/safelz4-0.1.0-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:db00cd268350a6f265fda88b8cdb54fd492fec39fef2c39609097ffecd7348bf", size = 387199 },
+    { url = "https://files.pythonhosted.org/packages/6c/cd/a924bf730e575f26ea6f8a322fda0e263f38750cdb39034bd8e05ea66821/safelz4-0.1.0-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:7af52a2cfd0cd127fa275090b4ce7a42875a93cda6b03f828bfde55344396a0d", size = 519663 },
+    { url = "https://files.pythonhosted.org/packages/b7/2b/9c9f66c32183a01c7c42de847be8a92a88da646f35c6f87488ff58630fa2/safelz4-0.1.0-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:91407d9e993f0d07c38152003ba6673c4dc500efd5487267e54dd6e02f05be56", size = 416308 },
+    { url = "https://files.pythonhosted.org/packages/a9/25/abd6afee49c1d2761b388e131e282276131e128ed91f842110298dbe2531/safelz4-0.1.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:429a6b4ea25c6ffdd01288e525870f60283ee42912e7a32003e2e51f12333fed", size = 381246 },
+    { url = "https://files.pythonhosted.org/packages/4f/37/0d5c545c12f98c7a236a5295909bff4c06006bdcbfbb980bd7abc3169ebc/safelz4-0.1.0-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:de7987160f4a6bf91ac9683dbffa7f5235c1a0d93f5e70f0cb4309312e034633", size = 409939 },
+    { url = "https://files.pythonhosted.org/packages/06/5b/a80aaac80dab44cec7c6d21b55a7c8c997ddd0cf9f71f2cbb9e9e7f382f3/safelz4-0.1.0-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:6b3b2e539bd94db1d12b7a33493d731075692b658b0ef5d0d560b6761f980fb7", size = 557814 },
+    { url = "https://files.pythonhosted.org/packages/76/b4/125621cdf05bd23d22365465432c96b12076499f29bfab32317f9b32bc0b/safelz4-0.1.0-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:a356f4c226141621afe7b16a208e14e2fa765c46b1765bd8fdf15c07caf541aa", size = 651504 },
+    { url = "https://files.pythonhosted.org/packages/b9/dc/dd76726892f102d8e732325b69b1976dcff7a21706bae7daefd49afe92c7/safelz4-0.1.0-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:ea2213dd2c0f86377c4ddd6d6f0c3fc6a342a1a0d70c388a1f2af08c3d6e35f1", size = 584787 },
+    { url = "https://files.pythonhosted.org/packages/ba/ce/46f5831187aa2182043414a2c89b2cb9c5be501e14411afe9b32b31798d3/safelz4-0.1.0-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:8fbf2bd3ea565b1111c191a4085db1c7ce2c680039c64ef28215850854110fb9", size = 551337 },
+    { url = "https://files.pythonhosted.org/packages/18/cd/45c57805c768c5a366d46217c70352138f6a15f49b32270ed797497886bb/safelz4-0.1.0-cp38-abi3-win32.whl", hash = "sha256:03a2efd20775d1c32e45bd442d49f958e00af16c3c5e3b7fc5980b2fe81d7108", size = 227113 },
+    { url = "https://files.pythonhosted.org/packages/14/0d/1bf6d556447fc4248888a9dc02cef08cd32a4fa1b3837df77cf63c075601/safelz4-0.1.0-cp38-abi3-win_amd64.whl", hash = "sha256:8b8d3a54699820e4dcc05347023f4606d22df6b9467a226d6967a29ee5409bcc", size = 234476 },
 ]
 
 [[package]]
