@@ -1,5 +1,7 @@
 import numpy as np
 from planning_utils.types import ReferencePath
+from planning_utils.types import ReferencePath
+from scipy.interpolate import CubicSpline
 from scipy.spatial import KDTree
 
 
@@ -25,6 +27,37 @@ class FrenetConverter:
             dy = np.diff(self._y)
             dist = np.sqrt(dx**2 + dy**2)
             self._s[1:] = np.cumsum(dist)
+
+        # Create Cubic Splines for x and y parametrized by s
+        # bc_type='natural' or 'clamped'? 'not-a-knot' is default.
+        # Since raceline might be a loop, if we knew it loops we could use bc_type='periodic'.
+        # But here valid s range is finite. Default is fine.
+        # Ensure s is strictly increasing (remove duplicates if any)
+        _, unique_indices = np.unique(self._s, return_index=True)
+        unique_indices = np.sort(unique_indices) # np.unique returns sorted unique elements, but indices might need sort? 
+        # Actually it sorts by value. if s is sorted (monotonic), unique should preserve order.
+        # But let's just use what we have, usually s is monotonic.
+        
+        # Check for strictly increasing s
+        if len(self._s) > 1:
+            # Handle potential duplicate s (zero distance points)
+            keep_mask = np.diff(self._s, prepend=-1.0) > 1e-6
+            keep_mask[0] = True # Always keep start
+            
+            s_clean = self._s[keep_mask]
+            x_clean = self._x[keep_mask]
+            y_clean = self._y[keep_mask]
+            
+            if len(s_clean) > 1:
+                self._sx = CubicSpline(s_clean, x_clean)
+                self._sy = CubicSpline(s_clean, y_clean)
+            else:
+                 # Fallback for too few points
+                self._sx = lambda s: self._x[0]
+                self._sy = lambda s: self._y[0]
+        else:
+             self._sx = lambda s: self._x[0]
+             self._sy = lambda s: self._y[0]
 
     def global_to_frenet(self, x: float, y: float) -> tuple[float, float]:
         """Convert global (x, y) to Frenet (s, l).
@@ -150,40 +183,15 @@ class FrenetConverter:
         Returns:
             Tuple of (x, y)
         """
-        # Find segment for s
-        # np.searchsorted finds index where s should be inserted to maintain order
-        idx = np.searchsorted(self._s, s) - 1
+        # Use Cubic Spline for position
+        x_ref = float(self._sx(s))
+        y_ref = float(self._sy(s))
 
-        # Clamp index
-        if idx < 0:
-            idx = 0
-        elif idx >= len(self.ref_path) - 1:
-            idx = len(self.ref_path) - 2
-
-        # Interpolate along ref path
-        s0 = self._s[idx]
-        s1 = self._s[idx + 1]
-
-        if s1 - s0 < 1e-6:
-            ratio = 0.0
-        else:
-            ratio = (s - s0) / (s1 - s0)
-
-        x_ref = self._x[idx] + ratio * (self._x[idx + 1] - self._x[idx])
-        y_ref = self._y[idx] + ratio * (self._y[idx + 1] - self._y[idx])
-
-        # Interpolate yaw properly
-        yaw0 = self._yaw[idx]
-        yaw1 = self._yaw[idx + 1]
-
-        # Handle wraparound
-        diff = yaw1 - yaw0
-        while diff > np.pi:
-            diff -= 2 * np.pi
-        while diff < -np.pi:
-            diff += 2 * np.pi
-
-        yaw_ref = yaw0 + ratio * diff
+        # Use Cubic Spline derivatives for yaw
+        # dx/ds and dy/ds
+        dx_ds = float(self._sx(s, 1))
+        dy_ds = float(self._sy(s, 1))
+        yaw_ref = np.arctan2(dy_ds, dx_ds)
 
         # Calculate deviation
         # n = (-sin, cos)
@@ -204,31 +212,7 @@ class FrenetConverter:
         Returns:
             Interpolated yaw angle in radians
         """
-        # Find segment for s
-        idx = np.searchsorted(self._s, s) - 1
-
-        # Clamp index
-        if idx < 0:
-            idx = 0
-        elif idx >= len(self.ref_path) - 1:
-            idx = len(self.ref_path) - 2
-
-        # Interpolate yaw
-        s0 = self._s[idx]
-        s1 = self._s[idx + 1]
-        if s1 - s0 < 1e-6:
-            ratio = 0.0
-        else:
-            ratio = (s - s0) / (s1 - s0)
-
-        yaw0 = self._yaw[idx]
-        yaw1 = self._yaw[idx + 1]
-
-        # Handle wraparound
-        diff = yaw1 - yaw0
-        while diff > np.pi:
-            diff -= 2 * np.pi
-        while diff < -np.pi:
-            diff += 2 * np.pi
-
-        return yaw0 + ratio * diff
+        # Use Cubic Spline derivatives for yaw
+        dx_ds = float(self._sx(s, 1))
+        dy_ds = float(self._sy(s, 1))
+        return np.arctan2(dy_ds, dx_ds)

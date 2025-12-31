@@ -1,0 +1,72 @@
+# MPC Controller Configuration
+# MPCコントローラー設定 (横方向MPC + 縦方向PID)
+
+nodes:
+  sensor:
+    type: "ideal_sensor.sensor_node.IdealSensorNode"
+    rate_hz: 50.0  # センサー更新レート [Hz]
+    priority: 10   # 実行優先度（シミュレータの後に実行）
+    params:
+      vehicle_params: ${vehicle}
+      vehicle_color: ${visualization.colors.vehicle}
+
+  planning:
+    type: LateralShiftPlannerNode
+    rate_hz: 50.0  # プランニング更新レート [Hz] (Increased to 50Hz)
+    priority: 20   # 実行優先度（センサーの後に実行）
+    params:
+      track_path: ${env.track_path}
+      map_path: ${env.map_path}
+      # Perception / Planning Horizon (認識・計画範囲)
+      lookahead_distance: 100.0 # [m] 障害物検知と軌道生成の最大プレビュー距離（計画する軌道の長さ）
+      lookbehind_distance: 5.0 # [m] 車両後方の障害物検知距離
+
+      # Shift Profile Parameters (Avoidance Logic, 回避ロジック)
+      avoidance_maneuver_length: 5.0 # [m] 横方向移動（0から目標位置まで）を完了するために必要な縦方向距離
+      longitudinal_margin_front: 0.0 # [m] 障害物手前の余裕距離（障害物のこの距離手前で回避移動を完了する）
+      longitudinal_margin_rear: 0.0  # [m] 障害物通過後の余裕距離（障害物を通過した後、この距離だけ回避状態を維持する）
+
+      # Vehicle & Environment (車両・環境設定)
+      vehicle_width: ${vehicle.width} # [m] 自車幅
+      safe_margin: 1.0 # [m] 障害物境界から確保すべき追加の横方向余裕
+
+      # Trajectory Generation (軌道生成)
+      trajectory_resolution: 0.5    # [m] 出力軌道の離散化間隔
+      target_velocity: 8.0         # [m/s] 目標速度（設定がない、またはnullの場合はデフォルト値またはマップ速度を使用）
+      trajectory_color: "#4DB6ACCC" # 軌跡の色 (Teal)
+
+  control:
+    type: MPCLateralControllerNode
+    rate_hz: 50.0  # 制御更新レート [Hz] (Increased to 50Hz)
+    priority: 30   # 実行優先度（プランニングの後に実行）
+    params:
+      vehicle_params: ${vehicle}
+      
+      # MPC Lateral Control Parameters
+      mpc_lateral:
+        prediction_horizon: 50        # 予測ホライズン [steps] (1.0 seconds at 50Hz)
+        control_horizon: 50           # 制御ホライズン [steps] (M=N for Autoware parity)
+        dt: 0.02                      # 離散化時間 [s] (High resolution)
+        weight_lateral_error: 40.0    # 横方向誤差の重み (High)
+        weight_heading_error: 40.0    # ヨー角誤差の重み (High)
+        weight_steering: 0.01          # ステアリング入力の重み (Almost Zero)
+        weight_steering_rate: 0.01   # ステアリング変化率の重み (Almost Zero)
+        max_steering_angle: ${vehicle.max_steering_angle} # 最大ステアリング角度 [rad]
+        max_steering_rate: ${vehicle.max_steer_rate}      # 最大ステアリング角速度 [rad/s]
+        steer_delay_time: ${vehicle.steer_delay_time}     # ステアリング遅れ時間 [s]
+        steer_gain: ${vehicle.steer_gain}                 # ステアリングゲイン
+        steer_zeta: ${vehicle.steer_zeta}                 # 減衰比
+        steer_omega_n: ${vehicle.steer_omega_n}           # 固有角周波数 [rad/s]
+        prediction_velocity: ${ad_components.nodes.planning.params.target_velocity} # 予測に使用する速度 [m/s]
+        solver_max_iter: 50000        # 最大反復回数 (increased for robustness)
+        solver_verbose: false         # ソルバーの詳細ログ出力
+        solver_eps_abs: 1e-3          # 絶対許容誤差
+        solver_eps_rel: 1e-3          # 相対許容誤差
+
+      # PID Longitudinal Control Parameters (Pure Pursuitと同じ)
+      longitudinal:
+        kp: 1.0       # 比例ゲイン (P)
+        ki: 0.0       # 積分ゲイン (I)
+        kd: 0.001     # 微分ゲイン (D)
+        u_min: -3.0   # 最小制御入力（減速度） [m/s^2]
+        u_max: 3.0    # 最大制御入力（加速度） [m/s^2]

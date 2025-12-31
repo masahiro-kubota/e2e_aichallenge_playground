@@ -2,7 +2,7 @@
 # Hydraルート設定ファイル (エントリポイント)
 
 defaults:
-  - experiment: evaluation # デフォルトの実験タイプ [str]
+  - experiment: default # デフォルトの実験タイプ [str]
   - env: randomized         # デフォルトの環境設定 [str]
   - vehicle: default     # デフォルトの車両設定 [str]
   - ad_components: lateral_shift # デフォルトのADコンポーネント構成 [str]
