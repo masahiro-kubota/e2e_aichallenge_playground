@@ -142,5 +142,6 @@ class SimulationVehicleState:
             velocity=self.velocity_2d,
             acceleration=final_acceleration,
             steering=final_steering,
+            steering_rate=self.steer_rate_internal,
             timestamp=self.timestamp,
         )

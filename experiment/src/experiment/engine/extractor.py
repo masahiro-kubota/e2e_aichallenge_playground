@@ -27,6 +27,20 @@ class ExtractorEngine(BaseEngine):
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        logger.info(f"Config keys: {list(cfg.keys())}")
+        if "experiment" in cfg:
+            logger.info(f"Experiment keys: {list(cfg.experiment.keys())}")
+
+        ignore_fail = cfg.get("ignore_failure", False)
+        # Fallback to experiment.ignore_failure if not at root
+        if not ignore_fail and "experiment" in cfg:
+            ignore_fail = cfg.experiment.get("ignore_failure", False)
+
+        if ignore_fail:
+            logger.info(f"Ignoring failure status (ignore_failure={ignore_fail})")
+        else:
+            logger.info(f"Respecting failure status (ignore_failure={ignore_fail})")
+
         logger.info(f"Extracting data from {input_dir} to {output_dir}")
 
         # 1. MCAP files discovery
@@ -49,13 +63,14 @@ class ExtractorEngine(BaseEngine):
                 try:
                     with open(result_json_path) as f:
                         result_data = json.load(f)
-                        if not result_data.get("success", False):
-                            logger.info(f"Skipping failed episode: {mcap_file.parent}")
-                            continue
+                    if not result_data.get("success", False) and not ignore_fail:
+                        logger.info(f"Skipping failed episode: {mcap_file.parent}")
+                        continue
                 except Exception as e:
                     logger.warning(f"Failed to read result.json at {result_json_path}: {e}")
-                    # Decide whether to skip or proceed. Safe approach: skip if status unknown
-                    continue
+                    # If ignore_failure is True, we proceed even if result.json is unreadable
+                    if not ignore_fail:
+                        continue
 
             result = self._extract_from_single_mcap(mcap_file)
             if result:
@@ -80,12 +95,14 @@ class ExtractorEngine(BaseEngine):
         accels = np.concatenate(all_accels, axis=0)
 
         # 3. Calculate and Log Global Frequency
-        if s_freq_list:
-            avg_s_freq = np.mean(s_freq_list)
+        valid_s_freq = [f for f in s_freq_list if f is not None]
+        if valid_s_freq:
+            avg_s_freq = np.mean(valid_s_freq)
             logger.info(f"Global Average LiDAR Frequency: {avg_s_freq:.2f} Hz")
 
-        if c_freq_list:
-            avg_c_freq = np.mean(c_freq_list)
+        valid_c_freq = [f for f in c_freq_list if f is not None]
+        if valid_c_freq:
+            avg_c_freq = np.mean(valid_c_freq)
             logger.info(f"Global Average Control Frequency: {avg_c_freq:.2f} Hz")
 
         # 4. Calculate statistics
@@ -212,10 +229,11 @@ class ExtractorEngine(BaseEngine):
                             ranges = np.array(msg.ranges, dtype=np.float32)
 
                         if ranges is not None:
-                            # Replace inf/nan with 0.0 or a safe value
-                            # For statistics, we might want to filter them out, but for dataset consistency we keep shape.
-                            # Standard practice: replace inf with max_range or 0.
-                            ranges = np.nan_to_num(ranges, posinf=30.0, neginf=0.0)
+                            # Replace inf/nan with max_range (30.0)
+                            # Sim data (JSON) uses None for infinity, which becomes NaN in numpy.
+                            # Standard ROS drivers use inf.
+                            # We treat NaN/Inf as "Safe" (Max Range).
+                            ranges = np.nan_to_num(ranges, posinf=30.0, neginf=0.0, nan=30.0)
                             scans_list.append(ranges)
                             scan_times.append(message.log_time)
 

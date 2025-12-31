@@ -1,0 +1,11 @@
+# @package _global_
+# Evaluation Configuration
+
+defaults:
+  - base
+  - _self_
+
+experiment:
+  name: "evaluation"
+  type: "evaluation"
+  description: "Closed-loop evaluation of trained model"

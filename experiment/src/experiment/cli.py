@@ -25,6 +25,7 @@ def main(cfg: DictConfig) -> None:
 
     # Configure logging level from config
     import logging
+
     try:
         log_level_str = cfg.execution.get("log_level", "INFO")
         log_level = getattr(logging, log_level_str.upper())

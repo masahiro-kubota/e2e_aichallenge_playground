@@ -35,7 +35,6 @@ class LateralShiftPlannerConfig:
     target_velocity: float | None = None
 
 
-
 @dataclass
 class AvoidanceDebugData:
     """Debug data for visualization."""

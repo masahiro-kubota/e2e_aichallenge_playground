@@ -31,5 +31,12 @@ class VehicleState:
         """numpy配列から生成."""
         # Support both old (4 elements) and new (5 elements) formats for backward compatibility
         if len(arr) >= 5:
-            return cls(x=arr[0], y=arr[1], yaw=arr[2], velocity=arr[3], steering_rate=arr[4], timestamp=timestamp)
+            return cls(
+                x=arr[0],
+                y=arr[1],
+                yaw=arr[2],
+                velocity=arr[3],
+                steering_rate=arr[4],
+                timestamp=timestamp,
+            )
         return cls(x=arr[0], y=arr[1], yaw=arr[2], velocity=arr[3], timestamp=timestamp)

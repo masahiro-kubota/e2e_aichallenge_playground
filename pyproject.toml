@@ -153,7 +153,7 @@ dev = [
     "vulture>=2.14",
     "import-linter>=2.0",
     "pytest>=9.0.2",
-    "pytest>=9.0.2",
+    "deptry>=0.24.0",
 ]
 
 [tool.vulture]

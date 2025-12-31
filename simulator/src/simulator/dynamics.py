@@ -21,7 +21,7 @@ def apply_steering_response_model(
     delay_buffer: deque[float],
 ) -> tuple[float, deque[float]]:
     """ステアリング応答モデルを適用.
-    
+
     計算順序:
     1. Clamp: 入力を最大ステア角で制限
     2. Gain: ステアリングゲインを適用
@@ -42,64 +42,64 @@ def apply_steering_response_model(
     # ステップ1: Clamp - 最大ステア角で制限
     max_steering = params.max_steering_angle
     clamped_steering = max(-max_steering, min(max_steering, command_steering))
-    
+
     # ステップ2: Gain - ステアリングゲインを適用
     gain_steering = clamped_steering * params.steer_gain
-    
+
     # ステップ3: Delay - 時間遅延
     # 遅延バッファに新しい値を追加
     delay_buffer.append(gain_steering)
-    
+
     # 遅延ステップ数を計算
     delay_steps = max(1, int(params.steer_delay_time / dt))
-    
+
     # バッファサイズを調整
     while len(delay_buffer) > delay_steps:
         delay_buffer.popleft()
-    
+
     # 遅延された値を取得
     delayed_steering = delay_buffer[0] if len(delay_buffer) > 0 else gain_steering
-    
+
     actual_steering = state.actual_steering
-    
+
     # ステップ4: SOPDT (Second Order Plus Dead Time)
     # 2次系: d²y/dt² + 2ζωn dy/dt + ωn² y = ωn² u
     # 状態変数モデル:
     #   dy/dt = v
     #   dv/dt = ωn²(u - y) - 2ζωn v
-    
+
     omega_n = params.steer_omega_n
     zeta = params.steer_zeta
-    
+
     # Delayed input (from step 3)
     u_delayed = delayed_steering
-    
+
     # Current state
     y_k = state.actual_steering
     v_k = state.steer_rate_internal
-    
+
     # Semi-implicit Euler integration
     # v_{k+1} = v_k + (omega_n^2 * (u - y_k) - 2*zeta*omega_n * v_k) * dt
     # y_{k+1} = y_k + v_{k+1} * dt
-    
+
     dv_dt = (omega_n**2) * (u_delayed - y_k) - (2 * zeta * omega_n) * v_k
     v_next = v_k + dv_dt * dt
     y_next = y_k + v_next * dt
-    
+
     # ステップ5: RateLimit - 変化率制限 (出力のレート制限)
-    
+
     max_steer_rate_rad = params.max_steer_rate
     max_delta = max_steer_rate_rad * dt
-    
+
     delta_steering = y_next - state.actual_steering
-    
+
     if abs(delta_steering) > max_delta:
         delta_steering = math.copysign(max_delta, delta_steering)
         # レート制限にかかった場合、内部速度もリセットすべきだが、
         # 単純化のため位置のみ制限し、速度は次ステップで補正されるに任せる(あるいは整合させる)
         # ここでは積分整合性を保つため、速度を制限された値に合わせる
         v_next = delta_steering / dt
-    
+
     actual_steering = state.actual_steering + delta_steering
 
     return actual_steering, v_next, delay_buffer

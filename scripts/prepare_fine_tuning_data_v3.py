@@ -1,9 +1,9 @@
-import argparse
-import logging
 from pathlib import Path
+
 import numpy as np
 from rosbags.highlevel import AnyReader
 from sklearn.model_selection import train_test_split
+
 
 def clean_scan_array(scan_array: np.ndarray, max_range: float) -> np.ndarray:
     if not isinstance(scan_array, np.ndarray):
@@ -11,6 +11,7 @@ def clean_scan_array(scan_array: np.ndarray, max_range: float) -> np.ndarray:
     cleaned = np.nan_to_num(scan_array, nan=0.0, posinf=max_range, neginf=0.0)
     cleaned = np.clip(cleaned, 0.0, max_range)
     return cleaned.astype(np.float32)
+
 
 def synchronize_data(src_times: np.ndarray, target_times: np.ndarray):
     if len(target_times) == 0:
@@ -23,6 +24,7 @@ def synchronize_data(src_times: np.ndarray, target_times: np.ndarray):
     use_prev = time_diff_prev < time_diff_curr
     final_indices = np.where(use_prev, prev_idx, idx_sorted)
     return final_indices
+
 
 def process_and_split(bag_path, output_dir, control_topic, scan_topic, val_ratio=0.2):
     bag_path = Path(bag_path)
@@ -53,12 +55,12 @@ def process_and_split(bag_path, output_dir, control_topic, scan_topic, val_ratio
                     scan_vec = clean_scan_array(ranges, 30.0)
                     scan_data.append(scan_vec)
                     scan_times.append(timestamp)
-            except Exception as e:
+            except Exception:
                 # print(f"Error decoding {conn.topic}: {e}")
                 pass
 
     print(f"Extracted: Scans={len(scan_data)}, Controls={len(cmd_data)}")
-    
+
     if not scan_data or not cmd_data:
         print("Insufficient data.")
         return
@@ -80,7 +82,7 @@ def process_and_split(bag_path, output_dir, control_topic, scan_topic, val_ratio
     print(f"Synced Data Shape: Scans={np_scan_data.shape}, Controls={synced_cmds.shape}")
 
     # Split
-    X_train, X_val, y_train, y_val = train_test_split(
+    x_train, x_val, y_train, y_val = train_test_split(
         np_scan_data, synced_cmds, test_size=val_ratio, random_state=42
     )
 
@@ -90,21 +92,22 @@ def process_and_split(bag_path, output_dir, control_topic, scan_topic, val_ratio
     train_dir.mkdir(parents=True, exist_ok=True)
     val_dir.mkdir(parents=True, exist_ok=True)
 
-    np.save(train_dir / "scans.npy", X_train)
+    np.save(train_dir / "scans.npy", x_train)
     np.save(train_dir / "steers.npy", y_train[:, 0])
     np.save(train_dir / "accelerations.npy", y_train[:, 1])
 
-    np.save(val_dir / "scans.npy", X_val)
+    np.save(val_dir / "scans.npy", x_val)
     np.save(val_dir / "steers.npy", y_val[:, 0])
     np.save(val_dir / "accelerations.npy", y_val[:, 1])
 
-    print(f"Saved Train: {len(X_train)} samples to {train_dir}")
-    print(f"Saved Val: {len(X_val)} samples to {val_dir}")
+    print(f"Saved Train: {len(x_train)} samples to {train_dir}")
+    print(f"Saved Val: {len(x_val)} samples to {val_dir}")
+
 
 if __name__ == "__main__":
     process_and_split(
         "temp_mcap_dir/rosbag2_autoware_0.mcap",
         "data/processed/extra_tuning",
         control_topic="/control/command/control_cmd",
-        scan_topic="/sensing/lidar/scan"
+        scan_topic="/sensing/lidar/scan",
     )

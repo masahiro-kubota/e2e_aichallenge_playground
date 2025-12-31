@@ -48,13 +48,9 @@ class VehicleParameters(BaseModel):
     max_velocity: float  # 最大速度 [m/s]
     max_acceleration: float  # 最大加速度 [m/s^2]
 
-
-
     # 寸法詳細パラメータ (オプション、未指定時は length, wheelbase から推定)
     front_overhang: float  # フロントオーバーハング [m]
     rear_overhang: float  # リアオーバーハング [m]
-
-
 
     # ステアリング応答パラメータ
     steer_delay_time: float = Field(description="純粋な時間遅れ [秒]")

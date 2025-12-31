@@ -255,9 +255,9 @@ class CollectorEngine(BaseEngine):
             return
 
         initial_state = sim_node.params.initial_state
-        initial_state.x += rng.uniform(-2.0, 2.0)
-        initial_state.y += rng.uniform(-2.0, 2.0)
-        initial_state.yaw += rng.uniform(-0.5, 0.5)
+
+        if cfg.env.get("initial_state_sampling", {}).get("enabled", False):
+            self._sample_and_update_initial_state(cfg, sim_node, rng)
 
         obstacles = sim_node.params.obstacles
 
@@ -301,3 +301,49 @@ class CollectorEngine(BaseEngine):
                 obs["position"]["x"] += rng.uniform(-1.0, 1.0)
                 obs["position"]["y"] += rng.uniform(-1.0, 1.0)
                 obs["position"]["yaw"] = rng.uniform(0, 6.28)
+
+    def _sample_and_update_initial_state(
+        self, cfg: DictConfig, sim_node: Any, rng: np.random.Generator
+    ) -> None:
+        """Sample and update the initial state of the simulation."""
+        from simulator.map import LaneletMap
+
+        from experiment.engine.initial_state_sampler import InitialStateSampler
+
+        # Load map and track
+        map_path = Path(sim_node.params.map_path)
+        track_path_str = cfg.env.get("track_path")
+        if not track_path_str:
+            logger.warning("track_path not found in config, skipping initial state sampling")
+            return
+
+        track_path = Path(track_path_str)
+
+        # Create sampler
+        lanelet_map = LaneletMap(map_path)
+        sampler = InitialStateSampler(track_path, lanelet_map)
+
+        # Sample new initial state
+        sampling_config = cfg.env.initial_state_sampling
+        try:
+            sampled_state = sampler.sample_initial_state(
+                rng=rng,
+                lateral_offset_range=tuple(sampling_config.lateral_offset_range),
+                yaw_offset_range=tuple(sampling_config.yaw_offset_range),
+                velocity_range=tuple(sampling_config.velocity_range),
+                max_retries=sampling_config.get("max_retries", 10),
+            )
+
+            # Update initial state
+            initial_state = sim_node.params.initial_state
+            initial_state.x = sampled_state["x"]
+            initial_state.y = sampled_state["y"]
+            initial_state.yaw = sampled_state["yaw"]
+            initial_state.velocity = sampled_state["velocity"]
+
+            logger.info(
+                f"Updated initial state: x={initial_state.x:.2f}, y={initial_state.y:.2f}, "
+                f"yaw={initial_state.yaw:.3f}, velocity={initial_state.velocity:.2f}"
+            )
+        except RuntimeError as e:
+            logger.error(f"Failed to sample initial state: {e}, using default")

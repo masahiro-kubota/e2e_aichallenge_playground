@@ -8,13 +8,14 @@
 
 import argparse
 import csv
+import sys
 from pathlib import Path
-from typing import List, Optional, Any
 
 # Adjust path to find core
-from core.utils.mcap_utils import read_messages, msg_to_dict
+from core.utils.mcap_utils import msg_to_dict, read_messages
 
-def flatten(d, parent_key='', sep='.'):
+
+def flatten(d, parent_key="", sep="."):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -24,7 +25,8 @@ def flatten(d, parent_key='', sep='.'):
             items.append((new_key, v))
     return dict(items)
 
-def extract_topics_to_csv(mcap_path: str, topics: List[str], output_path: Optional[str] = None):
+
+def extract_topics_to_csv(mcap_path: str, topics: list[str], output_path: str | None = None):
     input_path = Path(mcap_path)
     if not input_path.exists():
         print(f"Error: File not found: {mcap_path}")
@@ -32,13 +34,13 @@ def extract_topics_to_csv(mcap_path: str, topics: List[str], output_path: Option
 
     if not output_path:
         output_path = input_path.with_suffix(".csv")
-    
+
     print(f"Reading {mcap_path}...")
     print(f"Extracting topics: {topics}")
-    
+
     rows = []
     all_keys = set(["timestamp_ns", "log_time_s", "topic"])
-    
+
     count = 0
     try:
         for topic, msg, timestamp_ns in read_messages(mcap_path, topics):
@@ -47,20 +49,20 @@ def extract_topics_to_csv(mcap_path: str, topics: List[str], output_path: Option
                 # We need a dict for flattening
                 msg_dict = msg_to_dict(msg)
                 flat_data = flatten(msg_dict)
-                
+
                 row = {
                     "timestamp_ns": timestamp_ns,
                     "log_time_s": timestamp_ns / 1e9,
-                    "topic": topic
+                    "topic": topic,
                 }
                 row.update(flat_data)
                 rows.append(row)
                 all_keys.update(flat_data.keys())
                 count += 1
-            except Exception as e:
+            except Exception:
                 # print(f"Error processing message from {topic}: {e}")
                 pass
-                
+
     except Exception as e:
         print(f"Error reading MCAP: {e}")
         return
@@ -73,10 +75,10 @@ def extract_topics_to_csv(mcap_path: str, topics: List[str], output_path: Option
     header = ["timestamp_ns", "log_time_s", "topic"]
     data_keys = sorted([k for k in all_keys if k not in header])
     header.extend(data_keys)
-    
+
     print(f"Writing {count} rows to {output_path}...")
     try:
-        with open(output_path, "w", newline='') as csvfile:
+        with open(output_path, "w", newline="") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=header)
             writer.writeheader()
             writer.writerows(rows)
@@ -84,15 +86,19 @@ def extract_topics_to_csv(mcap_path: str, topics: List[str], output_path: Option
     except Exception as e:
         print(f"Error writing CSV: {e}")
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Convert MCAP topics to CSV via rosbags/mcap utils")
+    parser = argparse.ArgumentParser(
+        description="Convert MCAP topics to CSV via rosbags/mcap utils"
+    )
     parser.add_argument("input", help="Input MCAP file")
     parser.add_argument("topics", nargs="+", help="Topics to extract")
     parser.add_argument("-o", "--output", help="Output CSV file path")
-    
+
     args = parser.parse_args()
-    
+
     extract_topics_to_csv(args.input, args.topics, args.output)
+
 
 if __name__ == "__main__":
     main()

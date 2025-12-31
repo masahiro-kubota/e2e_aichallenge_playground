@@ -11,6 +11,10 @@ initial_state:
   yaw: 2.2      # 初期ヨー角 [rad]
   velocity: 0.0 # 初期速度 [m/s]
 
+# Initial State Randomization (初期状態のランダム化)
+initial_state_sampling:
+  enabled: false  # デフォルトは無効 [bool]
+
 # Goal Configuration (ゴール設定)
 goal_position:
   x: 89630.067  # ゴールX座標 [m]
@@ -41,7 +45,7 @@ obstacles:
       enabled: true # 除外ゾーンを有効化 [bool]
       # 初期位置からの除外距離 [m]
       distance: 10.0
-    seed: 42       # 障害物生成用シード (再現性確保のため) [int] -- fixed for obstacle generation only
+    seed: 1       # 障害物生成用シード (再現性確保のため) [int] -- fixed for obstacle generation only
   list:
     # 固定障害物のリスト
     - type: static # 種類 (static: 静的) [str]

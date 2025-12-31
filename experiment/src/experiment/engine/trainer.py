@@ -1,9 +1,9 @@
-import json
 import logging
 from pathlib import Path
 from typing import Any
 
 import hydra
+import mlflow
 import mlflow.pytorch
 import numpy as np
 import torch
@@ -12,11 +12,10 @@ import yaml
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 
-import mlflow
 import wandb
 from experiment.data.dataset import ScanControlDataset
 from experiment.engine.base import BaseEngine
-from experiment.engine.loss import WeightedSmoothL1Loss
+from experiment.engine.loss import WeightedHuberLoss
 from experiment.models.tiny_lidar import TinyLidarNet
 
 logger = logging.getLogger(__name__)
@@ -50,13 +49,14 @@ class TrainerEngine(BaseEngine):
         train_dir = Path(cfg.train_data)
         val_dir = Path(cfg.val_data)
 
-        # 統計量のロード (もしあれば)
+        # 統計量のロード (無効化: 推論時のMax-Min正規化に合わせるため)
         stats = None
-        stats_path = train_dir / "stats.json"
-        if stats_path.exists():
-            with open(stats_path) as f:
-                stats = json.load(f)
-            logger.info(f"Loaded statistics from {stats_path}")
+        # stats_path = train_dir / "stats.json"
+        # if stats_path.exists():
+        #     with open(stats_path) as f:
+        #         stats = json.load(f)
+        #     logger.info(f"Loaded statistics from {stats_path}")
+        logger.info("Using Max-Min normalization (stats=None) to match inference logic.")
 
         train_dataset = ScanControlDataset(train_dir, stats=stats)
         val_dataset = ScanControlDataset(val_dir, stats=stats)
@@ -65,10 +65,23 @@ class TrainerEngine(BaseEngine):
         _val_loader = DataLoader(val_dataset, batch_size=cfg.training.batch_size)
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info(f"Config keys available: {list(cfg.keys())}")
+        if "pretrained_model_path" in cfg:
+            logger.info(f"pretrained_model_path in cfg: {cfg.pretrained_model_path}")
+        else:
+            logger.info("pretrained_model_path NOT in cfg")
+
         model = TinyLidarNet(input_dim=cfg.model.input_width, output_dim=2).to(device)
 
+        if "pretrained_model_path" in cfg.training and cfg.training.pretrained_model_path:
+            pretrained_path = cfg.training.pretrained_model_path
+            logger.info(f"Loading pretrained weights from {pretrained_path}")
+            model.load_state_dict(torch.load(pretrained_path, map_location=device))
+        else:
+            logger.info("No pretrained model path found in cfg.training, training from scratch.")
+
         _optimizer = optim.Adam(model.parameters(), lr=cfg.training.learning_rate)
-        _criterion = WeightedSmoothL1Loss()
+        _criterion = WeightedHuberLoss()
 
         logger.info(f"Starting training for {cfg.training.num_epochs} epochs on {device}")
 

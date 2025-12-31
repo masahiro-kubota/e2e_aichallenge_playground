@@ -3,9 +3,8 @@ import subprocess
 from abc import ABC, abstractmethod
 from typing import Any
 
-from omegaconf import DictConfig, OmegaConf
-
 import mlflow
+from omegaconf import DictConfig, OmegaConf
 
 
 class BaseEngine(ABC):

@@ -1,7 +1,5 @@
 """Diagnostic data structures for AD components."""
 
-from dataclasses import dataclass
-
 from pydantic import BaseModel
 
 

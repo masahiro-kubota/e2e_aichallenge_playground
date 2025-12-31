@@ -4,27 +4,28 @@ import torch
 import torch.nn as nn
 
 
-class WeightedSmoothL1Loss(nn.Module):
-    """Weighted sum of Smooth L1 losses for Acceleration and Steering.
+class WeightedHuberLoss(nn.Module):
+    """Weighted sum of Huber losses for Acceleration and Steering.
 
-    This loss function calculates the Smooth L1 loss independently for the
+    This loss function calculates the Huber loss independently for the
     acceleration and steering components, averages them across the batch,
     and then computes a weighted sum.
     """
 
-    def __init__(self, accel_weight: float = 1.0, steer_weight: float = 1.0):
-        """Initialize the WeightedSmoothL1Loss.
+    def __init__(self, accel_weight: float = 1.0, steer_weight: float = 1.0, delta: float = 1.0):
+        """Initialize the WeightedHuberLoss.
 
         Args:
             accel_weight: Coefficient to scale the acceleration loss
             steer_weight: Coefficient to scale the steering loss
+            delta: Threshold for Huber loss (default: 1.0)
         """
         super().__init__()
         self.accel_weight = accel_weight
         self.steer_weight = steer_weight
 
         # Use reduction='none' to calculate losses per element individually
-        self.criterion = nn.SmoothL1Loss(reduction="none")
+        self.criterion = nn.HuberLoss(reduction="none", delta=delta)
 
     def forward(self, outputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         """Calculate the weighted loss.

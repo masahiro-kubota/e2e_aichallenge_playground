@@ -30,6 +30,11 @@ DUMMY_VP = VehicleParameters(
     max_drive_force=5000.0,
     max_brake_force=8000.0,
     tire_params={},
+    steer_delay_time=0.2,
+    max_steer_rate=1.0,
+    steer_gain=1.0,
+    steer_zeta=0.7,
+    steer_omega_n=5.0,
 )
 
 DUMMY_INITIAL_STATE = VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0, timestamp=0.0)

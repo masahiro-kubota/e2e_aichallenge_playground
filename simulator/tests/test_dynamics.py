@@ -345,6 +345,11 @@ class TestGetBicycleModelPolygon:
             max_drive_force=5000.0,
             max_brake_force=8000.0,
             vehicle_height=2.2,
+            steer_delay_time=0.0,
+            max_steer_rate=0.87,
+            steer_gain=1.0,
+            steer_zeta=1.0,
+            steer_omega_n=5.0,
             tire_params={},
         )
 
@@ -382,6 +387,11 @@ class TestGetBicycleModelPolygon:
             max_drive_force=5000.0,
             max_brake_force=8000.0,
             vehicle_height=2.2,
+            steer_delay_time=0.0,
+            max_steer_rate=0.87,
+            steer_gain=1.0,
+            steer_zeta=1.0,
+            steer_omega_n=5.0,
             tire_params={},
         )
 
@@ -416,6 +426,11 @@ class TestGetBicycleModelPolygon:
             max_drive_force=5000.0,
             max_brake_force=8000.0,
             vehicle_height=2.2,
+            steer_delay_time=0.0,
+            max_steer_rate=0.87,
+            steer_gain=1.0,
+            steer_zeta=1.0,
+            steer_omega_n=5.0,
             tire_params={},
         )
 

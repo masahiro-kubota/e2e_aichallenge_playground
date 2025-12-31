@@ -217,12 +217,14 @@ class SimulatorNode(Node[SimulatorConfig]):
         # Apply steering response model
         from simulator.dynamics import apply_steering_response_model
 
-        actual_steering, steer_rate_internal, self._steer_delay_buffer = apply_steering_response_model(
-            self._current_state,
-            steering,
-            self.dt,
-            self.config.vehicle_params,
-            self._steer_delay_buffer,
+        actual_steering, steer_rate_internal, self._steer_delay_buffer = (
+            apply_steering_response_model(
+                self._current_state,
+                steering,
+                self.dt,
+                self.config.vehicle_params,
+                self._steer_delay_buffer,
+            )
         )
 
         # Update internal state for next iteration
@@ -244,7 +246,7 @@ class SimulatorNode(Node[SimulatorConfig]):
 
         # Convert to VehicleState
         vehicle_state = self._current_state.to_vehicle_state(
-            steering=steering, acceleration=acceleration
+            steering=actual_steering, acceleration=acceleration
         )
 
         # Map validation (if map is loaded)

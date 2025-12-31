@@ -30,7 +30,7 @@ class MPCLateralParams(ComponentConfig):
 
     prediction_horizon: int = Field(..., description="Prediction horizon [steps]")
     control_horizon: int = Field(..., description="Control horizon [steps]")
-    dt: float = Field(..., description="Discretization time step [s]")
+    # dt is derived from 1/rate_hz in the node
     weight_lateral_error: float = Field(..., description="Weight for lateral error")
     weight_heading_error: float = Field(..., description="Weight for heading error")
     weight_steering: float = Field(..., description="Weight for steering input")
@@ -78,11 +78,14 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
     def __init__(self, config: MPCLateralControllerConfig, rate_hz: float, priority: int) -> None:
         super().__init__("MPCLateralController", rate_hz, config, priority)
 
+        # Calculate dt from rate_hz
+        self.dt = 1.0 / rate_hz
+
         # Initialize MPC solver
         mpc_config = MPCConfig(
             prediction_horizon=self.config.mpc_lateral.prediction_horizon,
             control_horizon=self.config.mpc_lateral.control_horizon,
-            dt=self.config.mpc_lateral.dt,
+            dt=self.dt,
             weight_lateral_error=self.config.mpc_lateral.weight_lateral_error,
             weight_heading_error=self.config.mpc_lateral.weight_heading_error,
             weight_steering=self.config.mpc_lateral.weight_steering,
@@ -104,7 +107,7 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         )
 
         # Steering history for delay modeling
-        delay_steps = round(self.config.mpc_lateral.steer_delay_time / self.config.mpc_lateral.dt)
+        delay_steps = round(self.config.mpc_lateral.steer_delay_time / self.dt)
         self.steering_history = deque([0.0] * max(1, delay_steps), maxlen=max(1, delay_steps))
 
         # PID state for longitudinal control
@@ -349,7 +352,7 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
     def _extract_reference_curvature(self, trajectory: Trajectory, start_idx: int) -> np.ndarray:
         """Extract reference path curvature by numerically differentiating interpolated yaws (Vectorized)."""
         n_horizon = self.config.mpc_lateral.prediction_horizon
-        dt = self.config.mpc_lateral.dt
+        dt = self.dt
         v = max(self.config.mpc_lateral.prediction_velocity, 0.1)
 
         # 1. Collect points data into arrays for fast access
@@ -467,7 +470,7 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         marker.color = ColorRGBA(r=1.0, g=0.5, b=0.0, a=0.8)  # Orange
 
         n_horizon = predicted_states.shape[1]
-        dt = self.config.mpc_lateral.dt
+        dt = self.dt
         v = max(self.config.mpc_lateral.prediction_velocity, 0.1)
 
         # Vectorized calculation of global positions

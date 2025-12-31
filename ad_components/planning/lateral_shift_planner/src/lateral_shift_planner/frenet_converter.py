@@ -1,6 +1,5 @@
 import numpy as np
 from planning_utils.types import ReferencePath
-from planning_utils.types import ReferencePath
 from scipy.interpolate import CubicSpline
 from scipy.spatial import KDTree
 
@@ -34,30 +33,32 @@ class FrenetConverter:
         # But here valid s range is finite. Default is fine.
         # Ensure s is strictly increasing (remove duplicates if any)
         _, unique_indices = np.unique(self._s, return_index=True)
-        unique_indices = np.sort(unique_indices) # np.unique returns sorted unique elements, but indices might need sort? 
+        unique_indices = np.sort(
+            unique_indices
+        )  # np.unique returns sorted unique elements, but indices might need sort?
         # Actually it sorts by value. if s is sorted (monotonic), unique should preserve order.
         # But let's just use what we have, usually s is monotonic.
-        
+
         # Check for strictly increasing s
         if len(self._s) > 1:
             # Handle potential duplicate s (zero distance points)
             keep_mask = np.diff(self._s, prepend=-1.0) > 1e-6
-            keep_mask[0] = True # Always keep start
-            
+            keep_mask[0] = True  # Always keep start
+
             s_clean = self._s[keep_mask]
             x_clean = self._x[keep_mask]
             y_clean = self._y[keep_mask]
-            
+
             if len(s_clean) > 1:
                 self._sx = CubicSpline(s_clean, x_clean)
                 self._sy = CubicSpline(s_clean, y_clean)
             else:
-                 # Fallback for too few points
-                self._sx = lambda s: self._x[0]
-                self._sy = lambda s: self._y[0]
+                # Fallback for too few points
+                self._sx = lambda _: self._x[0]
+                self._sy = lambda _: self._y[0]
         else:
-             self._sx = lambda s: self._x[0]
-             self._sy = lambda s: self._y[0]
+            self._sx = lambda _: self._x[0]
+            self._sy = lambda _: self._y[0]
 
     def global_to_frenet(self, x: float, y: float) -> tuple[float, float]:
         """Convert global (x, y) to Frenet (s, l).

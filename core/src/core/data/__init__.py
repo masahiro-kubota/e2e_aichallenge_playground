@@ -6,6 +6,7 @@ from core.data.ad_components import (
     ADComponentType,
     VehicleState,
 )
+from core.data.ad_components.diagnostic import MPCCostDebug
 from core.data.dashboard import DashboardData
 from core.data.environment import (
     CsvPathTrajectory,
@@ -37,6 +38,7 @@ __all__ = [
     "EvaluationMetrics",
     "ExperimentResult",
     "LidarConfig",
+    "MPCCostDebug",
     "NodeExecutionResult",
     "Observation",
     "Obstacle",

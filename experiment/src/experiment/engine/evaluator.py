@@ -101,17 +101,15 @@ class EvaluatorEngine(BaseEngine):
         mlflow.set_tag("evaluation_type", cfg.experiment.get("type", "standard"))
 
         # Always resolve hydra_dir correctly to find simulation logs
+        # In Multirun, each job gets its own hydra_dir (e.g., outputs/DATE/TIME/0/, outputs/DATE/TIME/1/, etc.)
         try:
-            hydra_dir = Path(hydra.core.hydra_config.HydraConfig.get().run.dir)
+            hydra_dir = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
         except (ValueError, AttributeError):
             hydra_dir = Path("outputs/latest")
 
-        output_dir_raw = cfg.get("output_dir")
-        if output_dir_raw:
-            output_dir = Path(output_dir_raw)
-        else:
-            output_dir = hydra_dir / "evaluation"
-
+        # Use hydra_dir/evaluation as output_dir for consistency
+        # This ensures each Multirun job has its own evaluation directory
+        output_dir = hydra_dir / "evaluation"
         output_dir.mkdir(parents=True, exist_ok=True)
 
         from experiment.engine.collector import CollectorEngine
@@ -167,6 +165,33 @@ class EvaluatorEngine(BaseEngine):
             logger.info(
                 f"\n{banner}\nEPISODE {i + 1}/{num_episodes}: {result_str}\nCheckpoints: {checkpoint_count}\nGoals: {goal_count}\n{banner}"
             )
+
+            # Save result to JSON for metrics aggregation
+            result_path = episode_dir / "result.json"
+            try:
+                import json
+
+                with open(result_path, "w") as f:
+                    json.dump(
+                        {
+                            "episode_idx": i,
+                            "seed": episode_seed,
+                            "success": res.success,
+                            "reason": res.reason,
+                            "metrics": res.metrics,
+                            "final_state": {
+                                "x": res.final_state.x if res.final_state else None,
+                                "y": res.final_state.y if res.final_state else None,
+                            }
+                            if res.final_state
+                            else None,
+                        },
+                        f,
+                        indent=4,
+                    )
+                logger.debug(f"Saved result to {result_path}")
+            except Exception as e:
+                logger.warning(f"Failed to save result.json for episode {i}: {e}")
 
             # Record artifact if MCAP was generated
             # CollectorEngine enforces a specific path structure: episode_XXXX/simulation.mcap

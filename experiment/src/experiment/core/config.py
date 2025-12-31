@@ -108,6 +108,9 @@ class EnvironmentConfig(BaseModel):
         default_factory=list, description="List of intermediate checkpoints"
     )
     obstacles: ObstaclesConfig = Field(..., description="Obstacle configuration")
+    initial_state_sampling: dict[str, Any] | None = Field(
+        None, description="Initial state sampling configuration (optional)"
+    )
 
 
 class PostProcessConfig(BaseModel):

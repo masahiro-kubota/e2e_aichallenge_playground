@@ -21,12 +21,12 @@ class TestVehicleState:
         """Test conversion to numpy array."""
         state = VehicleState(x=1.0, y=2.0, yaw=0.5, velocity=5.0)
         arr = state.to_array()
-        expected = np.array([1.0, 2.0, 0.5, 5.0])
+        expected = np.array([1.0, 2.0, 0.5, 5.0, 0.0])
         np.testing.assert_array_equal(arr, expected)
 
     def test_from_array(self) -> None:
         """Test creation from numpy array."""
-        arr = np.array([1.0, 2.0, 0.5, 5.0])
+        arr = np.array([1.0, 2.0, 0.5, 5.0, 0.0])
         state = VehicleState.from_array(arr)
         assert state.x == 1.0
         assert state.y == 2.0

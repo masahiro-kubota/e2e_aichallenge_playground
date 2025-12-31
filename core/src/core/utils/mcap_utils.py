@@ -5,16 +5,15 @@ import json
 import logging
 import math
 import pkgutil
+from collections.abc import Generator
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
-from pathlib import Path
-from typing import Any, Generator, Tuple, List, Optional
-from types import SimpleNamespace
-
+from mcap.reader import make_reader
 from pydantic import BaseModel
 from rosbags.highlevel import AnyReader, AnyReaderError
 from rosbags.rosbag2.errors import ReaderError
-from mcap.reader import make_reader
 
 import core.data
 
@@ -26,17 +25,17 @@ _SCHEMA_TO_MODEL_CACHE: dict[str, type[BaseModel]] = {}
 
 def is_json_encoding(encoding: str) -> bool:
     """Check if the encoding is JSON or JSON-schema based."""
-    return encoding in ['json', 'jsonschema'] or 'json' in encoding or encoding == 'json'
+    return encoding in ["json", "jsonschema"] or "json" in encoding or encoding == "json"
 
 
 def msg_to_dict(obj: Any) -> Any:
     """Convert rosbags message object to dictionary."""
-    if hasattr(obj, '__dict__'):
-        return {k: msg_to_dict(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
+    if hasattr(obj, "__dict__"):
+        return {k: msg_to_dict(v) for k, v in obj.__dict__.items() if not k.startswith("_")}
     elif isinstance(obj, list):
         return [msg_to_dict(x) for x in obj]
     elif isinstance(obj, tuple):
-        if hasattr(obj, '_fields'):
+        if hasattr(obj, "_fields"):
             return {k: msg_to_dict(getattr(obj, k)) for k in obj._fields}
         return [msg_to_dict(x) for x in obj]
     else:
@@ -56,8 +55,8 @@ def dict_to_namespace(d: Any) -> Any:
 
 
 def read_messages(
-    mcap_path: str, topics: List[str], as_namespace: bool = True
-) -> Generator[Tuple[str, Any, int], None, None]:
+    mcap_path: str, topics: list[str], as_namespace: bool = True
+) -> Generator[tuple[str, Any, int], None, None]:
     """
     Reads messages from an MCAP file, handling both ROS2 (CDR) and JSON encoding.
 
@@ -79,17 +78,19 @@ def read_messages(
         with AnyReader([path]) as reader:
             # Filter connections
             connections = [x for x in reader.connections if x.topic in topics]
-            
+
             for connection, timestamp, rawdata in reader.messages(connections=connections):
                 try:
                     is_json = False
-                    if hasattr(connection, 'digest'):
-                         if connection.digest == 'json':
-                             is_json = True
-                    
-                    if not is_json and hasattr(connection, 'encoding'):
-                         if is_json_encoding(connection.encoding):
-                             is_json = True
+                    if hasattr(connection, "digest") and connection.digest == "json":
+                        is_json = True
+
+                    if (
+                        not is_json
+                        and hasattr(connection, "encoding")
+                        and is_json_encoding(connection.encoding)
+                    ):
+                        is_json = True
 
                     if is_json:
                         msg = json.loads(rawdata)
@@ -98,17 +99,17 @@ def read_messages(
                     else:
                         msg = reader.deserialize(rawdata, connection.msgtype)
                         # rosbags usually returns objects with dot access already
-                        
+
                     yield connection.topic, msg, timestamp
-                except Exception as e:
+                except Exception:
                     # Log error but continue
                     pass
-                    
+
     except (ReaderError, AnyReaderError):
         use_generic = True
     except Exception:
         use_generic = True
-        
+
     # Fallback to generic MCAP reader
     if use_generic:
         with open(path, "rb") as f:
@@ -122,7 +123,7 @@ def read_messages(
                     else:
                         # Skip unsupported encodings in generic mode
                         continue
-                        
+
                     yield channel.topic, msg, message.log_time
                 except Exception:
                     pass

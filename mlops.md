@@ -134,6 +134,26 @@ uv run experiment-runner -m \
 これにより分散して保存された後も、どのシード（シナリオ）のデータかを容易に識別できます。
 
 
+### ランダム初期状態でのデータ収集
+
+Lanelet内のランダムな位置・姿勢・速度からエピソードを開始することで、様々な状況での走行データを収集できます。
+
+```bash
+# 100エピソードのランダム初期状態データ収集
+uv run experiment-runner -m \
+  experiment=data_collection_random_start \
+  env.obstacles.generation.seed="range(0,100)" \
+  execution.duration_sec=10.0 \
+  split=train
+```
+
+**ランダムサンプリングの仕組み**:
+- centerline上のランダムな点を選択
+- 横方向オフセット (デフォルト±2m) を適用
+- 初期速度 (デフォルト5-15 m/s) と姿勢オフセット (デフォルト±0.2rad) をサンプリング
+- すべてのサンプリング位置がLanelet内にあることを検証
+
+
 ---
 
 ## 2. データセットの分析
@@ -262,7 +282,7 @@ uv run experiment-runner -m \
 
 ```bash
 # シェルスクリプトを使用（推奨）
-./run_evaluation_benchmark.sh outputs/YYYY-MM-DD/HH-MM-SS/checkpoints
+./scripts/run_evaluation_benchmark.sh outputs/YYYY-MM-DD/HH-MM-SS/checkpoints
 ```
 
 または、直接コマンドで実行する場合:

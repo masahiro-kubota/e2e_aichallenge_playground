@@ -37,16 +37,18 @@ nodes:
 
   control:
     type: MPCLateralControllerNode
-    rate_hz: 50.0  # 制御更新レート [Hz] (Increased to 50Hz)
+    rate_hz: 50.0  # 制御更新レート [Hz] (この周期で最適化計算が実行されます)
     priority: 30   # 実行優先度（プランニングの後に実行）
     params:
       vehicle_params: ${vehicle}
-      
+
       # MPC Lateral Control Parameters
+      # Note:
+      # Preview Time (予測時間) = prediction_horizon / rate_hz
+      # rate_hz=50Hz, horizon=50 の場合、1.0秒先まで予測します。
       mpc_lateral:
-        prediction_horizon: 50        # 予測ホライズン [steps] (1.0 seconds at 50Hz)
+        prediction_horizon: 50        # 予測ホライズン [steps]
         control_horizon: 50           # 制御ホライズン [steps] (M=N for Autoware parity)
-        dt: 0.02                      # 離散化時間 [s] (High resolution)
         weight_lateral_error: 40.0    # 横方向誤差の重み (High)
         weight_heading_error: 40.0    # ヨー角誤差の重み (High)
         weight_steering: 0.01          # ステアリング入力の重み (Almost Zero)

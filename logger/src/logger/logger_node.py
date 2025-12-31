@@ -134,6 +134,7 @@ class LoggerNode(Node[LoggerConfig]):
                 "planning_marker": "/planning/marker",
                 "mppi_candidates": "/planning/mppi/candidates",
                 "mppi_optimal": "/planning/mppi/optimal",
+                "steering_status": "/vehicle/status/steering_status",
             }
             topic = topic_map.get(key, f"/{key}")
 
