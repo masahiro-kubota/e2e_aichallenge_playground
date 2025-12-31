@@ -2,17 +2,17 @@
 
 import logging
 import math
+import time
+from collections import deque
 
 import numpy as np
-from collections import deque
-from core.data import ComponentConfig, VehicleParameters, VehicleState
+from core.data import ComponentConfig, MPCCostDebug, VehicleParameters, VehicleState
 from core.data.autoware import (
     AckermannControlCommand,
     AckermannLateralCommand,
     LongitudinalCommand,
     Trajectory,
 )
-from core.data import MPCCostDebug
 from core.data.node_io import NodeIO
 from core.data.ros import ColorRGBA, Marker, MarkerArray, Point
 from core.interfaces.node import Node, NodeExecutionResult
@@ -75,9 +75,7 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
     and a simple PID controller for longitudinal speed control.
     """
 
-    def __init__(
-        self, config: MPCLateralControllerConfig, rate_hz: float, priority: int
-    ) -> None:
+    def __init__(self, config: MPCLateralControllerConfig, rate_hz: float, priority: int) -> None:
         super().__init__("MPCLateralController", rate_hz, config, priority)
 
         # Initialize MPC solver
@@ -106,7 +104,7 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         )
 
         # Steering history for delay modeling
-        delay_steps = int(round(self.config.mpc_lateral.steer_delay_time / self.config.mpc_lateral.dt))
+        delay_steps = round(self.config.mpc_lateral.steer_delay_time / self.config.mpc_lateral.dt)
         self.steering_history = deque([0.0] * max(1, delay_steps), maxlen=max(1, delay_steps))
 
         # PID state for longitudinal control
@@ -170,10 +168,10 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
 
     def _quaternion_to_yaw(self, quat) -> float:
         """Convert quaternion to yaw angle.
-        
+
         Args:
             quat: Quaternion object with x, y, z, w fields
-            
+
         Returns:
             Yaw angle in radians
         """
@@ -181,7 +179,7 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         # yaw = atan2(2*(w*z + x*y), 1 - 2*(y^2 + z^2))
         return math.atan2(
             2.0 * (quat.w * quat.z + quat.x * quat.y),
-            1.0 - 2.0 * (quat.y * quat.y + quat.z * quat.z)
+            1.0 - 2.0 * (quat.y * quat.y + quat.z * quat.z),
         )
 
     def _compute_control(
@@ -200,9 +198,11 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         # Find closest point on trajectory
         closest_idx, min_dist = self._find_closest_point(trajectory, vehicle_state)
 
-        logger.info(f"[MPC] Vehicle: pos=({vehicle_state.x:.2f}, {vehicle_state.y:.2f}), "
-                   f"yaw={math.degrees(vehicle_state.yaw):.1f}°, v={vehicle_state.velocity:.2f}m/s, "
-                   f"steering={math.degrees(vehicle_state.steering):.2f}°")
+        logger.info(
+            f"[MPC] Vehicle: pos=({vehicle_state.x:.2f}, {vehicle_state.y:.2f}), "
+            f"yaw={math.degrees(vehicle_state.yaw):.1f}°, v={vehicle_state.velocity:.2f}m/s, "
+            f"steering={math.degrees(vehicle_state.steering):.2f}°"
+        )
         logger.info(f"[MPC] Closest point: idx={closest_idx}, dist={min_dist:.3f}m")
 
         # Calculate lateral error (signed distance to path relative to path heading)
@@ -214,9 +214,11 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         # Calculate heading error
         heading_error = normalize_angle(vehicle_state.yaw - ref_heading)
 
-        logger.info(f"[MPC] Errors: lateral={lateral_error:.3f}m, "
-                   f"heading={math.degrees(heading_error):.2f}° "
-                   f"(ref_yaw={math.degrees(ref_heading):.1f}°)")
+        logger.info(
+            f"[MPC] Errors: lateral={lateral_error:.3f}m, "
+            f"heading={math.degrees(heading_error):.2f}° "
+            f"(ref_yaw={math.degrees(ref_heading):.1f}°)"
+        )
 
         # Extract reference curvature for prediction horizon
         reference_curvature = self._extract_reference_curvature(trajectory, closest_idx)
@@ -224,7 +226,8 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
 
         # Solve MPC for lateral control
         # Use steering_rate from vehicle_state (now available)
-        steering_angle, predicted_states, predicted_controls, success, costs = self.mpc_solver.solve(
+        start_time = time.perf_counter()
+        steering_angle, predicted_states, _, success, costs = self.mpc_solver.solve(
             lateral_error=lateral_error,
             heading_error=heading_error,
             current_steering=vehicle_state.steering,
@@ -233,9 +236,10 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
             steering_history=list(self.steering_history),
             current_steering_rate=vehicle_state.steering_rate,
         )
+        solve_time_ms = (time.perf_counter() - start_time) * 1000.0
 
         if success:
-            logger.info(f"[MPC] ✅ Optimization success")
+            logger.info("[MPC] ✅ Optimization success")
             # Publish predicted trajectory for debugging
             self._publish_predicted_trajectory(
                 predicted_states, trajectory, closest_idx, current_time
@@ -251,32 +255,39 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
                     total_cost=costs["total_cost"],
                 ),
             )
-            logger.info(f"[MPC] Costs: lat={costs['lateral_error_cost']:.2f}, "
-                        f"head={costs['heading_error_cost']:.2f}, "
-                        f"steer={costs['steering_cost']:.2f}, "
-                        f"rate={costs['steering_rate_cost']:.2f}, "
-                        f"total={costs['total_cost']:.2f}")
+            logger.info(
+                f"[MPC] Costs: lat={costs['lateral_error_cost']:.2f}, "
+                f"head={costs['heading_error_cost']:.2f}, "
+                f"steer={costs['steering_cost']:.2f}, "
+                f"rate={costs['steering_rate_cost']:.2f}, "
+                f"total={costs['total_cost']:.2f}"
+            )
+            logger.info(f"[MPC] ⏱️ Solve time: {solve_time_ms:.2f} ms")
         else:
-            logger.warning("[MPC] ❌ Optimization failed, using current steering")
+            logger.warning(
+                f"[MPC] ❌ Optimization failed, using current steering (Time: {solve_time_ms:.2f} ms)"
+            )
             steering_angle = vehicle_state.steering
 
         # Update steering history with the command we are about to send
         self.steering_history.append(steering_angle)
-        
-        # Note: self.previous_time is shared with PID, so we must not update it 
+
+        # Note: self.previous_time is shared with PID, so we must not update it
         # BEFORE calling _compute_longitudinal_control.
 
         logger.info(f"[MPC] Steering angle: {math.degrees(steering_angle):.3f}°")
-        
+
         # Clamp steering angle to limits
         steering_angle = np.clip(
             steering_angle,
             -self.config.mpc_lateral.max_steering_angle,
             self.config.mpc_lateral.max_steering_angle,
         )
-        
-        logger.info(f"[MPC] Final steering command: {math.degrees(steering_angle):.3f}° "
-                   f"(limits: ±{math.degrees(self.config.mpc_lateral.max_steering_angle):.1f}°)")
+
+        logger.info(
+            f"[MPC] Final steering command: {math.degrees(steering_angle):.3f}° "
+            f"(limits: ±{math.degrees(self.config.mpc_lateral.max_steering_angle):.1f}°)"
+        )
 
         # PID longitudinal control。。。
         current_velocity = vehicle_state.velocity
@@ -285,8 +296,10 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
             target_velocity, current_velocity, current_time
         )
 
-        logger.info(f"[MPC] Longitudinal: target_v={target_velocity:.2f}m/s, accel={acceleration:.2f}m/s²")
-        logger.info(f"[MPC] " + "="*80)
+        logger.info(
+            f"[MPC] Longitudinal: target_v={target_velocity:.2f}m/s, accel={acceleration:.2f}m/s²"
+        )
+        logger.info("[MPC] " + "=" * 80)
 
         return float(steering_angle), float(acceleration)
 
@@ -329,50 +342,54 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         # Lateral error is the perpendicular distance relative to the PATH heading
         # Normal vector to path (Left of path): (-sin(ref), cos(ref))
         # lateral_error = dot(pos_diff, left_normal)
-        lateral_error = - dx * math.sin(ref_heading) + dy * math.cos(ref_heading)
+        lateral_error = -dx * math.sin(ref_heading) + dy * math.cos(ref_heading)
 
         return lateral_error
 
-    def _extract_reference_curvature(
-        self, trajectory: Trajectory, start_idx: int
-    ) -> np.ndarray:
-        """Extract reference path curvature by numerically differentiating interpolated yaws.
-        
-        Since TrajectoryPoint doesn't have a 'curvature' field, we calculate it from 
-        the orientation (yaw) change along the path.
-        """
-        N = self.config.mpc_lateral.prediction_horizon
+    def _extract_reference_curvature(self, trajectory: Trajectory, start_idx: int) -> np.ndarray:
+        """Extract reference path curvature by numerically differentiating interpolated yaws (Vectorized)."""
+        n_horizon = self.config.mpc_lateral.prediction_horizon
         dt = self.config.mpc_lateral.dt
-        v = self.config.mpc_lateral.prediction_velocity
-        
-        curvatures = np.zeros(N)
-        points = trajectory.points
-        
-        # We use a helper to get interpolated yaw at distance 's' from start_idx
-        def get_interpolated_yaw(target_dist: float) -> float:
-            accum_s = 0.0
-            for j in range(start_idx, len(points) - 1):
-                p0 = points[j]
-                p1 = points[j + 1]
-                dx = p1.pose.position.x - p0.pose.position.x
-                dy = p1.pose.position.y - p0.pose.position.y
-                ds = math.sqrt(dx**2 + dy**2)
-                
-                if accum_s + ds >= target_dist:
-                    alpha = (target_dist - accum_s) / ds if ds > 1e-6 else 0.0
-                    yaw0 = self._quaternion_to_yaw(p0.pose.orientation)
-                    yaw1 = self._quaternion_to_yaw(p1.pose.orientation)
-                    return yaw0 + normalize_angle(yaw1 - yaw0) * alpha
-                accum_s += ds
-            return self._quaternion_to_yaw(points[-1].pose.orientation)
+        v = max(self.config.mpc_lateral.prediction_velocity, 0.1)
 
-        tiny_ds = 0.1  # Distance for numerical differentiation
-        for i in range(N):
-            s_i = i * v * dt
-            y_i = get_interpolated_yaw(s_i)
-            y_i_plus = get_interpolated_yaw(s_i + tiny_ds)
-            curvatures[i] = normalize_angle(y_i_plus - y_i) / tiny_ds
-        
+        # 1. Collect points data into arrays for fast access
+        points = trajectory.points
+        n_points = len(points)
+        path_x = np.array([p.pose.position.x for p in points])
+        path_y = np.array([p.pose.position.y for p in points])
+        path_yaw = np.array([self._quaternion_to_yaw(p.pose.orientation) for p in points])
+
+        # Calculate distances along the path (cumulative sum)
+        dx = np.diff(path_x)
+        dy = np.diff(path_y)
+        dists = np.sqrt(dx**2 + dy**2)
+        s_path = np.zeros(n_points)
+        s_path[1:] = np.cumsum(dists)
+
+        # 2. Define target s for prediction horizon
+        # s_target[i] = relative_s + s_start
+        s_start = s_path[min(start_idx, n_points - 1)]
+        s_targets = s_start + np.arange(n_horizon) * v * dt
+
+        # 3. Interpolate yaw at s_targets and (s_targets + tiny_ds)
+        tiny_ds = 0.1
+
+        # Handle wrapping for yaw interpolation: Unwrap before interpolation
+        path_yaw_unwrapped = np.unwrap(path_yaw)
+
+        # Interpolate
+        # We need to clamp s_targets to be within [0, s_path[-1]]
+        # But we assume the path is long enough or we extend the last value
+        y_i = np.interp(s_targets, s_path, path_yaw_unwrapped)
+        y_i_plus = np.interp(s_targets + tiny_ds, s_path, path_yaw_unwrapped)
+
+        # Calculate curvature: (y(s+ds) - y(s)) / ds
+        # Normalize angle just in case, though unwrap handles most
+        curvatures = (y_i_plus - y_i) / tiny_ds
+
+        # Normalize result to be safe (though curvature is a rate, so -pi/pi wrapping applies to the diff)
+        # However, for small steps, simple diff is usually fine on unwrapped data.
+
         return curvatures
 
     def _compute_longitudinal_control(
@@ -432,18 +449,13 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         start_idx: int,
         current_time: float,
     ) -> None:
-        """Publish predicted trajectory as MarkerArray.
-
-        Args:
-            predicted_states: [2, N+1] array of [lateral_error, heading_error]
-            reference_trajectory: Reference trajectory
-            start_idx: Current closest/lookahead index on reference trajectory
-            current_time: Current simulation time
-        """
+        """Publish predicted trajectory as MarkerArray (Vectorized calculation)."""
         if predicted_states is None:
             return
 
         marker_array = MarkerArray()
+
+        # 1. Trajectory Line Strip Marker
         marker = Marker()
         marker.header.frame_id = "map"
         marker.header.stamp = to_ros_time(current_time)
@@ -454,60 +466,83 @@ class MPCLateralControllerNode(Node[MPCLateralControllerConfig]):
         marker.scale.x = 0.2  # Line width
         marker.color = ColorRGBA(r=1.0, g=0.5, b=0.0, a=0.8)  # Orange
 
-        N = predicted_states.shape[1]
+        n_horizon = predicted_states.shape[1]
         dt = self.config.mpc_lateral.dt
-        v = self.config.mpc_lateral.prediction_velocity
-        accumulated_dist = 0.0
-        current_idx = start_idx
+        v = max(self.config.mpc_lateral.prediction_velocity, 0.1)
 
-        for i in range(N):
-            e_y = predicted_states[0, i]
-            target_dist = i * v * dt
+        # Vectorized calculation of global positions
+        # 1. Get reference path data
+        points = reference_trajectory.points
+        n_points = len(points)
+        path_x = np.array([p.pose.position.x for p in points])
+        path_y = np.array([p.pose.position.y for p in points])
+        path_yaw = np.array([self._quaternion_to_yaw(p.pose.orientation) for p in points])
 
-            # Find reference point at target_dist
-            while current_idx < len(reference_trajectory.points) - 1:
-                dx = reference_trajectory.points[current_idx + 1].pose.position.x - reference_trajectory.points[current_idx].pose.position.x
-                dy = reference_trajectory.points[current_idx + 1].pose.position.y - reference_trajectory.points[current_idx].pose.position.y
-                ds = math.sqrt(dx**2 + dy**2)
-                
-                if accumulated_dist + ds >= target_dist:
-                    break
-                
-                accumulated_dist += ds
-                current_idx += 1
+        # 2. Calculate path distance s
+        dx = np.diff(path_x)
+        dy = np.diff(path_y)
+        dists = np.sqrt(dx**2 + dy**2)
+        s_path = np.zeros(n_points)
+        s_path[1:] = np.cumsum(dists)
 
-            ref_point = reference_trajectory.points[current_idx]
-            ref_x = ref_point.pose.position.x
-            ref_y = ref_point.pose.position.y
-            ref_yaw = self._quaternion_to_yaw(ref_point.pose.orientation)
+        # 3. Target s for each prediction step
+        s_start = s_path[min(start_idx, n_points - 1)]
+        s_targets = s_start + np.arange(n_horizon) * v * dt
 
-            # Reconstruct predicted absolute position using the reference yaw
-            # x_pred = x_ref + e_y * (-sin(yaw_ref))
-            # y_pred = y_ref + e_y * (cos(yaw_ref))
-            pred_x = ref_x - e_y * math.sin(ref_yaw)
-            pred_y = ref_y + e_y * math.cos(ref_yaw)
+        # 4. Interpolate reference x, y, yaw at s_targets
+        # Clamp s_targets to valid range
+        s_targets = np.clip(s_targets, 0, s_path[-1])
 
-            marker.points.append(Point(x=pred_x, y=pred_y, z=0.0))
+        ref_x_interp = np.interp(s_targets, s_path, path_x)
+        ref_y_interp = np.interp(s_targets, s_path, path_y)
 
-            # Add text marker for steering angle every 5 steps
-            if i % 5 == 0:
-                text_marker = Marker()
-                text_marker.header = marker.header
-                text_marker.ns = "predicted_steering"
-                text_marker.id = i
-                text_marker.type = 9  # TEXT_VIEW_FACING
-                text_marker.action = 0  # ADD
-                text_marker.pose.position.x = pred_x
-                text_marker.pose.position.y = pred_y
-                text_marker.pose.position.z = 0.5  # Display above the line
-                text_marker.pose.orientation.w = 1.0
-                text_marker.scale.z = 0.3  # Text height
-                text_marker.color = ColorRGBA(r=1.0, g=1.0, b=1.0, a=1.0)  # White
-                
-                # projected_states row 2 is steering angle [rad]
-                steer_rad = predicted_states[2, i]
-                text_marker.text = f"{steer_rad:.3f}"
-                marker_array.markers.append(text_marker)
+        path_yaw_unwrapped = np.unwrap(path_yaw)
+        ref_yaw_interp = np.interp(s_targets, s_path, path_yaw_unwrapped)
+
+        # 5. Transform predicted lateral error to global position
+        # pred_x = ref_x - e_y * sin(ref_yaw)
+        # pred_y = ref_y + e_y * cos(ref_yaw)
+        # e_y = predicted_states[0, :]
+        # Actually solve returned x of shape (4, N+1). Loop in original code was range(N).
+        # We should use N points.
+
+        # Adjust size if needed (e.g. if N vs N+1 mismatch)
+        # predicted_states includes x0 (initial state).
+        # Usually we visualize x1...xN.
+        # Original code used i in range(N) and predicted_states[0, i].
+        # So it visualized x0...x(N-1). Let's stick to that for consistency, or visualize all.
+        # Let's visualize all N+1 points?
+        # Original code: range(N). target_dist = i * v * dt. i=0 is current state.
+
+        e_y_vec = predicted_states[0, :n_horizon]
+        pred_x_vec = ref_x_interp - e_y_vec * np.sin(ref_yaw_interp)
+        pred_y_vec = ref_y_interp + e_y_vec * np.cos(ref_yaw_interp)
+
+        # 6. Populate markers
+        # Converting numpy array to list of Points is still a loop, but lightweight
+        for x, y in zip(pred_x_vec, pred_y_vec):
+            marker.points.append(Point(x=x, y=y, z=0.0))
 
         marker_array.markers.append(marker)
+
+        # 7. Text Markers (every 5 steps)
+        # We can optimize this by reducing calls, but creating Marker objects is inevitable
+        for i in range(0, n_horizon, 5):
+            text_marker = Marker()
+            text_marker.header = marker.header
+            text_marker.ns = "predicted_steering"
+            text_marker.id = i
+            text_marker.type = 9  # TEXT_VIEW_FACING
+            text_marker.action = 0  # ADD
+            text_marker.pose.position.x = pred_x_vec[i]
+            text_marker.pose.position.y = pred_y_vec[i]
+            text_marker.pose.position.z = 0.5
+            text_marker.pose.orientation.w = 1.0
+            text_marker.scale.z = 0.3
+            text_marker.color = ColorRGBA(r=1.0, g=1.0, b=1.0, a=1.0)
+
+            steer_rad = predicted_states[2, i]
+            text_marker.text = f"{steer_rad:.3f}"
+            marker_array.markers.append(text_marker)
+
         self.publish("debug_predicted_trajectory", marker_array)

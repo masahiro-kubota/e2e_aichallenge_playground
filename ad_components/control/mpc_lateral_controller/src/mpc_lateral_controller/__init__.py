@@ -5,5 +5,4 @@ from mpc_lateral_controller.mpc_lateral_controller_node import (
     MPCLateralControllerNode,
 )
 
-__all__ = ["MPCLateralControllerNode", "MPCLateralControllerConfig"]
-
+__all__ = ["MPCLateralControllerConfig", "MPCLateralControllerNode"]
