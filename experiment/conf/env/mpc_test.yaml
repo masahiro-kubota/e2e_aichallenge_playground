@@ -1,0 +1,19 @@
+# Simple test environment for MPC debugging
+# まっすぐな初期状態でのMPCテスト用
+
+defaults:
+  - default
+
+# Override initial state to be aligned with track
+initial_state:
+  x: 89630.067
+  y: 43130.695
+  yaw: 2.2  # Approximately aligned with track heading ~126 degrees
+  velocity: 0.5  # Start slow for easier control
+
+obstacles:
+  generation:
+    enabled: false
+    groups: []
+    seed: 0
+  list: []
