@@ -109,14 +109,3 @@ def test_pure_pursuit_integration(_mock_mlflow_eval, _mock_mlflow_base) -> None:
     assert result.simulation_results[0].success
     assert result.metrics.goal_count == 1
     assert result.metrics.checkpoint_count == 3
-
-
-@pytest.mark.integration
-@patch("experiment.engine.base.mlflow")
-@patch("experiment.engine.evaluator.mlflow")
-def test_mppi_integration(_mock_mlflow_eval, _mock_mlflow_base) -> None:
-    """MPPI エージェントの整合テスト"""
-    result = run_integration_test("mppi")
-    assert result.simulation_results[0].success
-    assert result.metrics.goal_count >= 1
-    assert result.metrics.checkpoint_count >= 1

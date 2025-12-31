@@ -20,11 +20,10 @@ TOPIC_MAPPING = {
 }
 
 # Dynamic topics (prefix based)
-DYNAMIC_TOPIC_PREFIXES = ["/mppi_", "/pure_pursuit_", "/pid_"]
+DYNAMIC_TOPIC_PREFIXES = ["/pure_pursuit_", "/pid_"]
 
 # Blacklisted topics that are too large for the dashboard overview
 BLACKLISTED_TOPICS = {
-    "/mppi_candidates",  # Very large visualization data
     "/sensing/lidar/scan",  # Raw sensor data
 }
 

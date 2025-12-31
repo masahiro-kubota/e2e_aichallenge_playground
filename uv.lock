@@ -21,8 +21,6 @@ members = [
     "lateral-shift-planner",
     "logger",
     "mpc-lateral-controller",
-    "mppi-controller",
-    "mppi-planner",
     "pid-controller",
     "planning-utils",
     "pure-pursuit",
@@ -1230,8 +1228,6 @@ dependencies = [
     { name = "mcap-ros2-support" },
     { name = "mlflow" },
     { name = "mpc-lateral-controller" },
-    { name = "mppi-controller" },
-    { name = "mppi-planner" },
     { name = "numba" },
     { name = "onnxscript" },
     { name = "pid-controller" },
@@ -1283,8 +1279,6 @@ requires-dist = [
     { name = "mcap-ros2-support", specifier = ">=0.5.6" },
     { name = "mlflow", specifier = ">=3.7.0" },
     { name = "mpc-lateral-controller", editable = "ad_components/control/mpc_lateral_controller" },
-    { name = "mppi-controller", editable = "ad_components/control/mppi_controller" },
-    { name = "mppi-planner", editable = "ad_components/planning/mppi_planner" },
     { name = "numba", specifier = ">=0.63.1" },
     { name = "onnxscript", specifier = ">=0.5.7" },
     { name = "pid-controller", editable = "ad_components/control/pid_controller" },
@@ -2568,52 +2562,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e0/47/dd32fa426cc72114383ac549964eecb20ecfd886d1e5ccf5340b55b02f57/mpmath-1.3.0.tar.gz", hash = "sha256:7a28eb2a9774d00c7bc92411c19a89209d5da7c4c9a9e227be8330a23a25b91f", size = 508106 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl", hash = "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c", size = 536198 },
-]
-
-[[package]]
-name = "mppi-controller"
-version = "0.1.0"
-source = { editable = "ad_components/control/mppi_controller" }
-dependencies = [
-    { name = "core" },
-    { name = "numba" },
-    { name = "numpy" },
-    { name = "planning-utils" },
-    { name = "pydantic" },
-    { name = "scipy" },
-    { name = "simulator" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "core", editable = "core" },
-    { name = "numba" },
-    { name = "numpy" },
-    { name = "planning-utils", editable = "ad_components/planning/planning_utils" },
-    { name = "pydantic" },
-    { name = "scipy" },
-    { name = "simulator", editable = "simulator" },
-]
-
-[[package]]
-name = "mppi-planner"
-version = "0.1.0"
-source = { editable = "ad_components/planning/mppi_planner" }
-dependencies = [
-    { name = "core" },
-    { name = "numba" },
-    { name = "numpy" },
-    { name = "pydantic" },
-    { name = "scipy" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "core", editable = "core" },
-    { name = "numba" },
-    { name = "numpy" },
-    { name = "pydantic" },
-    { name = "scipy" },
 ]
 
 [[package]]
