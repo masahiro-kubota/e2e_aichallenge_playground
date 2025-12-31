@@ -40,6 +40,8 @@ dependencies = [
     "scipy>=1.10.0",
     "plotly>=5.0.0",
     "rosbags>=0.9.15",
+    "cvxpy>=1.4.0",
+    "mpc-lateral-controller",
 ]
 
 [tool.uv]
@@ -63,6 +65,7 @@ simulator = { workspace = true }
 "supervisor" = { workspace = true }
 "logger" = { workspace = true }
 "lateral-shift-planner" = { workspace = true }
+"mpc-lateral-controller" = { workspace = true }
 
 [tool.uv.workspace]
 members = [
@@ -84,6 +87,7 @@ members = [
     "supervisor",
     "logger",
     "ad_components/perception/ideal_sensor",
+    "ad_components/control/mpc_lateral_controller",
 ]
 
 [tool.ruff]
