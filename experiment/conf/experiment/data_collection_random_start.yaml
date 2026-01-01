@@ -1,25 +1,33 @@
 # @package _global_
 
 defaults:
-  - data_collection_parallel
+  - data_collection
   - _self_
 
-# Override execution for short episodes
-execution:
-  num_episodes: 1  # Multirunで各シードを実行するため1固定
-  duration_sec: 1.0  # 動作確認のため1秒に設定
+experiment:
+  name: data_collection_random_start
+  description: Data collection with random initial states from centerline (±45deg yaw)
 
-# Enable random initial state sampling (env下の値を直接上書き)
+# Override execution for test episodes
+execution:
+  duration_sec: 6.0
+
+# Enable random initial state sampling (env in data_collection is minimal, so we add this)
 env:
   initial_state_sampling:
     enabled: true
     position_mode: track_random
     lateral_offset_range: [-2.0, 2.0]
-    yaw_offset_range: [-0.785, 0.785]  # ±45度
-    velocity_range: [5.0, 15.0]
+    yaw_offset_range: [-0.785, 0.785]  # ±45 deg
+    velocity_range: [10.0, 10.0]
     max_retries: 10
+    seed: null  # Placeholder for Hydra Sweeper
+  obstacles:
+    generation:
+      enabled: false
 
-experiment:
-  name: data_collection_random_start
-  type: data_collection
-  description: Data collection with random initial states from centerline (±45deg yaw)
+hydra:
+  sweeper:
+    params:
+      # Use dynamic range based on inherited total_episodes (400) and local num_jobs (4)
+      env.initial_state_sampling.seed: ${seed_range:${execution.base_seed},0,${execution.total_episodes},${execution.num_episodes}}

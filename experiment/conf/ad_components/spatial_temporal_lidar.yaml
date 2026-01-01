@@ -1,0 +1,24 @@
+# Spatial Temporal LiDAR Agent Configuration
+
+model_path: "" # To be provided at runtime via CLI or override
+
+nodes:
+  sensor:
+    type: "ideal_sensor.sensor_node.IdealSensorNode"
+    rate_hz: 50.0
+    priority: 10
+    params:
+      vehicle_params: ${vehicle}
+      vehicle_color: ${visualization.colors.vehicle}
+      
+  spatial_temporal_lidar_net:
+    type: "SpatialTemporalLidarNetNode"
+    rate_hz: 50.0
+    priority: 20
+    params:
+      model_path: ${ad_components.model_path}
+      num_frames: 20
+      max_range: 30.0
+      target_velocity: 10.0
+      device: "cuda" # Use GPU for inference if available
+      vehicle_params: ${vehicle}

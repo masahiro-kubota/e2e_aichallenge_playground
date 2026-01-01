@@ -30,7 +30,8 @@ def main():
         try:
             with open(result_file) as f:
                 data = json.load(f)
-                if data.get("success", False):
+                # Accept if success=True OR if reason is empty (timeout/duration reached without failure)
+                if data.get("success", False) or data.get("reason", "") == "":
                     # Found a successful episode
                     # The "raw_data" directory is usually the parent of result.json
                     raw_data_dir = result_file.parent

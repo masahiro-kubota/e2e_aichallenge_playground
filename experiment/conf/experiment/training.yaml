@@ -16,8 +16,11 @@ val_data: "outputs/latest/processed_data"
 training:
   batch_size: 64
   learning_rate: 5e-5
-  num_epochs: 20
-  device: "cpu"
+  num_epochs: 50
+  dataloader:
+    num_workers: 4
+    pin_memory: true
+    persistent_workers: true
 
 model:
   input_width: 1080

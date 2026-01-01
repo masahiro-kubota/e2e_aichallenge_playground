@@ -3,6 +3,7 @@
 
 defaults:
   - base
+  - override /hydra/launcher: joblib
   - _self_
 
 experiment:
@@ -12,13 +13,33 @@ experiment:
 
 # Disable supervisor features for data collection
 
-
 # Override mcap output directory for raw data collection
 postprocess:
   mcap:
     output_dir: ${hydra:runtime.output_dir}/raw_data
   dashboard:
     enabled: false
+  foxglove:
+    auto_open: false
 
 execution:
-  num_episodes: 100
+  # 合計シミュレーション数 = num_episodes * num_jobs
+  total_episodes: 400
+  # 並列実行数（CPUコア数に応じて設定推奨）
+  num_jobs: 24
+  # 1ジョブあたりのエピソード数（自動計算）
+  # ⚠️ 注意: div_ceil（切り上げ）のため、実際のエピソード数は total_episodes より多くなることがあります。
+  #    例: total_episodes=40, num_jobs=24 → num_episodes=2 → 実際は 24*2=48 エピソード
+  #    正確に total_episodes を実行したい場合は、num_jobs を total_episodes の約数に設定してください。
+  num_episodes: ${div_ceil:${execution.total_episodes},${execution.num_jobs}}
+  enable_progress_bar: false
+  base_seed: 0
+
+
+# Link obstacle seed to initial state seed (Offset 100)
+# This ensures 1-to-1 mapping and avoids Cartesian product in sweeps
+env:
+  obstacles:
+    generation:
+      seed: ${add_int:${env.initial_state_sampling.seed},100}
+

@@ -22,6 +22,9 @@ class ExecutionConfig(BaseModel):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         "INFO", description="Logging level"
     )
+    num_jobs: int | None = Field(None, gt=0, description="Total number of jobs (sweeps)")
+    total_episodes: int | None = Field(None, gt=0, description="Total number of episodes across all jobs")
+    base_seed: int = Field(0, ge=0, description="Base random seed for experiment")
 
 
 class ObstaclePlacement(BaseModel):
@@ -135,6 +138,16 @@ class ExperimentMetaConfig(BaseModel):
     description: str
 
 
+class DataLoaderConfig(BaseModel):
+    """Configuration for data loading."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    num_workers: int = Field(default=4, ge=0)
+    pin_memory: bool = Field(default=True)
+    persistent_workers: bool = Field(default=True)
+
+
 class TrainingConfig(BaseModel):
     """Configuration for model training."""
 
@@ -143,8 +156,8 @@ class TrainingConfig(BaseModel):
     batch_size: int = Field(..., gt=0)
     learning_rate: float = Field(..., gt=0)
     num_epochs: int = Field(..., gt=0)
-    device: str = Field(...)
     pretrained_model_path: str | None = None
+    dataloader: DataLoaderConfig | None = None
 
 
 class ModelConfig(BaseModel):
@@ -199,5 +212,6 @@ class ExperimentConfig(BaseModel):
     val_data: str | None = None
     input_dir: str | None = None
     output_dir: str | None = None
+    include_failed_episodes: bool = Field(False, description="Include failed episodes in extraction")
 
     ad_components: dict[str, Any] | None = None

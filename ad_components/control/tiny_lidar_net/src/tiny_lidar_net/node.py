@@ -30,6 +30,8 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
 
         self.logger = logging.getLogger(__name__)
 
+        self.target_velocity = config.target_velocity
+
         # Initialize core inference engine
         try:
             self.core = TinyLidarNetCore(
@@ -37,13 +39,13 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
                 output_dim=config.output_dim,
                 architecture=config.architecture,
                 ckpt_path=config.model_path,
-                acceleration=config.fixed_acceleration,
-                control_mode=config.control_mode,
+                acceleration=0.0,  # Unused in new logic
+                control_mode="fixed",  # We only use steering from core
                 max_range=config.max_range,
             )
             self.logger.info(
                 f"TinyLidarNetCore initialized. Architecture: {config.architecture}, "
-                f"MaxRange: {config.max_range}"
+                f"MaxRange: {config.max_range}, TargetVelocity: {self.target_velocity} m/s"
             )
         except Exception as e:
             self.logger.error(f"Failed to initialize TinyLidarNetCore: {e}")
@@ -56,11 +58,11 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
             NodeIO specification
         """
         from core.data import VehicleState
-        from core.data.autoware import Trajectory
+        from core.data.autoware import AckermannControlCommand
 
         return NodeIO(
             inputs={"perception_lidar_scan": LaserScan, "vehicle_state": VehicleState},
-            outputs={"trajectory": Trajectory},
+            outputs={"control_cmd": AckermannControlCommand},
         )
 
     def on_run(self, _current_time: float) -> NodeExecutionResult:
@@ -79,34 +81,34 @@ class TinyLidarNetNode(Node[TinyLidarNetConfig]):
         # Process via Core Logic (returns accel, steer but we only use steer)
         _, steer = self.core.process(ranges)
 
-        # Create trajectory with steering-based lookahead point and fixed target velocity
-        from core.data.autoware import Trajectory, TrajectoryPoint
-        from core.data.ros import Point, Pose, Quaternion
+        # Velocity Control (Simple P-Control)
+        current_velocity = vehicle_state.velocity
+        velocity_error = self.target_velocity - current_velocity
+        kp_velocity = 1.0  # Simple P gain
+        acceleration = kp_velocity * velocity_error
+        acceleration = max(-3.0, min(3.0, acceleration))  # Clip acceleration
 
-        # Calculate lookahead point based on steering angle
-        # Using simple kinematic model: lookahead distance = 2.0m
-        lookahead_distance = 2.0
-        target_velocity = 10.0  # Fixed target velocity [m/s]
-
-        # Calculate target point position
-        # For small angles: x ≈ lookahead_distance, y ≈ lookahead_distance * tan(steer)
-        target_x = vehicle_state.x + lookahead_distance * np.cos(vehicle_state.yaw + steer)
-        target_y = vehicle_state.y + lookahead_distance * np.sin(vehicle_state.yaw + steer)
-
-        # Create trajectory with single point
-        trajectory_point = TrajectoryPoint(
-            pose=Pose(
-                position=Point(x=target_x, y=target_y, z=0.0),
-                orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0),
-            ),
-            longitudinal_velocity_mps=target_velocity,
-            lateral_velocity_mps=0.0,
-            acceleration_mps2=0.0,
-            heading_rate_rps=0.0,
-            front_wheel_angle_rad=steer,
-            rear_wheel_angle_rad=0.0,
+        # Output AckermannControlCommand
+        from core.data.autoware import (
+            AckermannControlCommand,
+            AckermannLateralCommand,
+            LongitudinalCommand,
         )
+        from core.utils.ros_message_builder import to_ros_time
 
-        self.publish("trajectory", Trajectory(points=[trajectory_point]))
+        self.publish(
+            "control_cmd",
+            AckermannControlCommand(
+                stamp=to_ros_time(_current_time),
+                lateral=AckermannLateralCommand(
+                    stamp=to_ros_time(_current_time), steering_tire_angle=steer
+                ),
+                longitudinal=LongitudinalCommand(
+                    stamp=to_ros_time(_current_time),
+                    acceleration=acceleration,
+                    speed=self.target_velocity,
+                ),
+            ),
+        )
 
         return NodeExecutionResult.SUCCESS

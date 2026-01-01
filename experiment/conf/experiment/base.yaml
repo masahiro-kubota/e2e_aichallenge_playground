@@ -8,6 +8,7 @@ defaults:
 # Default execution settings (デフォルト実行設定)
 execution:
   num_episodes: 1       # 実行エピソード数 [回]
+  num_jobs: 1
   clock_rate_hz: 100.0  # シミュレーションクロックレート（物理演算周期） [Hz]
   duration_sec: 200.0   # 1エピソードの最大実行時間 [s]
   # Clock type for simulation timing control (時間管理のタイプ)

@@ -61,8 +61,25 @@ class TrainerEngine(BaseEngine):
         train_dataset = ScanControlDataset(train_dir, stats=stats)
         val_dataset = ScanControlDataset(val_dir, stats=stats)
 
-        _train_loader = DataLoader(train_dataset, batch_size=cfg.training.batch_size, shuffle=True)
-        _val_loader = DataLoader(val_dataset, batch_size=cfg.training.batch_size)
+        num_workers = cfg.training.dataloader.get("num_workers", 4)
+        pin_memory = cfg.training.dataloader.get("pin_memory", True)
+        persistent_workers = cfg.training.dataloader.get("persistent_workers", True)
+
+        _train_loader = DataLoader(
+            train_dataset,
+            batch_size=cfg.training.batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            persistent_workers=persistent_workers if num_workers > 0 else False,
+        )
+        _val_loader = DataLoader(
+            val_dataset,
+            batch_size=cfg.training.batch_size,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            persistent_workers=persistent_workers if num_workers > 0 else False,
+        )
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logger.info(f"Config keys available: {list(cfg.keys())}")

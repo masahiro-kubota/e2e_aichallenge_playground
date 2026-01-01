@@ -81,6 +81,7 @@ members = [
     "ad_components/control/pid_controller",
     "ad_components/control/pure_pursuit_controller",
     "ad_components/control/tiny_lidar_net",
+    "ad_components/control/spatial_temporal_lidar_net",
     "simulator",
     "experiment",
     "experiment/training",

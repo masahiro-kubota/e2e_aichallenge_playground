@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Run experiment from Hydra configuration."""
 
+import math # Added
+
 from pathlib import Path
 
 import hydra
@@ -8,6 +10,42 @@ from dotenv import load_dotenv
 from omegaconf import DictConfig, OmegaConf
 
 from experiment.core.orchestrator import ExperimentOrchestrator
+
+
+def div_int_resolver(a: int, b: int) -> int:
+    """Integer division resolver."""
+    return a // b
+
+def div_ceil_resolver(a: int, b: int) -> int:
+    """Ceiling division resolver."""
+    return math.ceil(a / b)
+
+def add_int_resolver(a: int, b: int) -> int:
+    """Addition resolver."""
+    return a + b
+
+def seed_range_resolver(base: int, offset: int, total_episodes: int, step: int) -> str:
+    """Resolve seed range dynamically.
+    
+    Args:
+        base: Base seed value (from execution.base_seed)
+        offset: Offset for this specific component (e.g. 100 for obstacles)
+        total_episodes: Total number of episodes across all jobs
+        step: Step size (episodes per job)
+    
+    Returns:
+        String format for Hydra range: 'range(start, end, step)'
+    """
+    start = base + offset
+    end = start + total_episodes
+    return f"range({start},{end},{step})"
+
+# Register custom resolvers
+OmegaConf.register_new_resolver("div_int", div_int_resolver, replace=True)
+OmegaConf.register_new_resolver("div_ceil", div_ceil_resolver, replace=True)
+OmegaConf.register_new_resolver("add_int", add_int_resolver, replace=True)
+OmegaConf.register_new_resolver("seed_range", seed_range_resolver, replace=True)
+
 
 
 @hydra.main(
