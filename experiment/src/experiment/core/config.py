@@ -212,6 +212,8 @@ class ExperimentConfig(BaseModel):
     val_data: str | None = None
     input_dir: str | None = None
     output_dir: str | None = None
-    include_failed_episodes: bool = Field(False, description="Include failed episodes in extraction")
+    exclude_failure_reasons: list[str] | None = Field(
+        None, description="Failure reasons to exclude (None=exclude all failures, []=include all)"
+    )
 
     ad_components: dict[str, Any] | None = None

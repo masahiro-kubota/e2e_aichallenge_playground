@@ -20,9 +20,12 @@ normalization:
   enabled: true
   method: "standard" # standard (mean/std) or minmax
 
-include_failed_episodes: true
-# TODO: Add configuration to filter episodes by failure reason (e.g., ignore 'off_track' but keep 'collision', or vice versa)
-# filter_reasons: ["off_track", "collision"]
+# 除外する失敗理由のリスト
+# - null: 失敗エピソード全除外
+# - []: 全失敗を含む
+# - ["off_track"]: off_trackのみ除外し、collisionは含む
+# 有効な値: off_track, collision, timeout, unknown
+exclude_failure_reasons: []
 
 # Postprocessing (inherited from base.yaml, can override)
 postprocess:

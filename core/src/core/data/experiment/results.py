@@ -2,11 +2,30 @@
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
 from core.data.experiment.config import ResolvedExperimentConfig
 from core.data.simulator.result import SimulationResult
+
+
+class TerminationReason(str, Enum):
+    """シミュレーション終了理由.
+    
+    Values:
+        GOAL_REACHED: ゴール到達（成功）
+        OFF_TRACK: コース外に出た
+        COLLISION: 障害物に衝突
+        TIMEOUT: 時間切れ
+        UNKNOWN: 不明/その他
+    """
+
+    GOAL_REACHED = "goal_reached"
+    OFF_TRACK = "off_track"
+    COLLISION = "collision"
+    TIMEOUT = "timeout"
+    UNKNOWN = "unknown"
 
 
 @dataclass

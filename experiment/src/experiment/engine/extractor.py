@@ -36,15 +36,31 @@ class ExtractorEngine(BaseEngine):
         if "experiment" in cfg:
             logger.info(f"Experiment keys: {list(cfg.experiment.keys())}")
 
-        include_failed = cfg.get("include_failed_episodes", False)
-        # Fallback to experiment.include_failed_episodes if not at root
-        if not include_failed and "experiment" in cfg:
-            include_failed = cfg.experiment.get("include_failed_episodes", False)
+        # Get exclude_failure_reasons config
+        exclude_reasons = cfg.get("exclude_failure_reasons", None)
+        # Fallback to experiment.exclude_failure_reasons if not at root
+        if exclude_reasons is None and "experiment" in cfg:
+            exclude_reasons = cfg.experiment.get("exclude_failure_reasons", None)
 
-        if include_failed:
-            logger.info(f"Including failed episodes (include_failed_episodes={include_failed})")
+        # Backward compatibility: handle deprecated include_failed_episodes
+        include_failed_legacy = cfg.get("include_failed_episodes", None)
+        if include_failed_legacy is None and "experiment" in cfg:
+            include_failed_legacy = cfg.experiment.get("include_failed_episodes", None)
+        if include_failed_legacy is not None:
+            logger.warning(
+                "include_failed_episodes is deprecated. Use exclude_failure_reasons instead. "
+                "Treating as exclude_failure_reasons=[] (include all failures)"
+            )
+            if include_failed_legacy and exclude_reasons is None:
+                exclude_reasons = []  # include all failures
+
+        # Log filtering behavior
+        if exclude_reasons is None:
+            logger.info("Excluding all failed episodes (exclude_failure_reasons=null)")
+        elif len(exclude_reasons) == 0:
+            logger.info("Including all failed episodes (exclude_failure_reasons=[])")
         else:
-            logger.info(f"Skipping failed episodes (include_failed_episodes={include_failed})")
+            logger.info(f"Excluding episodes with reasons: {exclude_reasons}")
 
         logger.info(f"Extracting data from {input_dir} to {output_dir}")
 
@@ -68,13 +84,27 @@ class ExtractorEngine(BaseEngine):
                 try:
                     with open(result_json_path) as f:
                         result_data = json.load(f)
-                    if not result_data.get("success", False) and not include_failed:
-                        logger.info(f"Skipping failed episode: {mcap_file.parent}")
-                        continue
+
+                    if not result_data.get("success", False):
+                        # Failed episode - check if we should skip it
+                        if exclude_reasons is None:
+                            # Exclude all failures
+                            logger.info(f"Skipping failed episode: {mcap_file.parent}")
+                            continue
+
+                        failure_reason = result_data.get("reason", "")
+                        if failure_reason in exclude_reasons:
+                            # This reason is in the exclude list
+                            logger.info(
+                                f"Skipping episode due to excluded reason "
+                                f"'{failure_reason}': {mcap_file.parent}"
+                            )
+                            continue
+                        # Else: include this failed episode
                 except Exception as e:
                     logger.warning(f"Failed to read result.json at {result_json_path}: {e}")
-                    # If include_failed is True, we proceed even if result.json is unreadable
-                    if not include_failed:
+                    # If we can't read result.json, skip it unless we're including all
+                    if exclude_reasons is None:
                         continue
 
             result = self._extract_from_single_mcap(mcap_file)

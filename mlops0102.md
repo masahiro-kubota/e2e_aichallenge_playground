@@ -49,23 +49,27 @@ MCAPファイルからLiDARデータと操作量（ステアリング、アク�
 **スクリプト:** `scripts/prepare_fine_tuning_data_v3.py` (または同等の処理)
 
 ```bash
-# Trainデータの処理
+# Trainデータの処理 (timeoutのみを含む = off_track, collisionを除外)
 uv run experiment-runner \
   experiment=extraction \
   input_dir=outputs/YYYY-MM-DD/HH-MM-SS/data_collection_train_v7 \
-  output_dir=data/processed/train_v7
+  output_dir=data/processed/train_v7 \
+  exclude_failure_reasons=[off_track,collision,unknown]
 
 # Valデータの処理
 uv run experiment-runner \
   experiment=extraction \
   input_dir=outputs/YYYY-MM-DD/HH-MM-SS/data_collection_val_v7 \
-  output_dir=data/processed/val_v7
+  output_dir=data/processed/val_v7 \
+  exclude_failure_reasons=[off_track,collision,unknown]
 ```
 
 - **input_dir**: データ収集ステップの出力ディレクトリ (`outputs/日付/時刻/...`)
 - **output_dir**: 加工済みデータの保存先
-- **include_failed_episodes**: 失敗（off_track等）データも含める場合は `true`
-※スクリプト内のパスは適宜調整が必要な場合があります。
+- **exclude_failure_reasons**: 除外する失敗理由のリスト
+  - `null` (未定義): 失敗エピソード全除外
+  - `[]` (空リスト): 全失敗を含む
+  - `["off_track"]`: off_trackのみ除外、collisionは含む
 
 - **出力**: `scans.npy` (入力), `steers.npy`, `accelerations.npy` (正解ラベル)
 
