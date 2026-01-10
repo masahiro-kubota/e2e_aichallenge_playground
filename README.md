@@ -31,6 +31,9 @@ uv run experiment-runner
 # パラメータを上書き
 uv run experiment-runner execution.duration_sec=10.0
 
+# 特定のseedで障害物を設定
+uv run experiment-runner env=randomized env.obstacles.generation.seed=123
+
 # ADコンポーネント構成を切り替え
 # Pure Pursuit (一体型: Planning + Control統合)
 uv run experiment-runner ad_components=pure_pursuit
