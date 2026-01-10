@@ -26,25 +26,36 @@
 ### Proposed Method: MLOps Pipeline & Random Start
 #### 1. MLOps Pipeline
 - **Collection**: `joblib`による並列データ収集（CPUコアフル稼働）。
+  <!-- QUESTION: 並列化ライブラリにjoblibを選んだ理由は？multiprocessingやRayとの比較は？ -->
+  <!-- QUESTION: データはローカルディスクに保存？それともクラウド？容量はどのくらいになりましたか？ -->
 - **Extraction**: 成功エピソードのみを抽出・加工。失敗データは学習に使わない（Noisy Data Filtering）。
+  <!-- QUESTION: 「成功」の定義は厳密には？完走率100%？それとも途中まででもOK？ -->
 - **Training**: PyTorch Lightning + WandB/MLflow管理。
+  <!-- QUESTION: バッチサイズや学習率は？Optimizerは何を使いましたか？ -->
+  <!-- QUESTION: 学習にかかった時間は？GPUは何枚使用？ -->
 - **Evaluation & Visualization**: 結果をJSONに集約し、Foxglove (MCAP) で可視化。
 
 #### 2. Random Start Strategy
 - コース上のランダムな位置・姿勢・速度からスタートさせるデータ収集手法。
+  <!-- QUESTION: ランダムの分布はどう決めましたか？一様分布？コース幅いっぱい使う？ -->
+  <!-- QUESTION: 初期速度もランダムですか？0スタートだけではない？ -->
 - 理想的な走行ラインだけでなく、「少し逸脱した状態からの復帰」を網羅的に学習させる（擬似的なDAgger効果）。
 
 ### Experiment Setup
 - **環境**: Track Forward (Obstacleなし版)。
 - **モデル**: Tiny Lidar Net (1D CNN)。 <!-- QUESTION: なぜ2D CNNやPointNetではなく1D CNNなのか？軽量化のため？ -->
+  <!-- QUESTION: 入力データ形式は？LiDARのRange値？点群座標？その次元数は？ -->
+  <!-- QUESTION: 出力はステアリングのみ？アクセルも？ -->
 - **教師**: Pure Pursuit。 <!-- QUESTION: 完璧ではない教師（Pure Pursuit）を選んだ理由は？（実装が楽だから？これでも十分だから？） -->
+  <!-- QUESTION: Pure PursuitのLookahead Distanceはどう調整しましたか？ -->
 - **Dataset**:
-    - Train Episodes: 8000
+    - Train Episodes: 8000 <!-- QUESTION: この数はどうやって決めましたか？Scaling Law的な実験はしましたか？ -->
     - Val Episodes: 2000
 
 ### Metrics (評価指標)
 - **完走率 (Success Rate)**: 全エピソード中、ゴールライン（または一定距離）を通過した割合。
 - **Course Deviation**: センターラインからの平均逸脱距離。
+  <!-- QUESTION: 逸脱距離はどうやって計算していますか？Lanelet2マップとの照合？ -->
 
 ## 3. 前提環境 (Prerequisites)
 - **OS/Hardware**: Vol.1と同様。

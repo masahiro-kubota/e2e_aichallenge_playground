@@ -310,7 +310,6 @@ class CollectorEngine(BaseEngine):
         self, cfg: DictConfig, sim_node: Any, rng: np.random.Generator
     ) -> None:
         """Sample and update the initial state of the simulation."""
-        from simulator.map import LaneletMap
 
         from experiment.engine.initial_state_sampler import InitialStateSampler
 

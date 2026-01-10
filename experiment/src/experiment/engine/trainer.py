@@ -107,7 +107,7 @@ class TrainerEngine(BaseEngine):
             hydra_dir = Path(hydra.core.hydra_config.HydraConfig.get().run.dir)
         except (ValueError, AttributeError):
             hydra_dir = Path("outputs/latest")
-        
+
         output_dir = hydra_dir / "checkpoints"
         output_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"Checkpoints will be saved to {output_dir}")
@@ -117,9 +117,16 @@ class TrainerEngine(BaseEngine):
         logger.info(f"Starting training for {cfg.training.num_epochs} epochs on {device}")
 
         import psutil
+
         process = psutil.Process()
 
-        from torch.profiler import profile, record_function, ProfilerActivity, schedule, tensorboard_trace_handler
+        from torch.profiler import (
+            ProfilerActivity,
+            profile,
+            record_function,
+            schedule,
+            tensorboard_trace_handler,
+        )
 
         # Profiler output setup
         prof_dir = hydra_dir / "profiler"
@@ -128,50 +135,51 @@ class TrainerEngine(BaseEngine):
 
         # Define profiler schedule: wait 1, warmup 1, active 3, repeat 1
         # This will profile steps 2,3,4.
-        my_schedule = schedule(wait=1, warmup=1, active=3, repeat=1) 
+        my_schedule = schedule(wait=1, warmup=1, active=3, repeat=1)
 
         for epoch in range(cfg.training.num_epochs):
             model.train()
             train_loss = 0.0
-            
+
             # Log epoch start
             logger.info(f"Starting Epoch {epoch + 1}/{cfg.training.num_epochs}")
-            
+
             with profile(
                 activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
                 schedule=my_schedule,
                 on_trace_ready=tensorboard_trace_handler(str(prof_dir)),
                 record_shapes=True,
                 profile_memory=True,
-                with_stack=True
+                with_stack=True,
             ) as prof:
                 for batch_idx, (scans, targets) in enumerate(_train_loader):
-                    prof.step() # Signal step start
-                    
+                    prof.step()  # Signal step start
+
                     # Log progress every 100 batches
                     if batch_idx % 100 == 0:
                         mem_info = process.memory_info()
-                        mem_gb = mem_info.rss / (1024 ** 3)
-                        logger.info(f"[Epoch {epoch+1}] Batch {batch_idx}/{len(_train_loader)} processing... (RAM: {mem_gb:.2f} GB)")
+                        mem_gb = mem_info.rss / (1024**3)
+                        logger.info(
+                            f"[Epoch {epoch + 1}] Batch {batch_idx}/{len(_train_loader)} processing... (RAM: {mem_gb:.2f} GB)"
+                        )
 
                     with record_function("data_transfer"):
-                         scans, targets = scans.to(device), targets.to(device)
+                        scans, targets = scans.to(device), targets.to(device)
 
                     _optimizer.zero_grad()
-                    
+
                     with record_function("model_forward"):
                         # model expects (batch, 1, input_dim)
                         outputs = model(scans.unsqueeze(1))
-                    
+
                     with record_function("loss_calc"):
                         loss = _criterion(outputs, targets)
-                    
+
                     with record_function("backward_step"):
                         loss.backward()
                         _optimizer.step()
 
                     train_loss += loss.item()
-                    
 
             avg_train_loss = train_loss / len(_train_loader) if len(_train_loader) > 0 else 0.0
 
@@ -208,8 +216,10 @@ class TrainerEngine(BaseEngine):
             # 2. Save best model (if val loss improved)
             if avg_val_loss < best_val_loss:
                 best_val_loss = avg_val_loss
-                logger.info(f"Validation Loss Improved! Saving best model... (Loss: {best_val_loss:.6f})")
-                
+                logger.info(
+                    f"Validation Loss Improved! Saving best model... (Loss: {best_val_loss:.6f})"
+                )
+
                 # Save PyTorch weights
                 model_path = output_dir / "best_model.pth"
                 torch.save(model.state_dict(), model_path)
@@ -228,7 +238,7 @@ class TrainerEngine(BaseEngine):
                 # dummy_input = torch.randn(1, 1, cfg.model.input_width).to(device)
                 # torch.onnx.export(model, dummy_input, onnx_path)
                 logger.info("Skipping ONNX export to prevent crash.")
-        
+
         logger.info(f"Training completed. Best Val Loss: {best_val_loss:.6f}")
         logger.info(f"Models saved to {output_dir}")
 

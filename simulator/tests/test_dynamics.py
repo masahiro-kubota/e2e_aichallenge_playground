@@ -36,7 +36,7 @@ class TestUpdateBicycleModel:
             accel_gain=1.0,
             accel_offset=0.0,
             drag_coefficient=0.0,
-            cornering_drag_coefficient=0.0
+            cornering_drag_coefficient=0.0,
         )
 
     def test_straight_line_motion(self, default_params: VehicleParameters) -> None:
@@ -367,7 +367,7 @@ class TestGetBicycleModelPolygon:
             accel_gain=1.0,
             accel_offset=0.0,
             drag_coefficient=0.0,
-            cornering_drag_coefficient=0.0
+            cornering_drag_coefficient=0.0,
         )
 
         polygon = get_bicycle_model_polygon(state, params)
@@ -403,7 +403,7 @@ class TestGetBicycleModelPolygon:
             accel_gain=1.0,
             accel_offset=0.0,
             drag_coefficient=0.0,
-            cornering_drag_coefficient=0.0
+            cornering_drag_coefficient=0.0,
         )
 
         polygon = get_bicycle_model_polygon(state, params)

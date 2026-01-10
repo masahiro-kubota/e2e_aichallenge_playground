@@ -1,6 +1,4 @@
-
 from core.utils.mcap_utils import read_messages
-import sys
 
 mcap_path = "scripts/system_identification/data/rosbag2_autoware_0.mcap"
 topics_to_check = [
@@ -8,7 +6,7 @@ topics_to_check = [
     "/vehicle/status/steering_status",
     "/localization/kinematic_state",
     "/sensing/gnss/pose",
-    "/sensing/gnss/pose_with_covariance"
+    "/sensing/gnss/pose_with_covariance",
 ]
 
 print(f"Checking topics in {mcap_path}...")
@@ -31,12 +29,13 @@ for t, msg in sample_msgs.items():
     if hasattr(msg, "__dict__"):
         print(f"  Attributes: {list(msg.__dict__.keys())}")
         # Try to drill down a bit
-        if t == "/sensing/gnss/pose":
-             if hasattr(msg, "pose"):
-                 print(f"  msg.pose type: {type(msg.pose)}")
-                 if hasattr(msg.pose, "pose"):
-                      print(f"  msg.pose.pose type: {type(msg.pose.pose)}")
-                      if hasattr(msg.pose.pose, "position"):
-                           print(f"  msg.pose.pose.position.z: {getattr(msg.pose.pose.position, 'z', 'N/A')}")
-                 elif hasattr(msg.pose, "position"):
-                      print(f"  msg.pose.position.z: {getattr(msg.pose.position, 'z', 'N/A')}")
+        if t == "/sensing/gnss/pose" and hasattr(msg, "pose"):
+            print(f"  msg.pose type: {type(msg.pose)}")
+            if hasattr(msg.pose, "pose"):
+                print(f"  msg.pose.pose type: {type(msg.pose.pose)}")
+                if hasattr(msg.pose.pose, "position"):
+                    print(
+                        f"  msg.pose.pose.position.z: {getattr(msg.pose.pose.position, 'z', 'N/A')}"
+                    )
+            elif hasattr(msg.pose, "position"):
+                print(f"  msg.pose.position.z: {getattr(msg.pose.position, 'z', 'N/A')}")

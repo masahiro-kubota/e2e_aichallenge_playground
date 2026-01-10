@@ -42,4 +42,3 @@ env:
   obstacles:
     generation:
       seed: ${add_int:${env.initial_state_sampling.seed},100}
-

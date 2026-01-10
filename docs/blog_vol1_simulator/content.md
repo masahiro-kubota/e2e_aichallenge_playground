@@ -25,28 +25,39 @@
 
 ### Proposed Method: Python Proxy Simulator with FOPDT
 AWSIMの物理挙動を模倣するPythonシミュレータを作成しました。
+<!-- QUESTION: キネマティックモデルは具体的に何を使いましたか？Bicycle Model？ -->
 単なるキネマティックモデルではなく、システム同定によりUnity特有の「遅れ」や「慣性」まで再現しています。
 
 - **ステアリング応答**: 無駄時間＋1次遅れ系 (FOPDT) モデルを採用。
+  <!-- QUESTION: なぜ2次遅れ系ではなくFOPDT（1次遅れ+無駄時間）を選んだのですか？ステップ応答の波形がそれに近かったから？ -->
   - 実環境（Unity）のステップ応答データから、時定数 $\tau$ と無駄時間 $L$ を同定。
+  <!-- QUESTION: システム同定に用いた入力信号は？ステップ入力？サインスイープ？ -->
+  <!-- QUESTION: 同定にはどのライブラリを使いましたか？scipy.optimize？ -->
 - **縦方向ダイナミクス**: 空気抵抗とコーナリングドラッグを考慮。
+  <!-- QUESTION: 縦方向（速度制御）にも遅れ要素は入っていますか？それとも即時反応ですか？ -->
 - **アーキテクチャ**: Gymライクなインターフェース、Headless動作。
+  <!-- QUESTION: レンダリング機能は完全に排除しましたか？デバッグ用の簡易ビューアはありますか？ -->
 
 ### Experiment Setup: ベンチマーク条件
 - **比較対象**: オリジナルのAWSIM (Unityバイナリ) 環境。
+  <!-- QUESTION: AWSIMのバージョンは？PCのスペック差による影響をどう排除しましたか？ -->
 - **Model Parameters**:
-    - Steer Delay (L): 0.1s <!-- QUESTION: この値は正確ですか？ -->
-    - Time Constant (tau): 0.15s <!-- QUESTION: この値は正確ですか？ -->
+    - Steer Delay (L): 0.1s <!-- QUESTION: この値は正確ですか？通信遅延も含んでいますか？ -->
+    - Time Constant (tau): 0.15s <!-- QUESTION: この値は正確ですか？車両のエクステリア（慣性）に依存しますか？ -->
     - (同定された具体的な値を記載) <!-- QUESTION: 他に重要なパラメータがあれば追記してください -->
 
 ### Metrics (評価指標)
 - **波形一致度**: Unityの実測値とシミュレータ出力の二乗平均平方根誤差 (RMSE)。
+  <!-- QUESTION: RMSEの単位は？Rad？Deg？ -->
+  <!-- QUESTION: どの走行シナリオ（8の字、スラローム等）で計測しましたか？ -->
 - **Execution Speed (xRT)**: 実時間に対する処理速度倍率 (Real-Time Factor)。
+  <!-- QUESTION: 1コアでの性能ですか？マルチコア並列化した時のスケーラビリティは？ -->
 
 ## 3. 前提環境 (Prerequisites)
 - **OS**: Ubuntu 24.04
 - **Python**: 3.10
 - **Dependencies**: Managed by `uv`
+  <!-- QUESTION: なぜPoetryではなくuvを選びましたか？（速度？） -->
 - **Machine**: Intel Core i9-13900K, 64GB RAM (GPU不要)
 
 ## 4. 実行コマンド

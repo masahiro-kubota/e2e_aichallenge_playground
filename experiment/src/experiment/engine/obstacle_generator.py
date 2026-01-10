@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from core.utils.osm_parser import parse_osm_file
 from omegaconf import DictConfig, OmegaConf
 from shapely.affinity import rotate, translate
 from shapely.geometry import Polygon
@@ -49,17 +48,18 @@ class ObstacleGenerator:
 
         self.initial_state: dict[str, float] | None = None
         self.exclusion_zone: dict[str, Any] | None = None
-        
+
         from experiment.engine.pose_sampler import PoseSampler
+
         self.pose_sampler = PoseSampler(self.map_path, self.track_path, seed)
-        
+
         # Expose properties for legacy access if needed (or minimal support)
         self.drivable_area = self.pose_sampler.drivable_area
         self.global_centerline = self.pose_sampler.global_centerline
         self.total_track_length = self.pose_sampler.total_track_length
-        
-        self.centerlines: list[list[tuple[float, float, float]]] = [] 
-        self._load_lanelets_centerlines() # Fallback for non-global track usage
+
+        self.centerlines: list[list[tuple[float, float, float]]] = []
+        self._load_lanelets_centerlines()  # Fallback for non-global track usage
 
     def _load_lanelets_centerlines(self) -> None:
         """Load lanelet centerlines for fallback."""
@@ -68,9 +68,9 @@ class ObstacleGenerator:
 
         try:
             from core.utils.osm_parser import parse_osm_file
-            
+
             # Note: drivable_area is loaded by PoseSampler
-            
+
             osm_data = parse_osm_file(self.map_path)
             nodes = osm_data["nodes"]
             lanelets = osm_data["lanelets"]
@@ -200,16 +200,16 @@ class ObstacleGenerator:
                     }
 
                     if self._validate_placement(
-                        obstacle, 
-                        existing_obstacles + generated, 
+                        obstacle,
+                        existing_obstacles + generated,
                         min_distance,
-                        require_within_bounds
+                        require_within_bounds,
                     ):
                         generated.append(obstacle)
                         break
                 else:
                     logger.warning(
-                        f"Failed to place obstacle {len(generated)+1} for group '{group_config.get('name')}' after 100 attempts."
+                        f"Failed to place obstacle {len(generated) + 1} for group '{group_config.get('name')}' after 100 attempts."
                     )
 
         return generated
@@ -237,7 +237,7 @@ class ObstacleGenerator:
         """Generate a random pose along the track."""
         lateral_offset_range = placement_config.get("lateral_offset_range", [-1.0, 1.0])
         yaw_mode = placement_config.get("yaw_mode", "aligned")
-        
+
         yaw_offset_dict = placement_config.get("yaw_offset_range", [0.0, 0.0])
         # Convert list/tuple if needed (config handles list from yaml)
         if isinstance(yaw_offset_dict, (list, tuple)):
@@ -247,12 +247,12 @@ class ObstacleGenerator:
             yaw_offset_range = (0.0, 0.0)
 
         if self.pose_sampler.global_centerline:
-             return self.pose_sampler.sample_track_pose(
-                 lateral_offset_range=(lateral_offset_range[0], lateral_offset_range[1]),
-                 yaw_mode=yaw_mode,
-                 yaw_offset_range=yaw_offset_range,
-             )
-        
+            return self.pose_sampler.sample_track_pose(
+                lateral_offset_range=(lateral_offset_range[0], lateral_offset_range[1]),
+                yaw_mode=yaw_mode,
+                yaw_offset_range=yaw_offset_range,
+            )
+
         logger.warning("No global track loaded. Cannot use random_track strategy.")
         return None
 
@@ -267,24 +267,24 @@ class ObstacleGenerator:
         # Find closest point on global centerline to initial state
         init_x = self.initial_state["x"]
         init_y = self.initial_state["y"]
-        
-        # We need current_dist of the initial state. 
-        # PoseSampler doesn't have "get_dist_from_point" helper yet, 
+
+        # We need current_dist of the initial state.
+        # PoseSampler doesn't have "get_dist_from_point" helper yet,
         # so lets implement strict logic here or add helper to PoseSampler later.
-        # But reusing the previous linear search logic is okay for now, or assume 
-        # initial state *is* on track if we knew. 
-        # For robustness, we search. 
-        
+        # But reusing the previous linear search logic is okay for now, or assume
+        # initial state *is* on track if we knew.
+        # For robustness, we search.
+
         # Optimization: Reuse global_centerline search.
         # Note: existing code did this search efficiently.
-        
-        # Let's add a helper to PoseSampler later? 
+
+        # Let's add a helper to PoseSampler later?
         # For now, quick search locally or just reimplement using pose_sampler data.
-        
+
         # Search closest
         closest_idx = -1
         min_dist_sq = float("inf")
-        
+
         for i, pt in enumerate(self.pose_sampler.global_centerline):
             dx = pt[0] - init_x
             dy = pt[1] - init_y
@@ -292,28 +292,29 @@ class ObstacleGenerator:
             if d2 < min_dist_sq:
                 min_dist_sq = d2
                 closest_idx = i
-                
-        if closest_idx == -1: return None
-        
+
+        if closest_idx == -1:
+            return None
+
         current_dist = self.pose_sampler.global_centerline[closest_idx][3]
-        
+
         # Forward distance
         forward_distance_range = placement_config.get("forward_distance_range", None)
         if forward_distance_range is not None:
             forward_dist = self.rng.uniform(forward_distance_range[0], forward_distance_range[1])
         else:
             forward_dist = placement_config.get("forward_distance", 3.0)
-            
+
         target_dist = current_dist + forward_dist
-        
+
         lateral_offset_range = placement_config.get("lateral_offset_range", [0.0, 0.0])
         yaw_mode = placement_config.get("yaw_mode", "aligned")
-        
+
         yaw_offset_dict = placement_config.get("yaw_offset_range", [0.0, 0.0])
         if isinstance(yaw_offset_dict, (list, tuple)):
             yaw_offset_range = (yaw_offset_dict[0], yaw_offset_dict[1])
         else:
-             yaw_offset_range = (0.0, 0.0)
+            yaw_offset_range = (0.0, 0.0)
 
         return self.pose_sampler.sample_track_pose(
             target_dist=target_dist,
@@ -376,16 +377,16 @@ class ObstacleGenerator:
                 # Checks if obstacles are on the same track reference.
                 # If centerline_index is present (Lanelet), they must match.
                 # If centerline_index is None (PoseSampler/Global), we compare if both are None (or assume single global track).
-                indices_match = (o_idx == c_idx)
-                
-                # If one is None and other is not, we technically shouldn't compare, 
+                indices_match = o_idx == c_idx
+
+                # If one is None and other is not, we technically shouldn't compare,
                 # but currently we only mix mostly uniform obstacles.
                 # Safest is to compare if equal. (None == None is True).
 
                 if o_dist is not None and indices_match:
                     dist_diff = abs(c_dist - o_dist)
 
-                    # Handle lap wrap-around if on global track (c_idx is None implies global via PoseSampler usually, 
+                    # Handle lap wrap-around if on global track (c_idx is None implies global via PoseSampler usually,
                     # or c_idx == -1 for legacy).
                     # Check invalid/None index or explicit -1 convention
                     if (c_idx is None or c_idx == -1) and self.total_track_length > 0:
@@ -396,11 +397,13 @@ class ObstacleGenerator:
 
         # Check map bounds using PoseSampler
         if not self.pose_sampler.validate_pose(
-            (pos["x"], pos["y"], pos["yaw"]), 
-            shape=shape_cfg, 
-            require_fully_contained=require_within_bounds if require_within_bounds else False # intersects if false
+            (pos["x"], pos["y"], pos["yaw"]),
+            shape=shape_cfg,
+            require_fully_contained=require_within_bounds
+            if require_within_bounds
+            else False,  # intersects if false
         ):
-             return False
+            return False
 
         # Check collision with existing obstacles
         for obs in existing:

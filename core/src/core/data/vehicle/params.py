@@ -71,7 +71,9 @@ class VehicleParameters(BaseModel):
     accel_gain: float = Field(default=1.0, description="Longitudinal Acceleration Gain")
     accel_offset: float = Field(default=0.0, description="Longitudinal Acceleration Offset [m/s^2]")
     drag_coefficient: float = Field(default=0.0, description="Air Drag term C*v*|v|")
-    cornering_drag_coefficient: float = Field(default=0.0, description="Cornering Drag term C*|s|*v^2")
+    cornering_drag_coefficient: float = Field(
+        default=0.0, description="Cornering Drag term C*|s|*v^2"
+    )
 
     # センサー設定
     lidar: LidarConfig | None = None

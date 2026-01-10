@@ -1,10 +1,8 @@
-
-import math
 from typing import Any
 
 from core.data import ComponentConfig
 from core.data.node_io import NodeIO
-from core.data.ros import Float32, Time
+from core.data.ros import Float32
 from core.interfaces.node import Node, NodeExecutionResult
 from pydantic import Field
 
@@ -47,14 +45,13 @@ class ControlCmdDiffNode(Node[ControlCmdDiffConfig]):
         msg_a = self.subscribe(self.topic_a)
         msg_b = self.subscribe(self.topic_b)
 
-        if self.config.wait_for_both:
-            if msg_a is None or msg_b is None:
-                return NodeExecutionResult.SKIPPED
+        if self.config.wait_for_both and (msg_a is None or msg_b is None):
+            return NodeExecutionResult.SKIPPED
 
         # Update last known values if available
         if msg_a:
             self.last_a_steer = self._get_steer(msg_a)
-        
+
         if msg_b:
             self.last_b_steer = self._get_steer(msg_b)
 
@@ -62,10 +59,7 @@ class ControlCmdDiffNode(Node[ControlCmdDiffConfig]):
         diff = self.last_a_steer - self.last_b_steer
 
         # Publish
-        self.publish(
-            self.output_topic,
-            Float32(data=diff)
-        )
+        self.publish(self.output_topic, Float32(data=diff))
 
         return NodeExecutionResult.SUCCESS
 
@@ -74,6 +68,6 @@ class ControlCmdDiffNode(Node[ControlCmdDiffConfig]):
         # msg.lateral.steering_tire_angle
         if hasattr(msg, "lateral") and hasattr(msg.lateral, "steering_tire_angle"):
             return msg.lateral.steering_tire_angle
-        if hasattr(msg, "steering_angle"): # fallback
+        if hasattr(msg, "steering_angle"):  # fallback
             return msg.steering_angle
         return 0.0

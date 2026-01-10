@@ -2,7 +2,7 @@ import os
 import subprocess
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import mlflow
 from omegaconf import DictConfig, OmegaConf
@@ -97,7 +97,7 @@ class BaseEngine(ABC):
                 if (parent / ".env").exists():
                     project_root = parent
                     break
-            
+
             if project_root:
                 env_path = project_root / ".env"
                 with open(env_path) as f:
@@ -113,11 +113,11 @@ class BaseEngine(ABC):
         except Exception:
             pass
 
-    def _get_foxglove_url(self, mcap_path: Path) -> Optional[str]:
+    def _get_foxglove_url(self, mcap_path: Path) -> str | None:
         """Generate Foxglove URL for the given MCAP file."""
         try:
             import urllib.parse
-            
+
             # Ensure env is loaded
             self._load_env_file()
 
@@ -131,10 +131,10 @@ class BaseEngine(ABC):
 
             if project_root:
                 rel_mcap_path = mcap_path.resolve().relative_to(project_root.resolve())
-                
+
                 # Use MCAP_BASE_URL from env
                 base_url = os.getenv("MCAP_BASE_URL")
-                
+
                 if base_url:
                     # Strip trailing slash if present
                     base_url = base_url.rstrip("/")

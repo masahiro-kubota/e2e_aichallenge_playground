@@ -7,9 +7,7 @@ import re
 import shlex
 import subprocess
 import sys
-import time
 from pathlib import Path
-from typing import List, Optional, Dict
 
 """
 MLOps Pipeline Automation Script for Obstacle Avoidance
@@ -63,9 +61,9 @@ class MLOpsPipeline:
         self.args = args
         self.timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         self.project_root = Path.cwd()
-        
+
         self.dataset_version = args.version
-        
+
         # Base directory for this entire run
         if args.run_dir:
             self.run_base_dir = Path(args.run_dir).resolve()
@@ -74,33 +72,34 @@ class MLOpsPipeline:
             if "_" in dir_name:
                 self.timestamp = dir_name.split("_", 1)[1]
         else:
-            self.run_base_dir = self.project_root / "outputs" / "mlops" / f"{self.dataset_version}_{self.timestamp}"
+            self.run_base_dir = (
+                self.project_root / "outputs" / "mlops" / f"{self.dataset_version}_{self.timestamp}"
+            )
         self.collection_base_dir = self.run_base_dir / "collection"
-        
+
         # Processed data directories (Final destination for training)
         self.processed_data_root = self.project_root / "data" / "processed"
         self.train_data_dir = self.processed_data_root / f"train_{self.dataset_version}"
         self.val_data_dir = self.processed_data_root / f"val_{self.dataset_version}"
-        
-        # State tracking
-        self.collection_dirs: Dict[str, Dict[str, Path]] = {
-            "train": {},
-            "val": {}
-        }
-        self.model_path: Optional[Path] = None
-        self.pipeline_steps: List[dict] = []
 
-    def run_command(self, command: str, description: str = "", capture_output: bool = False) -> Optional[str]:
+        # State tracking
+        self.collection_dirs: dict[str, dict[str, Path]] = {"train": {}, "val": {}}
+        self.model_path: Path | None = None
+        self.pipeline_steps: list[dict] = []
+
+    def run_command(
+        self, command: str, description: str = "", capture_output: bool = False
+    ) -> str | None:
         """Run a shell command."""
         logger.info(f"Running [{description}]: {command}")
-        
+
         step_record = {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "description": description,
             "command": command,
-            "status": "pending"
+            "status": "pending",
         }
-        
+
         if self.args.dry_run:
             step_record["status"] = "dry_run"
             self.pipeline_steps.append(step_record)
@@ -109,15 +108,9 @@ class MLOpsPipeline:
         try:
             # Use shell=True for complex commands if needed, but here we split
             cmd_args = shlex.split(command)
-            
+
             if capture_output:
-                result = subprocess.run(
-                    cmd_args, 
-                    check=True, 
-                    text=True, 
-                    stdout=subprocess.PIPE, 
-                    stderr=subprocess.PIPE
-                )
+                result = subprocess.run(cmd_args, check=True, text=True, capture_output=True)
                 step_record["status"] = "success"
                 self.pipeline_steps.append(step_record)
                 return result.stdout.strip()
@@ -141,40 +134,54 @@ class MLOpsPipeline:
             raise FileNotFoundError(f"{parent_dir} does not exist")
 
         # Let's look for date-pattern directories first, then latest time.
-        date_dirs = sorted([d for d in parent_dir.iterdir() if d.is_dir() and re.match(r"\d{4}-\d{2}-\d{2}", d.name)])
+        date_dirs = sorted(
+            [
+                d
+                for d in parent_dir.iterdir()
+                if d.is_dir() and re.match(r"\d{4}-\d{2}-\d{2}", d.name)
+            ]
+        )
         if date_dirs:
             latest_date_dir = date_dirs[-1]
-            time_dirs = sorted([d for d in latest_date_dir.iterdir() if d.is_dir() and re.match(r"\d{2}-\d{2}-\d{2}", d.name)])
+            time_dirs = sorted(
+                [
+                    d
+                    for d in latest_date_dir.iterdir()
+                    if d.is_dir() and re.match(r"\d{2}-\d{2}-\d{2}", d.name)
+                ]
+            )
             if time_dirs:
                 return time_dirs[-1]
-        
+
         # Fallback: just return the latest created directory
-        all_dirs = sorted([d for d in parent_dir.glob("**/*") if d.is_dir()], key=lambda x: x.stat().st_mtime)
+        all_dirs = sorted(
+            [d for d in parent_dir.glob("**/*") if d.is_dir()], key=lambda x: x.stat().st_mtime
+        )
         if all_dirs:
             return all_dirs[-1]
-            
+
         raise FileNotFoundError(f"Could not find any output directory in {parent_dir}")
 
     def run_collection(self):
         """Step 1: Data Collection for both TF and RS."""
         logger.info("=== Step 1: Data Collection ===")
-        
+
         jobs = [
             ("track_forward", "train", self.args.tf_train, 0),
             ("track_forward", "val", self.args.tf_val, 100000),
             ("random_start", "train", self.args.rs_train, 200000),
             ("random_start", "val", self.args.rs_val, 300000),
         ]
-        
+
         for exp_type, split, count, base_seed in jobs:
             if count <= 0:
                 logger.info(f"Skipping {exp_type} {split} (count=0)")
                 continue
-                
+
             logger.info(f"--- Collecting {exp_type} {split} (N={count}) ---")
-            
+
             job_dir = (self.collection_base_dir / split / exp_type).resolve()
-            
+
             cmd = (
                 f"uv run experiment-runner -m "
                 f"experiment=data_collection_{exp_type} "
@@ -183,9 +190,9 @@ class MLOpsPipeline:
                 f"experiment.name=col_{exp_type}_{split}_{self.dataset_version} "
                 f"hydra.sweep.dir={job_dir}"
             )
-            
+
             self.run_command(cmd, description=f"Collection {exp_type} {split}")
-            
+
             if not self.args.dry_run:
                 # Since we set hydra.sweep.dir, the job_dir itself should be the multirun root.
                 self.collection_dirs[split][exp_type] = job_dir
@@ -204,18 +211,18 @@ class MLOpsPipeline:
     def run_extraction(self):
         """Step 3: Feature Extraction (Combined)."""
         logger.info("=== Step 3: Feature Extraction (Combined) ===")
-        
+
         exclude_reasons = "'[off_track,collision,unknown]'"
-        
+
         for split in ["train", "val"]:
             output_dir = self.train_data_dir if split == "train" else self.val_data_dir
-            
+
             # Point to the split directory (contains both TF and RS subdirs)
             input_dir = (self.collection_base_dir / split).resolve()
-            
+
             if self.args.dry_run:
                 input_dir = f"outputs/mlops/VERSION_TIME/collection/{split}"
-            
+
             cmd = (
                 f"uv run experiment-runner "
                 f"experiment=extraction "
@@ -228,11 +235,11 @@ class MLOpsPipeline:
     def run_training(self):
         """Step 4: Training."""
         logger.info("=== Step 4: Training ===")
-        
+
         safe_timestamp = self.timestamp.replace("_", "")
         # Use run_base_dir for training output too
         training_out = self.run_base_dir / "training"
-        
+
         cmd = (
             f"uv run experiment-runner -m "
             f"experiment=training "
@@ -242,12 +249,12 @@ class MLOpsPipeline:
             f"experiment.name=train_{self.dataset_version}_{safe_timestamp} "
             f"hydra.sweep.dir={training_out}"
         )
-        
+
         if self.args.epochs:
             cmd += f" training.num_epochs={self.args.epochs}"
 
         self.run_command(cmd, description="Model Training")
-        
+
         if not self.args.dry_run:
             try:
                 # 1. First check inside the dedicated mlops run directory
@@ -269,14 +276,14 @@ class MLOpsPipeline:
                     else:
                         logger.warning(f"No .npy model found in {latest_cp_dir}")
                 else:
-                    logger.warning(f"No checkpoints dir found.")
+                    logger.warning("No checkpoints dir found.")
             except Exception as e:
                 logger.warning(f"Could not automatically locate model: {e}")
 
     def run_evaluation(self):
         """Step 5: Evaluation."""
         logger.info("=== Step 5: Evaluation ===")
-        
+
         model_path = self.args.model_path or self.model_path
         if not model_path:
             if self.args.dry_run:
@@ -286,10 +293,10 @@ class MLOpsPipeline:
                 return
 
         eval_out = self.run_base_dir / "evaluation"
-        
+
         # Standard Evaluation (Autonomous driving with TinyLidarNet)
         logger.info("--- Running Standard Evaluation ---")
-        
+
         # 1a. Standard Evaluation: no_obstacle environment
         std_no_obs_cmd = (
             f"uv run experiment-runner experiment=evaluation "
@@ -318,7 +325,7 @@ class MLOpsPipeline:
 
         # Debug Evaluation (Monitoring with TinyLidarNet while Pure Pursuit drives)
         logger.info("--- Running Debug Evaluation ---")
-        
+
         # 2a. Debug Evaluation: no_obstacle environment
         dbg_no_obs_cmd = (
             f"uv run experiment-runner experiment=evaluation "
@@ -352,7 +359,9 @@ class MLOpsPipeline:
         logger.info("--- Aggregating Standard Evaluation Results ---")
         std_eval_dir = eval_out / "standard"
         if not self.args.dry_run and std_eval_dir.exists():
-            aggregate_cmd = f"uv run python experiment/scripts/aggregate_evaluation.py {std_eval_dir}"
+            aggregate_cmd = (
+                f"uv run python experiment/scripts/aggregate_evaluation.py {std_eval_dir}"
+            )
             self.run_command(aggregate_cmd, description="Aggregate Standard Eval")
 
     def run(self):
@@ -367,10 +376,10 @@ class MLOpsPipeline:
                     if dir_path.exists():
                         self.collection_dirs[split][exp_type] = dir_path
                         logger.info(f"Found existing collection: {dir_path}")
-        
+
         if not self.args.skip_extraction:
             self.run_extraction()
-            
+
         if not self.args.skip_training:
             self.run_training()
         else:
@@ -386,10 +395,10 @@ class MLOpsPipeline:
                         logger.info(f"Detected Model: {self.model_path}")
                 except Exception as e:
                     logger.warning(f"Could not find model for skipped training: {e}")
-            
+
         if not self.args.skip_evaluation:
             self.run_evaluation()
-            
+
         self._save_summary()
 
     def _save_summary(self):
@@ -397,16 +406,16 @@ class MLOpsPipeline:
         if self.args.dry_run:
             logger.info(f"Dry run: Would save summary to {summary_path}")
             return
-            
+
         summary = {
             "version": self.dataset_version,
             "timestamp": self.timestamp,
             "args": vars(self.args),
             "steps": self.pipeline_steps,
             "model": str(self.model_path) if self.model_path else None,
-            "intermediate_results": {}
+            "intermediate_results": {},
         }
-        
+
         # Collect summaries from each Job
         for split, types in self.collection_dirs.items():
             for exp_type, path in types.items():
@@ -419,7 +428,7 @@ class MLOpsPipeline:
                             logger.info(f"Included aggregation summary for {split}/{exp_type}")
                     except Exception as e:
                         logger.warning(f"Failed to load {summary_file}: {e}")
-        
+
         # Collect extraction stats
         for split in ["train", "val"]:
             output_dir = self.train_data_dir if split == "train" else self.val_data_dir
@@ -432,7 +441,7 @@ class MLOpsPipeline:
                         logger.info(f"Included extraction stats for {split}")
                 except Exception as e:
                     logger.warning(f"Failed to load {stats_file}: {e}")
-        
+
         self.run_base_dir.mkdir(parents=True, exist_ok=True)
         with open(summary_path, "w") as f:
             json.dump(summary, f, indent=4)
@@ -442,27 +451,29 @@ class MLOpsPipeline:
 def main():
     parser = argparse.ArgumentParser(description="Obstacle Avoidance MLOps Pipeline")
     parser.add_argument("--version", type=str, required=True, help="Dataset version (e.g., v8)")
-    
+
     # Episode counts
     parser.add_argument("--tf-train", type=int, default=1000, help="Track Forward Train episodes")
     parser.add_argument("--tf-val", type=int, default=200, help="Track Forward Val episodes")
     parser.add_argument("--rs-train", type=int, default=500, help="Random Start Train episodes")
     parser.add_argument("--rs-val", type=int, default=100, help="Random Start Val episodes")
     parser.add_argument("--epochs", type=int, help="Number of training epochs")
-    
+
     # Flags
     parser.add_argument("--skip-collection", action="store_true")
     parser.add_argument("--skip-extraction", action="store_true")
     parser.add_argument("--skip-training", action="store_true")
     parser.add_argument("--skip-evaluation", action="store_true")
-    
+
     parser.add_argument("--model-path", type=str, help="Reuse existing model for evaluation")
     parser.add_argument("--run-dir", type=str, help="Existing run directory to continue from")
     parser.add_argument("--dry-run", action="store_true", help="Don't execute commands")
-    parser.add_argument("--continue-on-error", action="store_true", help="Don't stop on command failure")
+    parser.add_argument(
+        "--continue-on-error", action="store_true", help="Don't stop on command failure"
+    )
 
     args = parser.parse_args()
-    
+
     pipeline = MLOpsPipeline(args)
     pipeline.run()
 

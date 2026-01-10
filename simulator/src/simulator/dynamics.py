@@ -71,7 +71,7 @@ def apply_steering_response_model(
         tau = params.steer_tau
         alpha = math.exp(-dt / tau)
         u_delayed = delayed_steering
-        
+
         y_next = alpha * state.actual_steering + (1 - alpha) * u_delayed
         v_next = (y_next - state.actual_steering) / dt
     else:
@@ -142,13 +142,16 @@ def update_bicycle_model(
     # y_dot = vx * sin(yaw) + vy * cos(yaw)
     # yaw_dot = vx / L * tan(delta)
     # vx_dot = ax
-    
+
     # Apply Longitudinal Dynamics
     # Effective Acceleration = K*cmd + Offset - Drag*v^2 - CornerDrag*|steer|*v^2
     v = state.vx
-    acc_eff = params.accel_gain * acceleration + params.accel_offset \
-              - params.drag_coefficient * v * abs(v) \
-              - params.cornering_drag_coefficient * abs(steering) * (v**2)
+    acc_eff = (
+        params.accel_gain * acceleration
+        + params.accel_offset
+        - params.drag_coefficient * v * abs(v)
+        - params.cornering_drag_coefficient * abs(steering) * (v**2)
+    )
 
     # Kinamatics model assumes vy = 0
     vx_next = state.vx + acc_eff * dt

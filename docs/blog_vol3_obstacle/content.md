@@ -26,18 +26,28 @@
 ### Proposed Method: Track Forward Strategy
 回避行動を濃縮して学習させるためのデータ収集環境。
 - **常に障害物を配置**: エピソード開始時、必ず車両の10m前方に障害物を設置。
+  <!-- QUESTION: 10mという距離はどう決めた？速度3m/sだと3秒弱。これより短いと回避不能？ -->
+  <!-- QUESTION: 障害物の大きさは？固定？ランダム？ -->
+  <!-- QUESTION: 障害物の位置はレーン中央固定？オフセットあり？ -->
 - **短時間エピソード**: 7秒でエピソード終了（回避完了直後）。
+  <!-- QUESTION: 7秒で十分？回避後に元のレーンに戻る動作まで含んでいる？ -->
 - **効果**: 直線を走るだけの「暇な時間」を排除し、回避密度を極限まで高める。
+  <!-- QUESTION: これによってデータ効率は何倍くらいになった感覚値はありますか？ -->
 
 ### Experiment Setup
 - **Dataset Ratio**: Random Start (10%) + Track Forward (90%)。 <!-- QUESTION: なぜこの9:1という比率にしたのですか？ -->
+  <!-- QUESTION: 100% Track Forwardではダメだった？基礎走行能力が落ちる？ -->
   - 基礎走行能力と回避能力のバランスを取るための混合比率。
 - **Teacher Algorithm**: Lateral Shift (回避点生成) + Pure Pursuit。 <!-- QUESTION: Lateral Shiftはどうやって生成していますか？（固定オフセット？サイン波？） -->
+  <!-- QUESTION: 経路生成時に滑らかさ（Jerk最小化）は考慮していますか？ -->
 - **Model**: Tiny Lidar Net (1D CNN)。
 
 ### Metrics (評価指標)
 - **Avoidance Success Rate**: 障害物に衝突せず、かつコースアウトせずに回避できた割合。
+  <!-- QUESTION: 衝突判定の閾値は？バウンディングボックス同士の干渉？ -->
 - **Lateral Jerk (横加加速度)**: 挙動の滑らかさの指標。値が小さいほど、人間にとって快適で安定した運転とされる。
+  <!-- QUESTION: Jerkの計算式は？加速度の微分？ノイズ処理はしましたか？ -->
+  <!-- QUESTION: サンプリング周波数は？ -->
 
 ## 3. 前提環境 (Prerequisites)
 - **Simulator**: Vol.1で作成したPython Simulator (v1.2以上で障害物対応済)。

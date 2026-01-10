@@ -9,8 +9,6 @@ Usage:
 import json
 import logging
 import os
-import socket
-import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -31,10 +29,6 @@ def find_result_files(multirun_dir: Path) -> list[Path]:
     return results
 
 
-
-
-
-
 def load_env_file() -> None:
     """Load .env file manually if it exists."""
     try:
@@ -45,7 +39,7 @@ def load_env_file() -> None:
             if (parent / ".env").exists():
                 project_root = parent
                 break
-        
+
         if project_root:
             env_path = project_root / ".env"
             with open(env_path) as f:
@@ -64,7 +58,7 @@ def load_env_file() -> None:
 def aggregate_results(result_files: list[Path], multirun_dir: Path) -> dict:
     """Aggregate all result files into a summary."""
     load_env_file()
-    
+
     results = []
     reason_counter: Counter[str] = Counter()
     episodes_by_reason: dict[str, list[dict]] = {}
@@ -73,12 +67,11 @@ def aggregate_results(result_files: list[Path], multirun_dir: Path) -> dict:
     host = os.getenv("FOXGLOVE_HOST_IP", "127.0.0.1")
 
     for result_path in result_files:
-
         try:
             with open(result_path) as f:
                 result = json.load(f)
                 results.append(result)
-                
+
                 # Determine reason
                 if result.get("success"):
                     reason = "goal_reached"
@@ -86,21 +79,22 @@ def aggregate_results(result_files: list[Path], multirun_dir: Path) -> dict:
                     reason = result.get("reason") or "unknown"
                     if reason == "":
                         reason = "timeout"
-                
+
                 reason_counter[reason] += 1
-                
+
                 # Track which episodes have each reason
                 if reason not in episodes_by_reason:
                     episodes_by_reason[reason] = []
-                
+
                 # Get episode directory name from path
                 episode_dir = result_path.parent.name
                 job_dir = result_path.parent.parent.parent.parent.name  # job number
                 episode_path = result_path.parent.relative_to(multirun_dir)
                 mcap_rel_path = episode_path / "simulation.mcap"
-                
+
                 # Generate Foxglove URL with full path from outputs/
                 import urllib.parse
+
                 # Find the outputs/ directory in the path and get relative path from there
                 try:
                     outputs_root = next(p for p in multirun_dir.parents if p.name == "outputs")
@@ -109,7 +103,7 @@ def aggregate_results(result_files: list[Path], multirun_dir: Path) -> dict:
                     # Fallback: use multirun_dir relative to parent.parent (old behavior)
                     date_time_path = multirun_dir.relative_to(multirun_dir.parent.parent)
                     full_rel_path = Path("outputs") / date_time_path / mcap_rel_path
-                
+
                 if base_url:
                     base_url = base_url.rstrip("/")
                     mcap_url = f"{base_url}/{full_rel_path}"
@@ -120,14 +114,16 @@ def aggregate_results(result_files: list[Path], multirun_dir: Path) -> dict:
 
                 encoded_url = urllib.parse.quote(mcap_url, safe="")
                 foxglove_url = f"https://app.foxglove.dev/view?ds=remote-file&ds.url={encoded_url}"
-                
-                episodes_by_reason[reason].append({
-                    "job": job_dir,
-                    "episode": episode_dir,
-                    "seed": result.get("seed"),
-                    "path": str(episode_path),
-                    "foxglove": foxglove_url
-                })
+
+                episodes_by_reason[reason].append(
+                    {
+                        "job": job_dir,
+                        "episode": episode_dir,
+                        "seed": result.get("seed"),
+                        "path": str(episode_path),
+                        "foxglove": foxglove_url,
+                    }
+                )
         except Exception as e:
             logger.warning(f"Failed to read {result_path}: {e}")
 
@@ -139,8 +135,7 @@ def aggregate_results(result_files: list[Path], multirun_dir: Path) -> dict:
     success_rate = success_count / total
 
     reason_breakdown = {
-        reason: {"count": count, "rate": count / total}
-        for reason, count in reason_counter.items()
+        reason: {"count": count, "rate": count / total} for reason, count in reason_counter.items()
     }
 
     total_checkpoints = sum(r.get("metrics", {}).get("checkpoint_count", 0) for r in results)
@@ -186,14 +181,14 @@ def plot_summary(output_dir: Path, reason_counter: Counter, total: int) -> None:
         sizes = list(reason_counter.values())
         colors = [color_map.get(label, "#9C27B0") for label in labels]
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
         # Pie chart
         ax1.pie(
             sizes,
             labels=labels,
             colors=colors,
-            autopct=lambda pct: f"{pct:.1f}%\n({int(pct/100*total)})",
+            autopct=lambda pct: f"{pct:.1f}%\n({int(pct / 100 * total)})",
             startangle=90,
             textprops={"fontsize": 10},
         )
@@ -228,15 +223,16 @@ def plot_summary(output_dir: Path, reason_counter: Counter, total: int) -> None:
     except Exception as e:
         logger.warning(f"Failed to generate plot: {e}")
 
+
 def find_latest_multirun(outputs_dir: Path) -> Path | None:
     """Find the most recent multirun directory in outputs."""
     if not outputs_dir.exists():
         return None
-    
+
     # Look for directories with date/time pattern
     latest = None
     latest_mtime = 0
-    
+
     for date_dir in outputs_dir.iterdir():
         if not date_dir.is_dir():
             continue
@@ -244,15 +240,13 @@ def find_latest_multirun(outputs_dir: Path) -> Path | None:
             if not time_dir.is_dir():
                 continue
             # Check if it looks like a multirun (has numbered subdirs)
-            has_numbered_dirs = any(
-                d.name.isdigit() for d in time_dir.iterdir() if d.is_dir()
-            )
+            has_numbered_dirs = any(d.name.isdigit() for d in time_dir.iterdir() if d.is_dir())
             if has_numbered_dirs:
                 mtime = time_dir.stat().st_mtime
                 if mtime > latest_mtime:
                     latest_mtime = mtime
                     latest = time_dir
-    
+
     return latest
 
 
@@ -283,7 +277,7 @@ def main():
         logger.error("No result.json files found")
         sys.exit(1)
 
-    summary, reason_counter, episodes_by_reason = aggregate_results(result_files, multirun_dir)
+    summary, reason_counter, _ = aggregate_results(result_files, multirun_dir)
 
     if summary is None:
         logger.error("Failed to aggregate results")

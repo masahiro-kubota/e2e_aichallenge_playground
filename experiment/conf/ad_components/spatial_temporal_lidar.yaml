@@ -10,7 +10,7 @@ nodes:
     params:
       vehicle_params: ${vehicle}
       vehicle_color: ${visualization.colors.vehicle}
-      
+
   spatial_temporal_lidar_net:
     type: "SpatialTemporalLidarNetNode"
     rate_hz: 50.0

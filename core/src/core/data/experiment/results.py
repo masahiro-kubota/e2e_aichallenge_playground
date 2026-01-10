@@ -12,7 +12,7 @@ from core.data.simulator.result import SimulationResult
 
 class TerminationReason(str, Enum):
     """シミュレーション終了理由.
-    
+
     Values:
         GOAL_REACHED: ゴール到達（成功）
         OFF_TRACK: コース外に出た

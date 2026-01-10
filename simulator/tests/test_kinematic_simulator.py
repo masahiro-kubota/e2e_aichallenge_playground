@@ -2,6 +2,8 @@
 
 import math
 
+import pytest
+from core.data.vehicle.params import VehicleParameters
 from simulator.dynamics import update_bicycle_model
 from simulator.state import SimulationVehicleState
 
@@ -9,9 +11,24 @@ from simulator.state import SimulationVehicleState
 class TestDynamicsFunctions:
     """Tests for dynamics functions."""
 
-    def test_straight_line(self) -> None:
+    @pytest.fixture
+    def params(self) -> VehicleParameters:
+        return VehicleParameters(
+            wheelbase=2.5,
+            width=1.8,
+            vehicle_height=1.5,
+            max_steering_angle=0.6,
+            max_velocity=30.0,
+            max_acceleration=5.0,
+            front_overhang=0.9,
+            rear_overhang=0.9,
+            steer_delay_time=0.0,
+            max_steer_rate=5.0,
+            steer_gain=1.0,
+        )
+
+    def test_straight_line(self, params: VehicleParameters) -> None:
         """Test straight line motion."""
-        wheelbase = 2.5
         state = SimulationVehicleState(
             x=0.0,
             y=0.0,
@@ -29,7 +46,7 @@ class TestDynamicsFunctions:
 
         # Move straight for 1 second
         new_state = update_bicycle_model(
-            state, steering=0.0, acceleration=0.0, dt=1.0, wheelbase=wheelbase
+            state, steering=0.0, acceleration=0.0, dt=1.0, params=params
         )
 
         assert abs(new_state.x - 10.0) < 1e-10
@@ -39,9 +56,8 @@ class TestDynamicsFunctions:
         # Kinematic model maintains vy = 0
         assert abs(new_state.vy) < 1e-10
 
-    def test_acceleration(self) -> None:
+    def test_acceleration(self, params: VehicleParameters) -> None:
         """Test acceleration."""
-        wheelbase = 2.5
         state = SimulationVehicleState(
             x=0.0,
             y=0.0,
@@ -59,7 +75,7 @@ class TestDynamicsFunctions:
 
         # Accelerate at 2.0 m/s^2 for 1 second
         new_state = update_bicycle_model(
-            state, steering=0.0, acceleration=2.0, dt=1.0, wheelbase=wheelbase
+            state, steering=0.0, acceleration=2.0, dt=1.0, params=params
         )
 
         assert abs(new_state.vx - 2.0) < 1e-10
@@ -68,9 +84,8 @@ class TestDynamicsFunctions:
         assert abs(new_state.x - 1.0) < 1e-10
         assert abs(new_state.vy) < 1e-10
 
-    def test_turning(self) -> None:
+    def test_turning(self, params: VehicleParameters) -> None:
         """Test turning motion."""
-        wheelbase = 2.5
         state = SimulationVehicleState(
             x=0.0,
             y=0.0,
@@ -91,7 +106,7 @@ class TestDynamicsFunctions:
         # yaw_rate = vx / R = 5.0 / 10.0 = 0.5 rad/s
 
         new_state = update_bicycle_model(
-            state, steering=steering, acceleration=0.0, dt=1.0, wheelbase=wheelbase
+            state, steering=steering, acceleration=0.0, dt=1.0, params=params
         )
 
         # Expected yaw change = 0.5 * 1.0 = 0.5 rad
@@ -99,9 +114,8 @@ class TestDynamicsFunctions:
         # yaw_rate should be calculated
         assert abs(new_state.yaw_rate - 0.5) < 1e-10
 
-    def test_backward_motion(self) -> None:
+    def test_backward_motion(self, params: VehicleParameters) -> None:
         """Test backward motion."""
-        wheelbase = 2.5
         # 後退速度
         state = SimulationVehicleState(
             x=0.0,
@@ -121,7 +135,7 @@ class TestDynamicsFunctions:
         # ステアリングを切って後退
         steering = 0.5
         new_state = update_bicycle_model(
-            state, steering=steering, acceleration=0.0, dt=1.0, wheelbase=wheelbase
+            state, steering=steering, acceleration=0.0, dt=1.0, params=params
         )
 
         # X座標は減少

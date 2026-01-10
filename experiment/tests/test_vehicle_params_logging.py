@@ -1,3 +1,4 @@
+import contextlib
 from unittest.mock import patch
 
 from core.utils import get_project_root
@@ -17,6 +18,9 @@ def test_metadata_injection(_mock_mlflow_eval, _mock_mlflow_base) -> None:
     config_dir = str(workspace_root / "experiment/conf")
 
     # Test 1: Verify fail-fast behavior - config validation happens before simulation
+    with contextlib.suppress(Exception):
+        OmegaConf.register_new_resolver("eval", eval, replace=True)
+
     with initialize_config_dir(config_dir=config_dir, version_base=None):
         cfg = compose(
             config_name="config",

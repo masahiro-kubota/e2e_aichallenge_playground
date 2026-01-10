@@ -13,7 +13,7 @@ Date: Tue Jan  6 00:47:28 2026
 | 32%   31C    P8             20W /  285W |    1027MiB /  12282MiB |     51%      Default |
 |                                         |                        |                  N/A |
 +-----------------------------------------+------------------------+----------------------+
-                                                                                         
+
 +-----------------------------------------------------------------------------------------+
 | Processes:                                                                              |
 |  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
@@ -37,7 +37,7 @@ top - 00:47:28 up 6 days, 10:56,  2 users,  load average: 1.71, 1.34, 1.49
 Tasks: 624 total,   4 running, 618 sleeping,   0 stopped,   2 zombie
 %Cpu(s):  3.9 us,  1.8 sy,  0.0 ni, 93.3 id,  1.0 wa,  0.0 hi,  0.0 si,  0.0 st
 MiB Mem :  64010.7 total,   3156.7 free,  12367.6 used,  48486.5 buff/cache
-MiB Swap:  95518.5 total,  86557.0 free,   8961.5 used.  50691.2 avail Mem 
+MiB Swap:  95518.5 total,  86557.0 free,   8961.5 used.  50691.2 avail Mem
 
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
  802272 masa      20   0 1415.1g 486252 111900 R  40.0   0.7  15:01.41 antigravity

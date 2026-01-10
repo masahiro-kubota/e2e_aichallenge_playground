@@ -26,9 +26,6 @@ def find_result_files(eval_dir: Path) -> list[Path]:
     return sorted(results)
 
 
-
-
-
 def load_env_file() -> None:
     """Load .env file manually if it exists."""
     try:
@@ -39,7 +36,7 @@ def load_env_file() -> None:
             if (parent / ".env").exists():
                 project_root = parent
                 break
-        
+
         if project_root:
             env_path = project_root / ".env"
             with open(env_path) as f:
@@ -71,7 +68,7 @@ def aggregate_results(result_files: list[Path], eval_dir: Path) -> dict:
             with open(result_path) as f:
                 result = json.load(f)
                 results.append(result)
-                
+
                 # Determine reason
                 if result.get("success"):
                     reason = "goal_reached"
@@ -79,16 +76,16 @@ def aggregate_results(result_files: list[Path], eval_dir: Path) -> dict:
                     reason = result.get("reason") or "unknown"
                     if reason == "":
                         reason = "timeout"
-                
+
                 reason_counter[reason] += 1
-                
+
                 # Track which episodes have each reason
                 if reason not in episodes_by_reason:
                     episodes_by_reason[reason] = []
-                
+
                 # Get episode directory name from path
                 episode_dir = result_path.parent.name
-                
+
                 # Get the scenario name (e.g., "default", "no_obstacle")
                 # Path structure: eval_dir/scenario/evaluation/episode_XXXX/result.json
                 # Note: eval_dir in main is likely outputs/.../evaluation/standard
@@ -96,27 +93,28 @@ def aggregate_results(result_files: list[Path], eval_dir: Path) -> dict:
                     scenario = result_path.parent.parent.parent.name
                 except Exception:
                     scenario = "unknown"
-                
+
                 episode_path = result_path.parent.relative_to(eval_dir)
-                
+
                 # Generate Foxglove URL dynamically to support remote viewing
                 foxglove_url = ""
                 try:
                     import urllib.parse
+
                     # Attempt to find outputs/ directory to calculate project-relative path
                     # We assume mcap is alongside result.json
                     mcap_path = result_path.parent / "simulation.mcap"
-                    
+
                     # Search for 'outputs' in the path parents to find project root
                     project_root = None
                     for p in result_path.parents:
                         if p.name == "outputs":
                             project_root = p.parent
                             break
-                    
+
                     if project_root:
                         full_rel_path = mcap_path.relative_to(project_root)
-                        
+
                         if base_url:
                             base_url = base_url.rstrip("/")
                             mcap_url = f"{base_url}/{full_rel_path}"
@@ -124,22 +122,26 @@ def aggregate_results(result_files: list[Path], eval_dir: Path) -> dict:
                             mcap_url = f"https://{host}/{full_rel_path}"
                         else:
                             mcap_url = f"http://{host}:8080/{full_rel_path}"
-                            
+
                         encoded_url = urllib.parse.quote(mcap_url, safe="")
-                        foxglove_url = f"https://app.foxglove.dev/view?ds=remote-file&ds.url={encoded_url}"
+                        foxglove_url = (
+                            f"https://app.foxglove.dev/view?ds=remote-file&ds.url={encoded_url}"
+                        )
                     else:
-                         foxglove_url = result.get("foxglove_url", "")
+                        foxglove_url = result.get("foxglove_url", "")
                 except Exception:
-                     foxglove_url = result.get("foxglove_url", "")
-                
-                episodes_by_reason[reason].append({
-                    "scenario": scenario,
-                    "episode": episode_dir,
-                    "seed": result.get("seed"),
-                    "path": str(episode_path),
-                    "foxglove": foxglove_url,
-                    "metrics": result.get("metrics", {})
-                })
+                    foxglove_url = result.get("foxglove_url", "")
+
+                episodes_by_reason[reason].append(
+                    {
+                        "scenario": scenario,
+                        "episode": episode_dir,
+                        "seed": result.get("seed"),
+                        "path": str(episode_path),
+                        "foxglove": foxglove_url,
+                        "metrics": result.get("metrics", {}),
+                    }
+                )
         except Exception as e:
             logger.warning(f"Failed to read {result_path}: {e}")
 
@@ -151,8 +153,7 @@ def aggregate_results(result_files: list[Path], eval_dir: Path) -> dict:
     success_rate = success_count / total
 
     reason_breakdown = {
-        reason: {"count": count, "rate": count / total}
-        for reason, count in reason_counter.items()
+        reason: {"count": count, "rate": count / total} for reason, count in reason_counter.items()
     }
 
     total_checkpoints = sum(r.get("metrics", {}).get("checkpoint_count", 0) for r in results)
@@ -198,14 +199,14 @@ def plot_summary(output_dir: Path, reason_counter: Counter, total: int) -> None:
         sizes = list(reason_counter.values())
         colors = [color_map.get(label, "#9C27B0") for label in labels]
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
         # Pie chart
         ax1.pie(
             sizes,
             labels=labels,
             colors=colors,
-            autopct=lambda pct: f"{pct:.1f}%\n({int(pct/100*total)})",
+            autopct=lambda pct: f"{pct:.1f}%\n({int(pct / 100 * total)})",
             startangle=90,
             textprops={"fontsize": 10},
         )
@@ -244,7 +245,9 @@ def plot_summary(output_dir: Path, reason_counter: Counter, total: int) -> None:
 def main():
     if len(sys.argv) < 2:
         print("Usage: uv run python experiment/scripts/aggregate_evaluation.py [evaluation_dir]")
-        print("Example: uv run python experiment/scripts/aggregate_evaluation.py outputs/mlops/v8_20260104_202932/evaluation/standard")
+        print(
+            "Example: uv run python experiment/scripts/aggregate_evaluation.py outputs/mlops/v8_20260104_202932/evaluation/standard"
+        )
         sys.exit(1)
 
     eval_dir = Path(sys.argv[1]).resolve()
@@ -262,7 +265,7 @@ def main():
         logger.error("No result.json files found")
         sys.exit(1)
 
-    summary, reason_counter, episodes_by_reason = aggregate_results(result_files, eval_dir)
+    summary, reason_counter, _ = aggregate_results(result_files, eval_dir)
 
     if summary is None:
         logger.error("Failed to aggregate results")

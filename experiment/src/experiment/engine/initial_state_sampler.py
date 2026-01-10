@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from simulator.map import LaneletMap
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class InitialStateSampler:
         """
         from experiment.engine.pose_sampler import PoseSampler
 
-        # We initialize PoseSampler with no seed, as we will use the rng passed 
+        # We initialize PoseSampler with no seed, as we will use the rng passed
         # to sample_initial_state (by injecting it or using it).
         # PoseSampler loads the map and track.
         self.pose_sampler = PoseSampler(map_path=map_path, track_path=track_path, seed=None)
@@ -68,7 +68,7 @@ class InitialStateSampler:
             result = self.pose_sampler.sample_track_pose(
                 lateral_offset_range=lateral_offset_range,
                 yaw_mode="aligned",
-                yaw_offset_range=yaw_offset_range
+                yaw_offset_range=yaw_offset_range,
             )
 
             if not result:
@@ -84,7 +84,7 @@ class InitialStateSampler:
             if self.pose_sampler.validate_pose(
                 (x, y, yaw),
                 shape=shape,
-                require_fully_contained=True  # Requirement: "self-vehicle cannot start if not within Lanelet"
+                require_fully_contained=True,  # Requirement: "self-vehicle cannot start if not within Lanelet"
             ):
                 # Sample velocity
                 final_velocity = rng.uniform(velocity_range[0], velocity_range[1])

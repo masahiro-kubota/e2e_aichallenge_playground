@@ -11,13 +11,19 @@ from omegaconf import OmegaConf
 @pytest.fixture
 def map_path():
     """Path to test map file."""
-    return Path("experiment/assets/lanelet2_map.osm")
+    return Path(__file__).parent.parent / "assets" / "lanelet2_map.osm"
 
 
 @pytest.fixture
-def generator(map_path):
+def track_path():
+    """Path to test track file."""
+    return Path(__file__).parent.parent / "assets" / "raceline_awsim_15km.csv"
+
+
+@pytest.fixture
+def generator(map_path, track_path):
     """Create obstacle generator instance."""
-    return ObstacleGenerator(map_path, seed=42)
+    return ObstacleGenerator(map_path, track_path, seed=42)
 
 
 class TestExclusionZone:

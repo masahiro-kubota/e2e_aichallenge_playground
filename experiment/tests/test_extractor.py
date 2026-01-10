@@ -1,11 +1,8 @@
 """Tests for ExtractorEngine filtering logic."""
 
 import json
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 from omegaconf import DictConfig, OmegaConf
 
@@ -16,7 +13,7 @@ class TestExcludeFailureReasons:
     @pytest.fixture
     def setup_test_data(self, tmp_path: Path) -> tuple[Path, Path]:
         """Create test directory with dummy result.json files.
-        
+
         Creates 4 episodes:
         - episode_0: success
         - episode_1: failed (off_track)
@@ -25,32 +22,29 @@ class TestExcludeFailureReasons:
         """
         input_dir = tmp_path / "input"
         output_dir = tmp_path / "output"
-        
+
         episodes = [
             {"episode_idx": 0, "success": True, "reason": "goal", "metrics": {}},
             {"episode_idx": 1, "success": False, "reason": "off_track", "metrics": {}},
             {"episode_idx": 2, "success": False, "reason": "collision", "metrics": {}},
             {"episode_idx": 3, "success": False, "reason": "timeout", "metrics": {}},
         ]
-        
+
         for ep in episodes:
             ep_dir = input_dir / f"episode_{ep['episode_idx']}"
             ep_dir.mkdir(parents=True)
-            
+
             # Create result.json
             with open(ep_dir / "result.json", "w") as f:
                 json.dump(ep, f)
-            
+
             # Create dummy mcap file (empty)
             (ep_dir / "simulation.mcap").touch()
-        
+
         return input_dir, output_dir
 
     def _create_config(
-        self, 
-        input_dir: Path, 
-        output_dir: Path,
-        exclude_failure_reasons: list[str] | None = None
+        self, input_dir: Path, output_dir: Path, exclude_failure_reasons: list[str] | None = None
     ) -> DictConfig:
         """Create test configuration."""
         cfg_dict = {
@@ -64,7 +58,7 @@ class TestExcludeFailureReasons:
                 "topics": {
                     "control": "/control/command/control_cmd",
                     "scan": "/sensing/lidar/scan",
-                }
+                },
             },
         }
         if exclude_failure_reasons is not None:
@@ -75,22 +69,21 @@ class TestExcludeFailureReasons:
         """exclude_failure_reasons=null should exclude all failed episodes."""
         input_dir, output_dir = setup_test_data
         cfg = self._create_config(input_dir, output_dir, exclude_failure_reasons=None)
-        
+
         from experiment.engine.extractor import ExtractorEngine
-        
+
         engine = ExtractorEngine()
-        
+
         # Count how many episodes get processed
         processed_episodes = []
-        original_extract = engine._extract_from_single_mcap
-        
-        def mock_extract(mcap_path, cfg=None):
+
+        def mock_extract(mcap_path, _cfg=None):
             processed_episodes.append(mcap_path.parent.name)
             return None  # Skip actual extraction
-        
+
         engine._extract_from_single_mcap = mock_extract
         engine._run_impl(cfg)
-        
+
         # Only successful episode should be processed
         assert processed_episodes == ["episode_0"], f"Got: {processed_episodes}"
 
@@ -98,20 +91,20 @@ class TestExcludeFailureReasons:
         """exclude_failure_reasons=[] should include all episodes."""
         input_dir, output_dir = setup_test_data
         cfg = self._create_config(input_dir, output_dir, exclude_failure_reasons=[])
-        
+
         from experiment.engine.extractor import ExtractorEngine
-        
+
         engine = ExtractorEngine()
-        
+
         processed_episodes = []
-        
-        def mock_extract(mcap_path, cfg=None):
+
+        def mock_extract(mcap_path, _cfg=None):
             processed_episodes.append(mcap_path.parent.name)
             return None
-        
+
         engine._extract_from_single_mcap = mock_extract
         engine._run_impl(cfg)
-        
+
         # All episodes should be processed
         assert len(processed_episodes) == 4
         assert set(processed_episodes) == {"episode_0", "episode_1", "episode_2", "episode_3"}
@@ -120,20 +113,20 @@ class TestExcludeFailureReasons:
         """exclude_failure_reasons=['off_track'] should exclude only off_track failures."""
         input_dir, output_dir = setup_test_data
         cfg = self._create_config(input_dir, output_dir, exclude_failure_reasons=["off_track"])
-        
+
         from experiment.engine.extractor import ExtractorEngine
-        
+
         engine = ExtractorEngine()
-        
+
         processed_episodes = []
-        
-        def mock_extract(mcap_path, cfg=None):
+
+        def mock_extract(mcap_path, _cfg=None):
             processed_episodes.append(mcap_path.parent.name)
             return None
-        
+
         engine._extract_from_single_mcap = mock_extract
         engine._run_impl(cfg)
-        
+
         # episode_1 (off_track) should be excluded
         assert "episode_1" not in processed_episodes
         # Others should be included
@@ -147,20 +140,20 @@ class TestExcludeFailureReasons:
         cfg = self._create_config(
             input_dir, output_dir, exclude_failure_reasons=["off_track", "collision"]
         )
-        
+
         from experiment.engine.extractor import ExtractorEngine
-        
+
         engine = ExtractorEngine()
-        
+
         processed_episodes = []
-        
-        def mock_extract(mcap_path, cfg=None):
+
+        def mock_extract(mcap_path, _cfg=None):
             processed_episodes.append(mcap_path.parent.name)
             return None
-        
+
         engine._extract_from_single_mcap = mock_extract
         engine._run_impl(cfg)
-        
+
         # off_track and collision should be excluded
         assert "episode_1" not in processed_episodes
         assert "episode_2" not in processed_episodes

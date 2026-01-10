@@ -1,9 +1,10 @@
 import argparse
 from pathlib import Path
+
 import numpy as np
-import sys
 from mcap.reader import make_reader
 from mcap_ros2.decoder import DecoderFactory
+
 
 def clean_scan_array(scan_array: np.ndarray, max_range: float) -> np.ndarray:
     if not isinstance(scan_array, np.ndarray):
@@ -25,15 +26,15 @@ def synchronize_data(src_times: np.ndarray, target_times: np.ndarray):
     """
     if len(target_times) == 0:
         return np.array([], dtype=int)
-    
+
     idx_sorted = np.searchsorted(target_times, src_times)
     idx_sorted = np.clip(idx_sorted, 0, len(target_times) - 1)
-    
+
     prev_idx = np.clip(idx_sorted - 1, 0, len(target_times) - 1)
-    
+
     time_diff_curr = np.abs(target_times[idx_sorted] - src_times)
     time_diff_prev = np.abs(target_times[prev_idx] - src_times)
-    
+
     # Choose closer one
     use_prev = time_diff_prev < time_diff_curr
     final_indices = np.where(use_prev, prev_idx, idx_sorted)
@@ -59,11 +60,13 @@ def process_single_mcap(bag_path: Path, control_topic: str, scan_topic: str):
 
         with open(bag_path, "rb") as f:
             reader = make_reader(f, decoder_factories=[DecoderFactory()])
-            for schema, channel, message in reader.iter_messages(topics=[control_topic, scan_topic]):
+            for schema, channel, message in reader.iter_messages(
+                topics=[control_topic, scan_topic]
+            ):
                 timestamp = message.log_time
-                
+
                 msg_obj = None
-                if schema.encoding == 'jsonschema':
+                if schema.encoding == "jsonschema":
                     msg_dict = json.loads(message.data)
                     msg_obj = dict_to_obj(msg_dict)
                 else:
@@ -114,31 +117,35 @@ def process_single_mcap(bag_path: Path, control_topic: str, scan_topic: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Extract training data from directory of MCAPs")
-    parser.add_argument("--input-dir", required=True, help="Directory containing MCAP files (can be nested)")
+    parser.add_argument(
+        "--input-dir", required=True, help="Directory containing MCAP files (can be nested)"
+    )
     parser.add_argument("--output-dir", required=True, help="Output directory for .npy files")
-    parser.add_argument("--control-topic", default="/control/command/control_cmd", help="Control topic name")
+    parser.add_argument(
+        "--control-topic", default="/control/command/control_cmd", help="Control topic name"
+    )
     parser.add_argument("--scan-topic", default="/sensing/lidar/scan", help="Lidar scan topic name")
-    
+
     args = parser.parse_args()
-    
+
     input_dir = Path(args.input_dir)
     output_dir = Path(args.output_dir)
-    
+
     if not input_dir.exists():
         print(f"Error: Input directory {input_dir} does not exist.")
         return
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     all_scans = []
     all_steers = []
     all_accels = []
-    
+
     # Recursively find all simulation.mcap files
     # Also look for *.mcap in case names are different
     mcap_files = list(input_dir.rglob("*.mcap"))
     print(f"Found {len(mcap_files)} MCAP files in {input_dir}")
-    
+
     count = 0
     for mcap_file in mcap_files:
         scans, cmds = process_single_mcap(mcap_file, args.control_topic, args.scan_topic)
@@ -148,26 +155,27 @@ def main():
             all_steers.append(cmds[:, 0])
             all_accels.append(cmds[:, 1])
             count += 1
-            
+
             if count % 100 == 0:
                 print(f"Processed {count} files...")
-                
+
     if count == 0:
         print("No valid data extracted.")
         return
-        
+
     # Concatenate
     final_scans = np.concatenate(all_scans, axis=0)
     final_steers = np.concatenate(all_steers, axis=0)
     final_accels = np.concatenate(all_accels, axis=0)
-    
+
     print(f"Total Samples: {len(final_scans)}")
     print(f"Saving to {output_dir}...")
-    
+
     np.save(output_dir / "scans.npy", final_scans)
     np.save(output_dir / "steers.npy", final_steers)
     np.save(output_dir / "accelerations.npy", final_accels)
     print("Done.")
+
 
 if __name__ == "__main__":
     main()

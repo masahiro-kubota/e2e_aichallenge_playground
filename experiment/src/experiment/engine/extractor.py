@@ -11,7 +11,7 @@ from omegaconf import DictConfig
 
 from experiment.engine.base import BaseEngine
 
-# 既存の抽出ロジック（ad_components配下）を参照する代わりに、ここに統合していく方針
+# 既存の抽出ロジック(ad_components配下)を参照する代わりに、ここに統合していく方針
 # 今回は構造のデモとして骨格を実装
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class ExtractorEngine(BaseEngine):
         # Initialize topics configuration
         self.topics = {}
         if "experiment" in cfg:
-             self.topics = cfg.experiment.get("topics", {})
+            self.topics = cfg.experiment.get("topics", {})
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -65,7 +65,7 @@ class ExtractorEngine(BaseEngine):
         logger.info(f"Extracting data from {input_dir} to {output_dir}")
 
         # 1. MCAP files discovery
-        mcap_files = sorted(list(input_dir.rglob("*.mcap")))
+        mcap_files = sorted(input_dir.rglob("*.mcap"))
         if not mcap_files:
             logger.error(f"No MCAP files found in {input_dir}")
             return None
@@ -74,10 +74,13 @@ class ExtractorEngine(BaseEngine):
         chunk_size = cfg.get("chunk_size", 500)
         total_mcaps = len(mcap_files)
         num_chunks = (total_mcaps + chunk_size - 1) // chunk_size
-        
-        logger.info(f"Total MCAP files: {total_mcaps}, Chunk size: {chunk_size}, Num chunks: {num_chunks}")
+
+        logger.info(
+            f"Total MCAP files: {total_mcaps}, Chunk size: {chunk_size}, Num chunks: {num_chunks}"
+        )
 
         from collections import Counter
+
         global_skipped_reasons = Counter()
         global_processed = 0
         global_samples = 0
@@ -88,12 +91,12 @@ class ExtractorEngine(BaseEngine):
             start_idx = chunk_idx * chunk_size
             end_idx = min(start_idx + chunk_size, total_mcaps)
             chunk_mcaps = mcap_files[start_idx:end_idx]
-            
+
             batch_name = f"batch_{chunk_idx:04d}"
             scans_path = output_dir / f"{batch_name}_scans.npy"
             steers_path = output_dir / f"{batch_name}_steers.npy"
             accels_path = output_dir / f"{batch_name}_accelerations.npy"
-            
+
             # Skip if batch already exists
             if scans_path.exists() and steers_path.exists() and accels_path.exists():
                 logger.info(f"Skipping {batch_name} (already exists)")
@@ -107,9 +110,11 @@ class ExtractorEngine(BaseEngine):
                         for reason, count in batch_stats.get("skipped_breakdown", {}).items():
                             global_skipped_reasons[reason] += count
                 continue
-            
-            logger.info(f"Processing {batch_name}: MCAPファイル {start_idx}-{end_idx} ({len(chunk_mcaps)} files)")
-            
+
+            logger.info(
+                f"Processing {batch_name}: MCAPファイル {start_idx}-{end_idx} ({len(chunk_mcaps)} files)"
+            )
+
             all_scans = []
             all_steers = []
             all_accels = []
@@ -185,9 +190,11 @@ class ExtractorEngine(BaseEngine):
             }
             with open(output_dir / f"{batch_name}_stats.json", "w") as f:
                 json.dump(batch_stats, f, indent=2)
-            
+
             all_stats.append(batch_stats)
-            logger.info(f"Saved {batch_name}: {len(scans)} samples from {processed_in_batch} episodes")
+            logger.info(
+                f"Saved {batch_name}: {len(scans)} samples from {processed_in_batch} episodes"
+            )
 
         # 3. Calculate and save global statistics
         if global_samples == 0:
@@ -222,7 +229,6 @@ class ExtractorEngine(BaseEngine):
         #     self._run_dvc_commands(output_dir, cfg.dvc.auto_push)
 
         return output_dir
-
 
     def _save_metadata(self, output_dir: Path, input_dir: Path) -> None:
         """Save metadata for data lineage."""
@@ -271,21 +277,23 @@ class ExtractorEngine(BaseEngine):
         """Find indices in target_times that correspond to src_times (nearest neighbor)."""
         if len(target_times) == 0:
             return np.array([], dtype=int)
-        
+
         idx_sorted = np.searchsorted(target_times, src_times)
         idx_sorted = np.clip(idx_sorted, 0, len(target_times) - 1)
-        
+
         prev_idx = np.clip(idx_sorted - 1, 0, len(target_times) - 1)
-        
+
         time_diff_curr = np.abs(target_times[idx_sorted] - src_times)
         time_diff_prev = np.abs(target_times[prev_idx] - src_times)
-        
+
         # Choose closer one
         use_prev = time_diff_prev < time_diff_curr
         final_indices = np.where(use_prev, prev_idx, idx_sorted)
         return final_indices
 
-    def _extract_from_single_mcap(self, mcap_path: Path, cfg: DictConfig | None = None) -> dict[str, Any] | None:
+    def _extract_from_single_mcap(
+        self, mcap_path: Path, _cfg: DictConfig | None = None
+    ) -> dict[str, Any] | None:
         """Extract and sync data from one MCAP."""
         scans_list = []
         scan_times = []
@@ -293,42 +301,40 @@ class ExtractorEngine(BaseEngine):
         control_data = []
 
         # Get topic names from config if available, otherwise defaults
-        control_topic = "/control/command/control_cmd"
-        scan_topic = "/sensing/lidar/scan"
-        
-        # Access topics via self.cfg if possible, or pass it down. 
+
+        # Access topics via self.cfg if possible, or pass it down.
         # Since _extract_from_single_mcap is called from _run_impl where self.cfg refers to Hydra cfg object...
         # Ideally we pass topics. But for member method we can use a class attribute or pass it.
-        # Here we will check if 'experiment' in self.base_cfg (stored if we modify init) 
-        # For now, let's assume we can rely on defaults or hardcode, 
-        # BUT this method signature doesn't take config. 
-        # Let's fix the call site in _run_impl or use hardcoded for now? 
+        # Here we will check if 'experiment' in self.base_cfg (stored if we modify init)
+        # For now, let's assume we can rely on defaults or hardcode,
+        # BUT this method signature doesn't take config.
+        # Let's fix the call site in _run_impl or use hardcoded for now?
         # Wait, I should update _run_impl to pass the topics or store cfg in self.
-        
+
         # Update: In _run_impl, I will read topics from cfg and pass/use them.
-        # But this method is replacing the WHOLE FILE content or chunk? 
+        # But this method is replacing the WHOLE FILE content or chunk?
         # I am replacing from 188 to 311.
         # I need to access the config. I'll modify the signature to accept topics map.
-        
-        pass 
+
+        pass
         # Since I'm replacing the method, I can change signature, but I need to update the call site too.
         # To avoid multiple edits, I will assume the caller will be updated or I handle it.
         # Let's check _run_impl... oh wait I am only replacing the bottom methods.
         # I need to edit _run_impl too.
-        
+
         # To be safe and minimal: I'll hardcode the retrieval from a class property or context if feasible?
-        # No, better: I'll make this method use the topics I just added to YAML, 
-        # assuming the caller (which I am not editing in this chunk) passes them? 
+        # No, better: I'll make this method use the topics I just added to YAML,
+        # assuming the caller (which I am not editing in this chunk) passes them?
         # Actually I am editing a huge chunk. Let me check lines 188-311.
         # This covers _extract_from_single_mcap implementation.
         # I can change it to use self._topics dictionary if I set it in _run_impl.
-        
+
         # However, _run_impl call site needs update.
         # Strategy:
         # 1. Update _run_impl to read topics and store in self.topics
         # 2. Update these methods to use self.topics
-        
-        # Let's stick to the current plan: Replace these methods first. 
+
+        # Let's stick to the current plan: Replace these methods first.
         # I will use instance variable `self.topics` which I will initialize in _run_impl (next tool call).
 
         topic_control = self.topics.get("control", "/control/command/control_cmd")
@@ -373,7 +379,7 @@ class ExtractorEngine(BaseEngine):
                     elif channel.topic == topic_control:
                         steer, accel, found = 0.0, 0.0, False
                         if isinstance(msg, dict):
-                            # Handle both nested (lateral.steering...) and flat structures if needed, 
+                            # Handle both nested (lateral.steering...) and flat structures if needed,
                             # but v3 script assumes specific structure. We follow v3.
                             if "lateral" in msg and "longitudinal" in msg:
                                 steer = msg["lateral"].get("steering_tire_angle", 0.0)
@@ -384,7 +390,7 @@ class ExtractorEngine(BaseEngine):
                                 steer = msg.lateral.steering_tire_angle
                                 accel = msg.longitudinal.acceleration
                                 found = True
-                        
+
                         if found:
                             control_data.append([steer, accel])
                             control_times.append(message.log_time)
@@ -402,7 +408,7 @@ class ExtractorEngine(BaseEngine):
         # Verify data frequency (Original logic preserved)
         s_times = np.array(scan_times, dtype=np.int64)
         c_times = np.array(control_times, dtype=np.int64)
-        
+
         s_freq = None
         c_freq = None
         if len(s_times) > 1:
@@ -415,7 +421,7 @@ class ExtractorEngine(BaseEngine):
         # Sync using NEW ROBUST LOGIC
         c_data = np.array(control_data, dtype=np.float32)
         idx = self._synchronize_data(s_times, c_times)
-        
+
         synced_controls = c_data[idx]
 
         return {

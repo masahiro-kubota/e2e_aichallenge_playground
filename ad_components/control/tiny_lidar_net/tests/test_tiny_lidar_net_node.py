@@ -87,10 +87,9 @@ class TestTinyLidarNetCore:
         assert np.all(processed >= 0.0)
         assert np.all(processed <= 1.0)
 
-    def test_process_output_shape(self, core_without_weights: TinyLidarNetCore) -> None:
+    def test_process_output_shape(self, _: TinyLidarNetCore) -> None:
         """Test process returns correct output shape."""
         # Create dummy LiDAR data
-        ranges = np.ones(720, dtype=np.float32) * 10.0
 
         # process returns (accel, steer), even if accel is unused in some modes
         # core checks output_dim internally, but our test fixture sets output_dim=1.
@@ -156,13 +155,16 @@ class TestTinyLidarNetNode:
 
         # Load default vehicle parameters from config file
         from pathlib import Path
+
         import yaml
 
         # Correct path to vehicle config
         vehicle_config_path = Path("experiment/conf/vehicle/default.yaml").absolute()
         if not vehicle_config_path.exists():
             # Fallback for running from different cwd
-            vehicle_config_path = Path("/home/masa/python-self-driving-simulator/experiment/conf/vehicle/default.yaml")
+            vehicle_config_path = Path(
+                "/home/masa/python-self-driving-simulator/experiment/conf/vehicle/default.yaml"
+            )
 
         with open(vehicle_config_path) as f:
             vehicle_config = yaml.safe_load(f)
@@ -211,34 +213,34 @@ class TestTinyLidarNetNode:
             )
         )
         node.frame_data.vehicle_state = TopicSlot(
-            initial_value=VehicleState(
-                x=0.0, y=0.0, yaw=0.0, velocity=5.0
-            )
+            initial_value=VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=5.0)
         )
 
         # Mock core process to return valid steer
         # accel from core is ignored in new node logic, but returns tuple
-        node.core.process = lambda ranges: (0.0, 0.1)  # accel=0.0, steer=0.1
+        node.core.process = lambda _: (0.0, 0.1)  # accel=0.0, steer=0.1
 
         # Mock publish to capture output
         published_data = {}
+
         def mock_publish(topic: str, message: object) -> None:
             published_data[topic] = message
-        
+
         # Override publish method
         node.publish = mock_publish
 
         result = node.on_run(0.0)
 
         assert result == NodeExecutionResult.SUCCESS
-        
+
         # Check published output
         assert "control_cmd" in published_data
         output = published_data["control_cmd"]
-        
+
         from core.data.autoware import AckermannControlCommand
+
         assert isinstance(output, AckermannControlCommand)
-        
+
         # Check steering matches mocked value
         assert abs(output.lateral.steering_tire_angle - 0.1) < 1e-3
 
@@ -250,12 +252,13 @@ class TestTinyLidarNetNode:
     def test_on_run_no_lidar_scan(self, node: TinyLidarNetNode) -> None:
         """Test execution when LiDAR scan is missing."""
         from core.data import TopicSlot, VehicleState
+
         node.frame_data = FrameData()
         node.frame_data.vehicle_state = TopicSlot(
             initial_value=VehicleState(x=0.0, y=0.0, yaw=0.0, velocity=0.0)
         )
         # perception_lidar_scan is None by default in FrameData
-        
+
         result = node.on_run(0.0)
 
         assert result == NodeExecutionResult.SKIPPED
@@ -263,15 +266,15 @@ class TestTinyLidarNetNode:
     def test_on_run_no_inputs(self, node: TinyLidarNetNode) -> None:
         """Test execution when inputs are None."""
         node.frame_data = None
-        # on_run subscribes which eventually uses frame_data, but subscribe implementation might handle None frame_data differently 
+        # on_run subscribes which eventually uses frame_data, but subscribe implementation might handle None frame_data differently
         # or we check if node.frame_data is None.
         # Looking at node implementation:
         # lidar_scan = self.subscribe("perception_lidar_scan")
         # If frame_data is None, subscribe raises ValueError in base class (as seen in trace).
         # We should expect failure or ensure frame_data is set but empty.
-        
+
         # If we want to simulate SKIPPED due to missing data from frame_data, we set frame_data but keep fields None.
         node.frame_data = FrameData()
-        
+
         result = node.on_run(0.0)
         assert result == NodeExecutionResult.SKIPPED
