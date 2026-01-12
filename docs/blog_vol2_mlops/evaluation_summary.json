@@ -1,0 +1,75 @@
+{
+  "evaluation_dir": "outputs/mlops/v2_blog_20260111_034905/evaluation",
+  "total_episodes": 5,
+  "success_rate": 1.0,
+  "reason_breakdown": {
+    "goal_reached": {
+      "count": 5,
+      "rate": 1.0
+    }
+  },
+  "episodes_by_reason": {
+    "goal_reached": [
+      {
+        "scenario": "evaluation",
+        "episode": "episode_0000",
+        "seed": 0,
+        "path": "evaluation/episode_0000",
+        "foxglove": "https://app.foxglove.dev/view?ds=remote-file&ds.url=https%3A%2F%2Fmasa-ubuntu.tailb5541.ts.net%2Foutputs%2Fmlops%2Fv2_blog_20260111_034905%2Fevaluation%2Fevaluation%2Fepisode_0000%2Fsimulation.mcap",
+        "metrics": {
+          "goal_count": 1,
+          "checkpoint_count": 3
+        }
+      },
+      {
+        "scenario": "evaluation",
+        "episode": "episode_0001",
+        "seed": 1,
+        "path": "evaluation/episode_0001",
+        "foxglove": "https://app.foxglove.dev/view?ds=remote-file&ds.url=https%3A%2F%2Fmasa-ubuntu.tailb5541.ts.net%2Foutputs%2Fmlops%2Fv2_blog_20260111_034905%2Fevaluation%2Fevaluation%2Fepisode_0001%2Fsimulation.mcap",
+        "metrics": {
+          "goal_count": 1,
+          "checkpoint_count": 3
+        }
+      },
+      {
+        "scenario": "evaluation",
+        "episode": "episode_0002",
+        "seed": 2,
+        "path": "evaluation/episode_0002",
+        "foxglove": "https://app.foxglove.dev/view?ds=remote-file&ds.url=https%3A%2F%2Fmasa-ubuntu.tailb5541.ts.net%2Foutputs%2Fmlops%2Fv2_blog_20260111_034905%2Fevaluation%2Fevaluation%2Fepisode_0002%2Fsimulation.mcap",
+        "metrics": {
+          "goal_count": 1,
+          "checkpoint_count": 3
+        }
+      },
+      {
+        "scenario": "evaluation",
+        "episode": "episode_0003",
+        "seed": 3,
+        "path": "evaluation/episode_0003",
+        "foxglove": "https://app.foxglove.dev/view?ds=remote-file&ds.url=https%3A%2F%2Fmasa-ubuntu.tailb5541.ts.net%2Foutputs%2Fmlops%2Fv2_blog_20260111_034905%2Fevaluation%2Fevaluation%2Fepisode_0003%2Fsimulation.mcap",
+        "metrics": {
+          "goal_count": 1,
+          "checkpoint_count": 3
+        }
+      },
+      {
+        "scenario": "evaluation",
+        "episode": "episode_0004",
+        "seed": 4,
+        "path": "evaluation/episode_0004",
+        "foxglove": "https://app.foxglove.dev/view?ds=remote-file&ds.url=https%3A%2F%2Fmasa-ubuntu.tailb5541.ts.net%2Foutputs%2Fmlops%2Fv2_blog_20260111_034905%2Fevaluation%2Fevaluation%2Fepisode_0004%2Fsimulation.mcap",
+        "metrics": {
+          "goal_count": 1,
+          "checkpoint_count": 3
+        }
+      }
+    ]
+  },
+  "aggregated_metrics": {
+    "total_checkpoints": 15,
+    "total_goals": 5,
+    "avg_checkpoints_per_episode": 3.0
+  }
+}

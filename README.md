@@ -15,8 +15,8 @@
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://github.com/masahiro-kubota/e2e_aichallenge_playground.git
-cd e2e_aichallenge_playground
+git clone https://github.com/masahiro-kubota/python-self-driving-simulator.git
+cd python-self-driving-simulator
 
 # 2. 依存関係をインストール
 uv sync
@@ -41,13 +41,11 @@ uv run experiment-runner ad_components=pure_pursuit
 # Centerline + Pure Pursuit (分離型: Planning と Control が独立)
 uv run experiment-runner ad_components=centerline_pure_pursuit
 
-# MPPI Planner (Model Predictive Path Integral)
-uv run experiment-runner ad_components=mppi
-
 # Lateral Shift Planner (Static Avoidance)
 uv run experiment-runner ad_components=lateral_shift
 
 # Tiny LiDAR Net (学習ベースのEnd-to-End制御)
+# ※事前にモデルの学習と変換が必要です (models/tinylidarnet_v2.npy)
 uv run experiment-runner ad_components=tiny_lidar ad_components.model_path=models/tinylidarnet_v2.npy
 
 # 5. 結果を確認
@@ -125,24 +123,6 @@ uv run experiment-runner ad_components=centerline_pure_pursuit
 **構成**:
 - **Planning**: `CenterlinePlannerNode` (センターライン軌道の読み込み)
 - **Control**: `PurePursuitControllerNode` (Pure Pursuit による軌道追従制御)
-
-### 3. MPPI Planner
-**設定**: `ad_components=mppi`
-
-Model Predictive Path Integral (MPPI) ベースの最適化プランナーです。
-
-```bash
-uv run experiment-runner ad_components=mppi
-```
-
-**構成**:
-- **Planning**: `MPPIPlannerNode` (MPPI による最適軌道生成)
-- **Control**: `PIDControllerNode` (加速度制御)
-
-**特徴**:
-- サンプリングベースの確率的最適化
-- 障害物回避
-- リアルタイム軌道最適化
 
 ### 4. Lateral Shift Planner (Static Avoidance)
 **設定**: `ad_components=lateral_shift`
@@ -314,16 +294,18 @@ graph TD
         class pure_pursuit impl;
         planning_utils["planning-utils<br/>Planning utilities"]
         class planning_utils impl;
-        mppi_planner["mppi-planner<br/>MPPI Planner component"]
-        class mppi_planner impl;
+        lateral_shift_planner["lateral-shift-planner<br/>Static avoidance planner based on CSV ma.."]
+        class lateral_shift_planner impl;
         centerline_planner["centerline-planner<br/>Simple centerline trajectory planner"]
         class centerline_planner impl;
         ideal_sensor["ideal-sensor<br/>Ideal sensor node for simulation"]
         class ideal_sensor impl;
         pid_controller["pid-controller<br/>PID controller"]
         class pid_controller impl;
-        mppi_controller["mppi-controller<br/>MPPI Controller component"]
-        class mppi_controller impl;
+        mpc_lateral_controller["mpc-lateral-controller<br/>MPC-based lateral controller for path tr.."]
+        class mpc_lateral_controller impl;
+        spatial_temporal_lidar_net["spatial-temporal-lidar-net<br/>Spatial-Temporal LiDAR Net controller wi.."]
+        class spatial_temporal_lidar_net impl;
         tiny_lidar_net["tiny-lidar-net<br/>Tiny LiDAR Net end-to-end controller"]
         class tiny_lidar_net impl;
         pure_pursuit_controller["pure-pursuit-controller<br/>Pure Pursuit path tracking controller"]
@@ -343,12 +325,14 @@ graph TD
     pure_pursuit --> planning_utils
     pure_pursuit --> simulator
     planning_utils --> core
-    mppi_planner --> core
+    lateral_shift_planner --> core
+    lateral_shift_planner --> planning_utils
     centerline_planner --> core
     centerline_planner --> planning_utils
     ideal_sensor --> core
     pid_controller --> core
-    mppi_controller --> core
+    mpc_lateral_controller --> core
+    spatial_temporal_lidar_net --> core
     tiny_lidar_net --> core
     pure_pursuit_controller --> core
 ```

@@ -1,0 +1,51 @@
+Loaded config: wheelbase=1.087
+Extracting data from scripts/system_identification/data/rosbag2_autoware_0.mcap...
+
+--- Training Mode ---
+Optimizing FOPDT model (Steering)...
+Optimizing SOPDT model (Steering)...
+Optimizing Gain+Delay model (Steering)...
+Optimizing FOPDT model (Yaw Rate)...
+Optimizing SOPDT model (Yaw Rate)...
+Optimizing Longitudinal model (Speed Drop & Slope)...
+Parameters saved to /home/masa/python-self-driving-simulator/scripts/system_identification/results/params.json
+
+========================================
+RESULTS: Steering Angle Dynamics
+========================================
+Model: FOPDT (First Order)
+  params: K=0.6992, tau=0.1012, L=0.2835
+  RMSE: 0.001976
+--------------------
+Model: SOPDT (Second Order)
+  params: K=0.6996, zeta=0.6217, omega_n=5.0100, L=0.1050
+  RMSE: 0.006308
+--------------------
+Model: Gain + Delay
+  params: K=0.6920, L=0.3540
+  RMSE: 0.009941
+
+========================================
+RESULTS: Yaw Rate Dynamics
+========================================
+Model: FOPDT (SteerCmd -> YawRate)
+  Equation: YawRate = (v/L) * FOPDT(SteerCmd)
+  params: K_total=0.6209, tau=0.1460, L=0.3644
+  RMSE: 0.014740
+--------------------
+Model: SOPDT (SteerCmd -> YawRate)
+  Equation: YawRate = (v/L) * SOPDT(SteerCmd)
+  params: K_total=0.6216, zeta=0.6803, omega_n=3.8060, L=0.1097
+  RMSE: 0.020684
+  (Note: K_total includes both actuator gain and tire slip factor)
+
+========================================
+RESULTS: Longitudinal Dynamics
+========================================
+Model: V_dot = K*AccCmd - C_drag*V^2 - C_corner*|Steer|*V^2 - g*sin(Pitch)
+  K_acc    = 0.5411
+  Offset   = 0.0000 (Fixed to 0)
+  C_corner = 0.0301
+  C_drag   = 0.0117
+  RMSE: 0.160672
+Plot saved to /home/masa/python-self-driving-simulator/scripts/system_identification/results/rosbag2_autoware_0.training.png

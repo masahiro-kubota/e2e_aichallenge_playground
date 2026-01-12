@@ -67,7 +67,10 @@ def test_metadata_injection(_mock_mlflow_eval, _mock_mlflow_base) -> None:
         assert "wheelbase" in cfg_dict["vehicle"]
 
         # Now run the actual experiment
-        result = orchestrator.run_from_hydra(cfg)
+        # Patch HydraConfig to avoid accessing "outputs/latest" which causes FileExistsError in tests
+        with patch("hydra.core.hydra_config.HydraConfig.get") as mock_hydra_get:
+            mock_hydra_get.return_value.runtime.output_dir = str(tmp_path)
+            result = orchestrator.run_from_hydra(cfg)
 
         # Test 2: Verify metadata injection
         assert len(result.simulation_results) > 0

@@ -1,0 +1,12 @@
+Benchmarking Parallel Simulation Throughput...
+Command: uv run experiment-runner -m experiment=evaluation ad_components=pure_pursuit execution.num_episodes=1 env.obstacles.generation.seed=range(0,100) hydra.launcher.n_jobs=12 execution.enable_progress_bar=False postprocess.foxglove.auto_open=false +postprocess.foxglove.enabled=false hydra.sweep.dir=outputs/benchmark_parallel hydra.sweep.subdir=${hydra.job.num}
+Running 100 episodes with 12 parallel jobs...
+------------------------------------------------------------
+Benchmark Results
+------------------------------------------------------------
+Total Wall Time:  55.56 s
+Total Episodes:   100
+Throughput:       1.80 episodes/s
+Simulated Time:   20000.0 s (Aggregate)
+Real-Time Factor: 360.00x (Aggregate Speedup)
+------------------------------------------------------------

@@ -127,6 +127,7 @@ class FoxgloveConfig(ComponentConfig):
     """Configuration for Foxglove."""
 
     auto_open: bool = Field(False, description="Auto open foxglove link")
+    enabled: bool = Field(True, description="Enable Foxglove server")
 
 
 class PostprocessConfig(ComponentConfig):

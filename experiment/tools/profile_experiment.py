@@ -3,6 +3,19 @@
 
 py-spyを使ってexperiment-runnerの実行時間を計測し、
 flamegraphまたはSpeedscope形式で出力します。
+
+Usage:
+    # Speedscope形式で出力 (デフォルト)
+    uv run python experiment/tools/profile_experiment.py
+
+    # Flamegraph形式で出力 (.svg)
+    uv run python experiment/tools/profile_experiment.py --format flamegraph
+
+    # 実行時間を10秒に指定してプロファイリング
+    uv run python experiment/tools/profile_experiment.py --duration 10.0
+
+    # 生成されたファイルをnpx speedscopeで開く
+    npx speedscope profile.speedscope.json
 """
 
 import argparse
