@@ -11,8 +11,14 @@
 - **What**: **「どれくらいの学習データがあれば、コースを1周走れるようになるのか？」**を検証したい。
 - **Why**:
   - シミュレータなら無限にデータを集められるが、計算資源には限りがある。効率的なデータ収集（Data Efficiency）の境界線を知りたい。
-  - 手動運転データは品質がバラつくため、自動生成された「良質なデータ」が最低何分（何エピソード）あれば、ベースモデルとして機能するかを確認する必要がある。
-- **Goal**: MLOpsパイプラインを用いてデータ量を変化させながら検証し、完走に必要な**最小限のデータ量（Miniomal Dataset Size）**を特定する。
+  - **仮説**: 「壁にぶつかる失敗データ（Bad Data）」を学習に含めるべきか、含めないべきか？（Clean vs Noisy）
+- **Goal**:
+  - MLOpsパイプラインを用いてデータ量を変化させながら検証し、完走に必要な**最小限のデータ量（Minimal Dataset Size）**を特定する。
+  - また、以下の3パターンで比較を行い、**「復帰データの重要性」と「ノイズの影響」**を検証する。
+    1. **Pattern A (Noisy)**: Random Startで収集した、失敗（壁衝突）データも含めてすべて学習させる。
+    2. **Pattern B (Clean)**: Random Startで収集した、成功（ゴール到達）データのみ選別して学習させる。
+    3. **Pattern C (Expert Baseline)**: Pure Pursuitで**普通に1周走行**しただけの連続データ（復帰なし）で学習させる。
+      - 仮説：きれいな走行データだけでは、少しのズレから復帰できずに失敗する（Covariate Shift）はずである。
 
 ## 2. 実験設定（解決策・作ったもの）
 ### 2.1 Approach Selection (アプローチの選定理由)
@@ -33,15 +39,18 @@
   - Optimizer: AdamW, Learning Rate: 3e-4, Batch Size: 64。
 - **Evaluation & Visualization**: 結果をJSONに集約し、Foxglove (MCAP) で可視化。
 
-#### Random Start Strategy
+#### Random Start Strategy (Data Collection Method)
 - **Why Random Start? (vs Manual Data Collection)**:
   - 手動操作（人手で蛇行運転など）によるデータ収集には以下の問題がある。
     1. **ラベルの不整合**: 人間の操作は反応遅延やノイズを含み、環境（画像/LiDAR）と操作量（ステア）の1対1対応が崩れやすい。
     2. **Bad Data (壁に向かう挙動)**: 未知の状況（コース端）への対応を学習させるために意図的に蛇行すると、「壁に向かって走る」という危険なデータが半分含まれてしまう。これをそのまま学習するとモデルが混乱する。
   - **Random Start**であれば、ランダムな初期位置から「ゴールに向かって復帰する」正常な軌道のみを収集できるため、効率よく復帰能力（Recovery）を学習できる。
-- **Mechanism**:
-  - コース幅いっぱいの均一分布で位置・姿勢（Yaw）・速度（0〜3m/s）をランダム化してエピソードを開始する。
-  - これにより、理想的なラインだけでなく、「少し逸脱した状態からの復帰」を網羅したデータセット（擬似的なDAgger効果）を構築できる。
+- **Mechanism (Collection Protocol)**:
+  1. **Random Pose Sampling**: Lanelet2マップの境界内から、ランダムな座標 $(x, y)$ と向き $\psi$ をサンプリングして車両を配置する（初期速度は 0〜3m/s）。
+  2. **Short Episode**: 教師アルゴリズム（Lateral Shift Planner）を用いて、**一定速度（3.0 m/s）**で**3秒間**だけ走行させる。
+  3. **Evaluation**:
+     - 3秒以内にコースアウトや衝突をせず、安定して走行できれば「成功（Goal Reached）」として記録。
+     - 3秒間という短時間に限定することで、データ収集効率を高めつつ、最も重要な「復帰シーン」を重点的に集める狙いがある。
 
 #### Teacher Algorithm: Lateral Shift Planner + Pure Pursuit
 - **Architecture**:
@@ -70,6 +79,11 @@
 - **モデル**: Tiny Lidar Net (1D CNN)。
   - 入力: LiDARのRange値（1080次元ベクトル）。出力: ステアリング角のみ（速度は固定）。
   - 軽量化のため1D CNNを採用。PointNetは点群座標が必要なため入力形式が異なる。
+  - **TinyLidarNetとは**:
+    - F1TENTH（1/10スケール自律走行レース）向けに提案されたEnd-to-Endモデル。
+    - **Architecture**: NVIDIAの著名な画像用自動運転モデル「**PilotNet**」をベースに、入力層を2D画像から**1D LiDAR信号**へ乗せ換えた構成（1D CNN）。
+    - **Why CNN?**: 全結合層（MLP）と異なり、畳み込みフィルタが「隣り合う点群の形状（角や壁の曲率など）」を空間的な特徴量として抽出するため、未知のコースへの汎化性能が高いとされる。
+    - **Resource**: パラメータ数が約22万と非常に少なく、マイコン（ESP32など）でも動作するほど軽量。
 - **教師**: Pure Pursuit。
   - 完璧ではないが、実装が簡単で安定した教師データを生成できる。Lookahead Distance = 4.0m。
 - **Dataset**:
